@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:15
+    container_name: taskforce-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123 # Change-le plus tard !
+      POSTGRES_DB: taskforce_db
+    ports:
+      - "5432:5432" # Ouvre le port pour que ton PC de dev puisse y accéder
+    volumes:
+      - ./infra/postgres-data:/var/lib/postgresql/data

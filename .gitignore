@@ -137,3 +137,24 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+# C# (.NET)
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Tauri
+src-tauri/target/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,13 @@
+{
+  "sonarlint.connectedMode.project": {
+    "connectionId": "taskforce-local",
+    "projectKey": "taskforce-monorepo"
+  },
+  "sonarlint.analyzerProperties": {
+    "sonar.exclusions": "**/node_modules/**, **/dist/**, **/bin/**, **/obj/**, **/.astro/**"
+  },
+  "sonarlint.rules": {
+    "typescript:S1117": "on", // Exemple : interdit de déclarer deux fois la même variable
+    "csharpsquid:S1172": "on"  // Exemple : alerte sur les paramètres inutilisés en C#
+  }
+}
