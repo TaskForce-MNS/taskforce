@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "EF: Add Migration",
+            "type": "shell",
+            "command": "dotnet ef migrations add ${input:migrationName} --project apps/api-csharp/",
+            "problemMatcher": "$msCompile",
+            "group": "none"
+        },
+        {
+            "label": "EF: Update Database",
+            "type": "shell",
+            "command": "dotnet ef database update --project apps/api-csharp/",
+            "problemMatcher": "$msCompile",
+            "group": "none"
+        },
+        {
+            "label": "dev",
+            "type": "shell",
+            "command": "pnpm dev",
+            "problemMatcher": [],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "migrationName",
+            "type": "promptString",
+            "description": "Nom de la migration (ex: InitialCreate)",
+            "default": "NewMigration"
+        }
+    ]
+}

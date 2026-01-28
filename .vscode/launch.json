@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug API C#",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/apps/api-csharp/bin/Debug/net8.0/api-csharp.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/apps/api-csharp",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "C:\\sources": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Migrer la BDD",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "ef",
+                "database",
+                "update",
+                "--project",
+                "apps/api-csharp/api-csharp.csproj"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+    ],
+    "compounds": [
+    {
+        "name": "TOUT LANCER (TaskForce)",
+        "configurations": ["Debug API C#"],
+        "preLaunchTask": "dev" 
+    }
+]
+}
