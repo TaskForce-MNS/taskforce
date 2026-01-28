@@ -1,0 +1,45 @@
+name: CI TaskForce
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Étape de build pour l'API C#
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+          
+      - name: Restore dependencies
+        run: dotnet restore apps/api-csharp/api-csharp.csproj
+        
+      - name: Build
+        run: dotnet build apps/api-csharp/api-csharp.csproj --no-restore
+
+  # Étape de build pour le Frontend React
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+        
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Build Web App
+        run: pnpm --filter web-app build
