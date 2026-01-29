@@ -1,6 +1,6 @@
-namespace Api.Back.UnitTests;
-
 using Api.Back.Models;
+
+namespace Api.Back.UnitTests;
 
 public class UnitTest1
 {
