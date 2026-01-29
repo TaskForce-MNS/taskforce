@@ -30,7 +30,7 @@ Vite utilise ces fichiers pour savoir quelle API appeler.
 * `VITE_API_URL=http://localhost:5000` (en dev).
 * `VITE_API_URL=https://api.taskforce.com` (en prod).
 
-### 3. Dans `apps/api-csharp/`
+### 3. Dans `apps/Api.Back/`
 Bien que .NET utilise `appsettings.json`, les variables d'environnement sont prioritaires en entreprise pour :
 * La chaîne de connexion à la base de données.
 * Les secrets pour les jetons de connexion (JWT).

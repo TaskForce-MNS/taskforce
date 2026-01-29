@@ -13,7 +13,7 @@ Basée sur **pnpm**, l'arborescence racine organise le code par domaine de respo
 * **`.github/`** : Automatisation des builds et CI/CD (GitHub Actions).
 * **`.vscode/`** : Automatisation locale (Profils de debug `launch.json` et tâches `tasks.json`).
 * **`apps/`** : Contient les différents piliers de l'écosystème :
-    * **`api-csharp/`** : Backend principal en .NET 9 (ASP.NET Core, SignalR, EF Core, PostgreSQL, Clean Architecture).
+    * **`Api.Back/`** : Backend principal en .NET 9 (ASP.NET Core, SignalR, EF Core, PostgreSQL, Clean Architecture).
     * **`desktop/`** : Application native propulsée par Tauri (Rust 2021, cargo, faible consommation RAM).
     * **`doc/`** : Documentation technique du projet.
     * **`landing-page/`** : Site vitrine haute performance (Astro, SEO, Lighthouse).
@@ -23,7 +23,7 @@ Basée sur **pnpm**, l'arborescence racine organise le code par domaine de respo
 
 ---
 
-## ⚙️ Architecture du Backend (`api-csharp`)
+## ⚙️ Architecture du Backend (`Api.Back`)
 
 Le backend suit une structure de **Clean Architecture** simplifiée pour garantir la séparation des préoccupations :
 
@@ -77,7 +77,7 @@ Le backend suit une structure de **Clean Architecture** simplifiée pour garanti
 
 ## 📦 Modules et Technologies
 
-* **api-csharp** : ASP.NET Core 9, SignalR, EF Core, PostgreSQL
+* **Api.Back** : ASP.NET Core 9, SignalR, EF Core, PostgreSQL
 * **web-app** : React, Zustand, Vite, pnpm
 * **landing-page** : Astro
 * **desktop** : Tauri, Rust 2021

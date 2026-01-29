@@ -6,7 +6,7 @@ Ce module correspond à l’interface utilisateur métier du projet TaskForce.
 
 * Développer les pages et composants React
 * Gérer l’état de l’application (Zustand)
-* Intégrer l’API backend (api-csharp)
+* Intégrer l’API backend (Api.Back)
 * Ajouter des assets et du style (CSS, images)
 * Mettre en place le routage (React Router)
 * Organiser le code en dossiers (components, pages, store, api, assets)

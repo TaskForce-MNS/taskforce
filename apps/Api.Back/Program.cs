@@ -1,9 +1,11 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajoute les services pour Swagger/OpenAPI (pour tester tes futurs points d'entrée)
-builder.Services.AddOpenApi();
+// --- 1. SERVICES ---
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// CONFIGURATION CORS : Pour autoriser ton React (port 5173) et Astro (port 4321)
+// Configuration CORS pour React et Astro
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
@@ -17,20 +19,28 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Active l'interface de test Swagger en mode développement
+// --- 2. PIPELINE (L'ordre compte !) ---
+
+// On attrape les erreurs en premier
+app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-// Sécurité de base
 app.UseHttpsRedirection();
+
+// Le CORS doit être AVANT l'autorisation et les routes
 app.UseCors("DevPolicy");
-app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
-// --- ZONE POUR TES FUTURS POINTS D'ENTRÉE ---
 
+app.UseAuthorization();
+
+// --- 3. POINTS D'ENTRÉE ---
+app.MapControllers();
+
+// Petit test pour vérifier que tout roule
 app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne !" });
-
-// --------------------------------------------
 
 app.Run();

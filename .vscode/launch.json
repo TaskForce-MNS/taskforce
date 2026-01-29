@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/apps/api-csharp/bin/Debug/net8.0/api-csharp.dll",
+            "program": "${workspaceFolder}/apps/Api.Back/bin/Debug/net9.0/Api.Back.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/apps/api-csharp",
+            "cwd": "${workspaceFolder}/apps/Api.Back",
             "stopAtEntry": false,
             "serverReadyAction": {
                 "action": "openExternally",
@@ -31,7 +31,7 @@
                 "database",
                 "update",
                 "--project",
-                "apps/api-csharp/api-csharp.csproj"
+                "apps/Api.Back/Api.Back.csproj"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

@@ -43,7 +43,7 @@ TaskForce est une solution multi-plateforme organisée en **monorepo**. Elle gè
 
 ## 📂 Structure des dossiers principaux
 
-- `apps/api-csharp/` : API principale, logique métier, routes, modèles, services, validation, hubs SignalR
+- `apps/Api.Back/` : API principale, logique métier, routes, modèles, services, validation, hubs SignalR
 - `apps/web-app/` : Frontend React, gestion d’état avec Zustand, pages, composants, appels API
 - `apps/landing-page/` : Landing page marketing, Astro
 - `apps/desktop/` : Application desktop, Tauri (Rust)
@@ -52,7 +52,7 @@ TaskForce est une solution multi-plateforme organisée en **monorepo**. Elle gè
 
 ## 🔎 Points d’entrée importants
 
-### Backend (api-csharp)
+### Backend (Api.Back)
 - `Controllers/` : Définissent les routes de l’API
 - `Services/` : Logique métier (attribution, gestion des tâches)
 - `Hubs/` : Communication temps réel (SignalR)

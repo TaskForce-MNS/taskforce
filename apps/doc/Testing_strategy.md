@@ -6,7 +6,7 @@ La qualité du code est assurée à trois niveaux pour couvrir l'ensemble du sta
 ---
 
 ## 🏗️ Tests Backend (.NET 9)
-**Dossier :** `apps/api-csharp/Tests`
+**Dossier :** `apps/Api.Back/Tests`
 * **Framework :** xUnit
 * **Bibliothèque d'assertions :** FluentAssertions
 * **Types de tests :**
