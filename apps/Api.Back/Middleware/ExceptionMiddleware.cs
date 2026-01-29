@@ -1,9 +1,9 @@
 
 using System.Net;
-using api_csharp.DTOs;
+using Api.Back.DTOs;
 using FluentValidation;
 
-namespace api_csharp.Middleware;
+namespace Api.Back.Middleware;
 
 public class ExceptionMiddleware
 {

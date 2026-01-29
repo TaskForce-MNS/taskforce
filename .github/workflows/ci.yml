@@ -19,10 +19,10 @@ jobs:
           dotnet-version: 9.0.x
           
       - name: Restore dependencies
-        run: dotnet restore apps/api-csharp/api-csharp.csproj
+        run: dotnet restore apps/Api.Back/Api.Back.csproj
         
       - name: Build
-        run: dotnet build apps/api-csharp/api-csharp.csproj --no-restore
+        run: dotnet build apps/Api.Back/Api.Back.csproj --no-restore
 
   # Étape de build pour le Frontend React
   build-frontend:

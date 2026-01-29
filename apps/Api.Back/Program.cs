@@ -26,7 +26,7 @@ if (app.Environment.IsDevelopment())
 // Sécurité de base
 app.UseHttpsRedirection();
 app.UseCors("DevPolicy");
-app.UseMiddleware<api_csharp.Middleware.ExceptionMiddleware>();
+app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
 // --- ZONE POUR TES FUTURS POINTS D'ENTRÉE ---
 
 app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne !" });

@@ -4,7 +4,7 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{1787FE1D-075E-9E68-7218-25F1BD1BBEAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api-csharp", "apps\api-csharp\api-csharp.csproj", "{71F339EC-CB5F-9044-0933-07858BAB691F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.Back", "apps\Api.Back\Api.Back.csproj", "{71F339EC-CB5F-9044-0933-07858BAB691F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
