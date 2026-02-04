@@ -1,3 +1,6 @@
+using Api.Back.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. SERVICES ---
@@ -5,6 +8,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Ajoute la connexion à PostgreSQL
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Configuration CORS pour React et Astro
 builder.Services.AddCors(options =>
 {

@@ -158,3 +158,8 @@ src-tauri/target/
 # OS
 .DS_Store
 Thumbs.db
+
+# --- Ignore les données de la base de données locale ---
+infra/postgres-data/
+postgres_data/
+**/*postgres-data/
