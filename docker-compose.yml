@@ -5,9 +5,26 @@ services:
     restart: always
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123 # Change-le plus tard !
+      POSTGRES_PASSWORD: password123
       POSTGRES_DB: taskforce_db
     ports:
-      - "5432:5432" # Ouvre le port pour que ton PC de dev puisse y accéder
+      - "5432:5432"
     volumes:
       - ./infra/postgres-data:/var/lib/postgresql/data
+
+  # api:
+  #   container_name: taskforce-api
+  #   build:
+  #     context: ./apps/Api.Back
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "7250:8080"
+  #   environment:
+  #     - ConnectionStrings__DefaultConnection=Host=db;Database=taskforce_db;Username=admin;Password=password123
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #   volumes:
+  #     - ./apps/Api.Back:/app
+  #     - /app/bin
+  #     - /app/obj
+  #   depends_on:
+  #     - db

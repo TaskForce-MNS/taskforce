@@ -2,44 +2,67 @@ name: CI TaskForce
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
+    paths-ignore:
+      - "**.md"
+      - ".vscode/**"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
 
 jobs:
-  # Étape de build pour l'API C#
+  # --- BACKEND C# ---
   build-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
-          
-      - name: Restore dependencies
-        run: dotnet restore apps/Api.Back/Api.Back.csproj
-        
-      - name: Build
-        run: dotnet build apps/Api.Back/Api.Back.csproj --no-restore
 
-  # Étape de build pour le Frontend React
-  build-frontend:
+      - name: Restore dependencies
+        run: dotnet restore taskforce.sln
+
+      # Compilation + Vérification de la qualité du code (Analyzers)
+      - name: Build API & Analyzers
+        # Si TreatWarningsAsErrors=true dans le .csproj, ceci bloquera le code "sale"
+        run: dotnet build apps/Api.Back/Api.Back.csproj --no-restore --configuration Release
+
+      # Tests Unitaires
+      - name: Run Unit Tests
+        run: dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj --no-restore --verbosity normal
+
+  # --- FRONTEND REACT & ASTRO ---
+  build-web-apps:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          
+          cache: "pnpm"
+
       - name: Install pnpm
         run: npm install -g pnpm
-        
+
       - name: Install dependencies
-        run: pnpm install
-        
-      - name: Build Web App
+        run: pnpm install --frozen-lockfile
+
+      # Vérification des types TypeScript (Stricte)
+      - name: Type Check
+        run: pnpm --filter web-app exec tsc --noEmit
+
+      # Vérification du style de code (Stricte - Zéro tolérance)
+      - name: Lint Check
+        run: pnpm --filter web-app exec eslint . --max-warnings=0
+
+      # Build React (Web App)
+      - name: Build React App
         run: pnpm --filter web-app build
+
+      # Build Astro (Landing Page)
+      - name: Build Landing Page
+        run: pnpm --filter landing-page build

@@ -1,11 +1,16 @@
+using Api.Back.DTOs;
+using FluentValidation;
+using Scalar.AspNetCore; // Indispensable pour l'interface
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. SERVICES ---
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Configuration CORS pour React et Astro
+// Active le nouveau générateur OpenAPI de .NET 9
+builder.Services.AddOpenApi();
+
+// Configuration CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
@@ -19,28 +24,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- 2. PIPELINE (L'ordre compte !) ---
+// --- 2. PIPELINE ---
 
-// On attrape les erreurs en premier
-app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
+// Middleware d'erreur (si tu l'as recréé)
+// app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Génère le JSON sur /openapi/v1.json
+    app.MapOpenApi();
+    // Affiche l'interface visuelle sur /scalar/v1
+    app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
-
-// Le CORS doit être AVANT l'autorisation et les routes
+// app.UseHttpsRedirection();
 app.UseCors("DevPolicy");
-
 app.UseAuthorization();
 
-// --- 3. POINTS D'ENTRÉE ---
 app.MapControllers();
-
-// Petit test pour vérifier que tout roule
-app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne !" });
+app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne (Mode .NET 9) !" });
 
 app.Run();

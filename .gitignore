@@ -158,3 +158,11 @@ src-tauri/target/
 # OS
 .DS_Store
 Thumbs.db
+
+# Ignore les données de la base de données
+infra/
+postgres-data/
+
+# Ignore les fichiers binaires .NET (partout)
+**/bin/
+**/obj/
