@@ -36,7 +36,7 @@ namespace Api.Back.Models
         #endregion
 
         #region Relationships
-        public virtual User? User { get; set; }
+        public virtual DbUser? User { get; set; }
         #endregion
     }
 }

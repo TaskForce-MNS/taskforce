@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Api.Back.Models
 {
     [Table("USERS")]
-    public class User
+    public class DbUser
     {
         #region Identity & Account
         [Key]
@@ -27,17 +27,17 @@ namespace Api.Back.Models
         public bool IsEmailVerified { get; set; } = false;
 
         [Column("password_hash_users")]
-        public string? PasswordHash { get; set; }
+        public required string PasswordHash { get; set; }
+
+        [Column("experience_users")]
+        [MaxLength(2)]
+        public required string Experience { get; set; }
         #endregion
 
         #region Professional Details
         [Column("title_users")]
         [MaxLength(100)]
         public string? Title { get; set; }
-
-        [Column("experience_users")]
-        [MaxLength(50)]
-        public string? Experience { get; set; }
 
         [Column("current_workload_percentage_users", TypeName = "decimal(5,2)")]
         public decimal CurrentWorkload { get; set; }

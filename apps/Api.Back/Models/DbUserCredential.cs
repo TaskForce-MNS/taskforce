@@ -40,7 +40,7 @@ namespace Api.Back.Models
         public Guid UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public virtual User? User { get; set; }
+        public virtual DbUser? User { get; set; }
         #endregion
     }
 }

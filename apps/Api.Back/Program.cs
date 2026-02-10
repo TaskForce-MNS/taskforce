@@ -1,17 +1,38 @@
 using Api.Back.Data;
+using Api.Back.IRepositories;
+using Api.Back.Repositories;
+using Api.Back.Services;
+using Api.Back.Services.Interface;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. SERVICES ---
+// --- 1. SERVICES (La boîte à outils) ---
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Ajoute la connexion à PostgreSQL
+// ✅ Configurer Swagger pour qu'il lise les annotations [SwaggerOperation]
+builder.Services.AddSwaggerGen(options =>
+{
+    options.EnableAnnotations();
+});
+
+// ✅ Injection des dépendances (Le câblage)
+// Indispensable pour que le Controller trouve le Service, et le Service trouve le Repo
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// ✅ FluentValidation
+// Scanne tout le projet pour trouver tes validateurs (comme RegisterUserDtoValidator)
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Base de données PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Configuration CORS pour React et Astro
+
+// Configuration CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
@@ -27,26 +48,49 @@ var app = builder.Build();
 
 // --- 2. PIPELINE (L'ordre compte !) ---
 
-// On attrape les erreurs en premier
-app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
+// Middleware d'erreur global (si le fichier existe bien chez toi)
+// app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>(); 
+// (Je l'ai commenté par sécurité, décommente-le si tu as bien créé le fichier)
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(); // L'interface visuelle classique
 }
 
 app.UseHttpsRedirection();
 
-// Le CORS doit être AVANT l'autorisation et les routes
 app.UseCors("DevPolicy");
 
 app.UseAuthorization();
 
 // --- 3. POINTS D'ENTRÉE ---
-app.MapControllers();
 
-// Petit test pour vérifier que tout roule
+// --- REMPLACE app.MapControllers(); PAR CECI ---
+
+try
+{
+    app.MapControllers();
+}
+catch (System.Reflection.ReflectionTypeLoadException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("\n\n##################################################");
+    Console.WriteLine("🚨 LE COUPABLE EST ICI ! REGARDE CI-DESSOUS 👇");
+    Console.WriteLine("##################################################");
+
+    foreach (var error in ex.LoaderExceptions)
+    {
+        if (error != null)
+        {
+            Console.WriteLine($"- ERREUR : {error.Message}");
+        }
+    }
+    Console.WriteLine("##################################################\n\n");
+    Console.ResetColor();
+    throw; // On arrête le programme
+}
+// Petit test healthcheck
 app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne !" });
 
 app.Run();
