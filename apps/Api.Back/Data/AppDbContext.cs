@@ -12,7 +12,7 @@ namespace Api.Back.Data
 
         // Voici tes 3 tables officielles
         public DbSet<Preference> Preferences { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<DbUser> Users { get; set; }
         public DbSet<UserCredential> UserCredentials { get; set; }
 
     }
