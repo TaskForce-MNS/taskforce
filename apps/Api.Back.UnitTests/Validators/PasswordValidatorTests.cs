@@ -1,5 +1,6 @@
 using Api.Back.Validators;
 using FluentAssertions;
+using Xunit;
 
 namespace Api.Back.UnitTests.Validators
 {

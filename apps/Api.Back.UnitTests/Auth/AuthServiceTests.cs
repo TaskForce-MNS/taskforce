@@ -6,6 +6,7 @@ using FluentAssertions;
 using Moq;
 using Api.Back.Tools;
 using Api.Back.Validators.Interface;
+using Xunit;
 
 namespace Api.Back.UnitTests.Auth
 {
