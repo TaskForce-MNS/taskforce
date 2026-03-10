@@ -5,6 +5,7 @@ using Api.Back.Services;
 using Api.Back.Services.Interface;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,12 +80,9 @@ catch (System.Reflection.ReflectionTypeLoadException ex)
     Console.WriteLine("🚨 LE COUPABLE EST ICI ! REGARDE CI-DESSOUS 👇");
     Console.WriteLine("##################################################");
 
-    foreach (var error in ex.LoaderExceptions)
+    foreach (var error in ex.LoaderExceptions.Where(error => error != null))
     {
-        if (error != null)
-        {
-            Console.WriteLine($"- ERREUR : {error.Message}");
-        }
+        Console.WriteLine($"- ERREUR : {error!.Message}");
     }
     Console.WriteLine("##################################################\n\n");
     Console.ResetColor();
