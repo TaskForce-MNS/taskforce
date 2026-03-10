@@ -1,14 +1,14 @@
 services:
   db:
     image: postgres:15
-    container_name: taskforce-db
+    container_name: taskforce_db
     restart: always
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: taskforce_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./infra/postgres-data:/var/lib/postgresql/data
 

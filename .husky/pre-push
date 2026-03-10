@@ -1,0 +1,4 @@
+
+echo "🚧 Lancement des tests C# avant le push..."
+
+dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj

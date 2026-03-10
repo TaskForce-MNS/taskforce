@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/apps/Api.Back/bin/Debug/net9.0/Api.Back.dll",
+            "program": "${workspaceFolder}/apps/Api.Back/bin/Debug/net10.0/Api.Back.dll",
             "args": [],
             "cwd": "${workspaceFolder}/apps/Api.Back",
             "stopAtEntry": false,
