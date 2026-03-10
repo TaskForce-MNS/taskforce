@@ -75,15 +75,11 @@ try
 catch (System.Reflection.ReflectionTypeLoadException ex)
 {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("\n\n##################################################");
-    Console.WriteLine("🚨 LE COUPABLE EST ICI ! REGARDE CI-DESSOUS 👇");
-    Console.WriteLine("##################################################");
 
     foreach (var error in ex.LoaderExceptions.Where(error => error != null))
     {
         Console.WriteLine($"- ERREUR : {error!.Message}");
     }
-    Console.WriteLine("##################################################\n\n");
     Console.ResetColor();
     throw; // On arrête le programme
 }
