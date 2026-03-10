@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Api.Back</RootNamespace>
+    <NoWarn>$(NoWarn);CA1515;CA2007</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
