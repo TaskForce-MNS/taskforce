@@ -5,7 +5,7 @@ using Api.Back.Services;
 using FluentAssertions;
 using Moq;
 using Api.Back.Tools;
-using Api.Back.Validators.Interface;
+using Api.Back.Validators;
 using Xunit;
 
 namespace Api.Back.UnitTests.Auth
