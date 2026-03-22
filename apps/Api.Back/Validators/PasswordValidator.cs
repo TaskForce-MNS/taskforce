@@ -1,7 +1,9 @@
-using Api.Back.Validators.Interface;
-
 namespace Api.Back.Validators
 {
+    public interface IPasswordValidator
+    {
+        bool PasswordIsValid(string password);
+    }
     public class PasswordValidator : IPasswordValidator
     {
         public bool PasswordIsValid(string password)

@@ -1,6 +1,6 @@
 using Api.Back.DTOs.Requests;
 using Api.Back.Services;
-using Api.Back.Shared;
+using Api.Back.Common;
 using Api.Back.Tools;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;

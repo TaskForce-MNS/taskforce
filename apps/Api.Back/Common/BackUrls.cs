@@ -1,4 +1,4 @@
-namespace Api.Back.Shared
+namespace Api.Back.Common
 {
     public static class BackUrls
     {

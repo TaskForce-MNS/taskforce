@@ -4,7 +4,7 @@ using Api.Back.IRepositories;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Tools;
-using Api.Back.Validators.Interface;
+using Api.Back.Validators;
 using BCrypt.Net;
 
 namespace Api.Back.Services;
