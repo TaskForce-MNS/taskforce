@@ -3,62 +3,74 @@ using System.Net;
 using Api.Back.DTOs;
 using FluentValidation;
 
-namespace Api.Back.Middleware;
-
-public class ExceptionMiddleware
+namespace Api.Back.Middleware
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionMiddleware> _logger;
-
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public partial class ExceptionMiddleware
     {
-        _next = next;
-        _logger = logger;
-    }
+        private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        var errorId = Guid.NewGuid().ToString();
-        try
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
-            await _next(context);
+            _next = next;
+            _logger = logger;
         }
-        catch (ValidationException vex)
-        {
-            _logger.LogWarning(vex, "Erreur de validation id {ErrorId}", errorId);
-            await HandleExceptionAsync(context, vex, errorId, HttpStatusCode.BadRequest);
-        }
-        catch (UnauthorizedAccessException uex)
-        {
-            _logger.LogWarning(uex, "Accès refusé id {ErrorId}", errorId);
-            await HandleExceptionAsync(context, uex, errorId, HttpStatusCode.Unauthorized);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur interne id {ErrorId}", errorId);
-            await HandleExceptionAsync(context, ex, errorId, HttpStatusCode.InternalServerError);
-        }
-    }
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Erreur de validation id {ErrorId}")]
+        private partial void LogValidationError(ValidationException ex, string errorId);
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception, string errorId, HttpStatusCode statusCode)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)statusCode;
+        [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Accès refusé id {ErrorId}")]
+        private partial void LogUnauthorizedAccessError(UnauthorizedAccessException ex, string errorId);
 
-        var env = context.RequestServices.GetService<IWebHostEnvironment>();
-        var isDev = env?.EnvironmentName == "Development";
-
-        var response = new ErrorResponse(
-            context.Response.StatusCode,
-            statusCode switch
+        [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Erreur interne id {ErrorId}")]
+        private partial void LogInternalError(Exception ex, string errorId);
+        public async Task InvokeAsync(HttpContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            var errorId = Guid.NewGuid().ToString();
+            try
             {
-                HttpStatusCode.BadRequest => "Erreur de validation.",
-                HttpStatusCode.Unauthorized => "Accès non autorisé.",
-                _ => "Une erreur interne du serveur est survenue."
-            },
-            isDev ? $"{exception.Message} (id: {errorId})" : $"Erreur id: {errorId}"
-        );
+                await _next(context);
+            }
+            catch (ValidationException vex)
+            {
+                LogValidationError(vex, errorId);
+                await HandleExceptionAsync(context, vex, errorId, HttpStatusCode.BadRequest);
+            }
+            catch (UnauthorizedAccessException uex)
+            {
+                LogUnauthorizedAccessError(uex, errorId);
+                await HandleExceptionAsync(context, uex, errorId, HttpStatusCode.Unauthorized);
+            }
+#pragma warning disable CA1031
+            catch (Exception ex)
+            {
+                LogInternalError(ex, errorId);
+                await HandleExceptionAsync(context, ex, errorId, HttpStatusCode.InternalServerError);
+            }
+#pragma warning restore CA1031
+        }
 
-        return context.Response.WriteAsJsonAsync(response);
+        private static Task HandleExceptionAsync(HttpContext context, Exception exception, string errorId, HttpStatusCode statusCode)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+
+            var env = context.RequestServices.GetService<IWebHostEnvironment>();
+            var isDev = env?.EnvironmentName == "Development";
+
+            var response = new ErrorResponse(
+                context.Response.StatusCode,
+                statusCode switch
+                {
+                    HttpStatusCode.BadRequest => "Erreur de validation.",
+                    HttpStatusCode.Unauthorized => "Accès non autorisé.",
+                    _ => "Une erreur interne du serveur est survenue."
+                },
+                isDev ? $"{exception.Message} (id: {errorId})" : $"Erreur id: {errorId}"
+            );
+
+            return context.Response.WriteAsJsonAsync(response);
+        }
     }
 }
+

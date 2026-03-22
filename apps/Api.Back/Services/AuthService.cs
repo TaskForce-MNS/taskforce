@@ -3,13 +3,17 @@ using Api.Back.DTOs.Responses;
 using Api.Back.IRepositories;
 using Api.Back.Models;
 using Api.Back.Repositories;
-using Api.Back.Services.Interface;
 using Api.Back.Tools;
 using Api.Back.Validators.Interface;
 using BCrypt.Net;
 
 namespace Api.Back.Services;
 
+public interface IAuthService
+{
+    Task<UserResponseDto> RegisterAsync(UserRegisterDto dto);
+
+}
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
@@ -23,6 +27,8 @@ public class AuthService : IAuthService
 
     public async Task<UserResponseDto> RegisterAsync(UserRegisterDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         if (!_passwordValidator.PasswordIsValid(dto.Password))
         {
             throw new WeakPasswordException();

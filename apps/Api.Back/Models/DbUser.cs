@@ -60,16 +60,13 @@ namespace Api.Back.Models
 
         #region Relationships
 
-        // Foreign Key vers Preferences
         [Column("id_preferences")]
         public Guid PreferenceId { get; set; }
 
-        // Navigation Property : Permet de faire user.Preference.Theme
         [ForeignKey("PreferenceId")]
         public virtual Preference? Preference { get; set; }
 
-        // Navigation Property : Permet de faire user.Credentials
-        public virtual List<UserCredential> Credentials { get; set; } = new();
+        public virtual ICollection<UserCredential> Credentials { get; } = new List<UserCredential>();
         #endregion
     }
 }

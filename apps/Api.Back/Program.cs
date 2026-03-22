@@ -2,7 +2,6 @@ using Api.Back.Data;
 using Api.Back.IRepositories;
 using Api.Back.Repositories;
 using Api.Back.Services;
-using Api.Back.Services.Interface;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -49,9 +48,7 @@ var app = builder.Build();
 
 // --- 2. PIPELINE ---
 
-// Middleware d'erreur global (si le fichier existe bien chez toi)
-// app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>(); 
-// (Je l'ai commenté par sécurité, décommente-le si tu as bien créé le fichier)
+app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>(); 
 
 if (app.Environment.IsDevelopment())
 {

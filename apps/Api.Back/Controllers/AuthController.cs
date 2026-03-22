@@ -1,6 +1,7 @@
 using Api.Back.DTOs.Requests;
-using Api.Back.Services.Interface;
+using Api.Back.Services;
 using Api.Back.Shared;
+using Api.Back.Tools;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -42,11 +43,15 @@ namespace Api.Back.Controllers
                 // 3. Succès
                 return CreatedAtAction(nameof(Register), new { id = userCreated.Id }, userCreated);
             }
-            catch (Exception ex)
+            catch (EmailAlreadyExistsException ex) // 👈 CORRECTION : On cible l'exception précise
             {
-                // 4. Gestion de l'erreur "Email déjà existant"
-                // On renvoie un code 409 Conflict qui est plus juste sémantiquement
+                // 4. Gestion exclusive de l'erreur "Email déjà existant"
                 return Conflict(new { message = ex.Message });
+            }
+            catch (WeakPasswordException ex) // 👈 BONUS : Si tu l'as créée dans ton service
+            {
+                // On peut en attraper une autre et renvoyer un code différent
+                return BadRequest(new { message = ex.Message });
             }
         }
     }
