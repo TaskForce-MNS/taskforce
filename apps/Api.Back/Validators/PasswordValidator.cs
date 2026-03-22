@@ -13,7 +13,7 @@ namespace Api.Back.Validators
             if (!password.Any(char.IsUpper)) return false;
             if (!password.Any(char.IsLower)) return false;
             if (!password.Any(char.IsDigit)) return false;
-            if (!password.Any(ch => "!@#$%^&*".Contains(ch))) return false;
+            if (!password.Any(ch => "!@#$%^&*".Contains(ch, StringComparison.Ordinal))) return false;
 
             return true;
         }
