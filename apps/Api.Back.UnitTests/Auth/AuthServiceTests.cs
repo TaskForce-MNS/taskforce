@@ -1,6 +1,6 @@
 using Api.Back.DTOs.Requests;
 using Api.Back.Models;
-using Api.Back.IRepositories;
+using Api.Back.Repositories;
 using Api.Back.Services;
 using FluentAssertions;
 using Moq;
@@ -29,14 +29,14 @@ namespace Api.Back.UnitTests.Auth
         }
 
         [Fact]
-        public async Task RegisterAsync_Should_ReturnUser_When_DataIsValid()
+        public async Task RegisterUserAsync_Should_ReturnUser_When_DataIsValid()
         {
             var dto = new UserRegisterDto("test@test.com", "Password123!", "Jean", "Test", "Dev", "Junior");
 
             _mockRepo.Setup(repo => repo.EmailExistsAsync(dto.Email))
                      .ReturnsAsync(false);
 
-            var result = await _authService.RegisterAsync(dto);
+            var result = await _authService.RegisterUserAsync(dto);
 
             result.Should().NotBeNull();
             result.Email.Should().Be(dto.Email);
@@ -50,7 +50,7 @@ namespace Api.Back.UnitTests.Auth
         }
 
         [Fact]
-        public async Task RegisterAsync_Should_ThrowException_When_EmailAlreadyExists()
+        public async Task RegisterUserAsync_Should_ThrowException_When_EmailAlreadyExists()
         {
             // ARRANGE
             var dto = new UserRegisterDto("existe@deja.com", "Password123!", "Jean", "Test", "Dev", "10");
@@ -59,12 +59,12 @@ namespace Api.Back.UnitTests.Auth
                      .ReturnsAsync(true);
 
             // ACT & ASSERT 
-            await Assert.ThrowsAsync<EmailAlreadyExistsException>(() => _authService.RegisterAsync(dto));
+            await Assert.ThrowsAsync<EmailAlreadyExistsException>(() => _authService.RegisterUserAsync(dto));
 
             _mockRepo.Verify(repo => repo.AddAsync(It.IsAny<DbUser>()), Times.Never);
         }
         [Fact]
-        public async Task RegisterAsync_Should_ThrowException_When_PasswordIsWeak()
+        public async Task RegisterUserAsync_Should_ThrowException_When_PasswordIsWeak()
         {
             // ARRANGE
             var dto = new UserRegisterDto("test@test.com", "weakpwd", "Jean", "Test", "Dev", "Junior");
@@ -74,13 +74,13 @@ namespace Api.Back.UnitTests.Auth
             _passwordValidatorMock.Setup(v => v.PasswordIsValid(dto.Password)).Returns(false);
 
             // ACT & ASSERT
-            await Assert.ThrowsAsync<WeakPasswordException>(() => _authService.RegisterAsync(dto));
+            await Assert.ThrowsAsync<WeakPasswordException>(() => _authService.RegisterUserAsync(dto));
 
             _mockRepo.Verify(repo => repo.AddAsync(It.IsAny<DbUser>()), Times.Never);
         }
 
         [Fact]
-        public async Task RegisterAsync_ShouldHashPassword()
+        public async Task RegisterUserAsync_ShouldHashPassword()
         {
             // Arrange
             var dto = new UserRegisterDto(
@@ -105,7 +105,7 @@ namespace Api.Back.UnitTests.Auth
                 .Returns(Task.CompletedTask);
 
             // Act
-            await _authService.RegisterAsync(dto);
+            await _authService.RegisterUserAsync(dto);
 
             // Assert
             savedUser.Should().NotBeNull();

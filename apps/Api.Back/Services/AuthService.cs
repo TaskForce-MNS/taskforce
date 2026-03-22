@@ -11,7 +11,7 @@ namespace Api.Back.Services;
 
 public interface IAuthService
 {
-    Task<UserResponseDto> RegisterAsync(UserRegisterDto dto);
+    Task<UserResponseDto> RegisterUserAsync(UserRegisterDto dto);
 
 }
 public class AuthService : IAuthService
@@ -25,7 +25,7 @@ public class AuthService : IAuthService
         _passwordValidator = passwordValidator;
     }
 
-    public async Task<UserResponseDto> RegisterAsync(UserRegisterDto dto)
+    public async Task<UserResponseDto> RegisterUserAsync(UserRegisterDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 

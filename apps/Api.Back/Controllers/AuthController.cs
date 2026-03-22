@@ -39,18 +39,16 @@ namespace Api.Back.Controllers
             try
             {
                 // 2. Service
-                var userCreated = await _authService.RegisterAsync(dto);
+                var userCreated = await _authService.RegisterUserAsync(dto);
                 // 3. Succès
                 return CreatedAtAction(nameof(Register), new { id = userCreated.Id }, userCreated);
             }
-            catch (EmailAlreadyExistsException ex) // 👈 CORRECTION : On cible l'exception précise
+            catch (EmailAlreadyExistsException ex) 
             {
-                // 4. Gestion exclusive de l'erreur "Email déjà existant"
                 return Conflict(new { message = ex.Message });
             }
-            catch (WeakPasswordException ex) // 👈 BONUS : Si tu l'as créée dans ton service
+            catch (WeakPasswordException ex) 
             {
-                // On peut en attraper une autre et renvoyer un code différent
                 return BadRequest(new { message = ex.Message });
             }
         }
