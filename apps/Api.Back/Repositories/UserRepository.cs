@@ -1,11 +1,16 @@
 using Api.Back.Data;
-using Api.Back.IRepositories;
 using Api.Back.Models;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Api.Back.Repositories;
 
+public interface IUserRepository
+{
+    Task<DbUser?> GetByEmailAsync(string email);
+    Task<bool> EmailExistsAsync(string email);
+    Task AddAsync(DbUser user);
+}
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
@@ -29,7 +34,6 @@ public class UserRepository : IUserRepository
 
     public async Task AddAsync(DbUser user)
     {
-        // On ajoute l'utilisateur (EF Core gère aussi l'ajout de la Préférence liée)
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
     }

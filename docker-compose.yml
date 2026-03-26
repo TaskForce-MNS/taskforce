@@ -1,4 +1,5 @@
 services:
+  # ─── Base de données PostgreSQL ─────────────────────────────────
   db:
     image: postgres:15
     container_name: taskforce_db
@@ -11,20 +12,47 @@ services:
       - "5433:5432"
     volumes:
       - ./infra/postgres-data:/var/lib/postgresql/data
+      
+  # ─── API .NET ───────────────────────────────────────────────────
+  api:
+    image: mcr.microsoft.com/dotnet/sdk:10.0 # On utilise directement l'image SDK (pas besoin de Dockerfile pour le dev !)
+    container_name: taskforce_api
+    working_dir: /workspace/apps/Api.Back
+    ports:
+      - "7250:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=taskforce_db;Username=admin;Password=password123
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./:/workspace # On monte TOUT le projet
+    depends_on:
+      - db
+    # On restaure les paquets et on lance le hot-reload
+    command: >
+      bash -c "dotnet restore && dotnet watch run --urls http://0.0.0.0:8080"
 
-  # api:
-  #   container_name: taskforce-api
-  #   build:
-  #     context: ./apps/Api.Back
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "7250:8080"
-  #   environment:
-  #     - ConnectionStrings__DefaultConnection=Host=db;Database=taskforce_db;Username=admin;Password=password123
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #   volumes:
-  #     - ./apps/Api.Back:/app
-  #     - /app/bin
-  #     - /app/obj
-  #   depends_on:
-  #     - db
+  # ─── Web App (React Vite) ───────────────────────────────────────
+  web-app:
+    image: node:24-alpine
+    container_name: taskforce_webapp
+    working_dir: /workspace/apps/web-app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./:/workspace
+    # On active pnpm, on installe les libs à la racine, et on lance Vite
+    command: >
+      sh -c "corepack enable pnpm && pnpm install && pnpm run dev --host 0.0.0.0"
+
+  # ─── Landing Page (Astro) ───────────────────────────────────────
+  landing-page:
+    image: node:24-alpine
+    container_name: taskforce_landing
+    working_dir: /workspace/apps/landing-page
+    ports:
+      - "4321:4321"
+    volumes:
+      - ./:/workspace
+    # Idem pour Astro
+    command: >
+      sh -c "corepack enable pnpm && pnpm install && pnpm run dev --host 0.0.0.0"

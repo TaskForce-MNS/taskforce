@@ -1,6 +1,5 @@
 using Api.Back.DTOs.Requests;
 using Api.Back.DTOs.Responses;
-using Api.Back.IRepositories;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Tools;

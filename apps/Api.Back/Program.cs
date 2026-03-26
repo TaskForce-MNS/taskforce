@@ -1,38 +1,52 @@
 using Api.Back.Data;
-using Api.Back.IRepositories;
 using Api.Back.Repositories;
 using Api.Back.Services;
+using Api.Back.Validators;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. SERVICES (La boîte à outils) ---
-
+#region SERVICES 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ✅ Configurer Swagger pour qu'il lise les annotations [SwaggerOperation]
-builder.Services.AddSwaggerGen(options =>
-{
-    options.EnableAnnotations();
-});
+builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
 
-// ✅ Injection des dépendances (Le câblage)
-// Indispensable pour que le Controller trouve le Service, et le Service trouve le Repo
+// Repos & Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 
-// ✅ FluentValidation
-// Scanne tout le projet pour trouver tes validateurs (comme RegisterUserDtoValidator)
+// Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+#endregion
 
-// Base de données PostgreSQL
+#region AUTHENTICATION
+builder.Services.AddAuthentication("JwtBearer") // ou "Cookies" selon ton choix
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key manquant")))
+        };
+    });
+#endregion
+
+#region DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+#endregion
 
-// Configuration CORS
+#region CORS POLICY
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
@@ -42,45 +56,39 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowCredentials();
     });
+    options.AddPolicy("ProdPolicy", policy =>
+        policy.WithOrigins("https://{prod-domaine}", "https://{prod-domaine}")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
+#endregion
 
+#region BUILD
 var app = builder.Build();
 
-// --- 2. PIPELINE ---
-
-app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>(); 
+// Middleware
+app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); // L'interface visuelle classique
+    app.UseSwaggerUI();
+    app.UseCors("DevPolicy");
 }
-
+else
+{
+    app.UseCors("ProdPolicy");
+    app.UseHsts();
+}
+// Security
 app.UseHttpsRedirection();
-
-app.UseCors("DevPolicy");
+app.UseAuthentication();
 app.UseAuthorization();
 
-// --- 3. POINTS D'ENTRÉE ---
+app.MapControllers();
 
-// --- REMPLACE app.MapControllers(); PAR CECI ---
-
-try
-{
-    app.MapControllers();
-}
-catch (System.Reflection.ReflectionTypeLoadException ex)
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-
-    foreach (var error in ex.LoaderExceptions.Where(error => error != null))
-    {
-        Console.WriteLine($"- ERREUR : {error!.Message}");
-    }
-    Console.ResetColor();
-    throw; // On arrête le programme
-}
-// Petit test healthcheck
-app.MapGet("/api/test", () => new { message = "L'API TaskForce est en ligne !" });
+app.MapGet("/api/back/v1/health", () => new { message = "L'API TaskForce est en bonne santé !" });
 
 app.Run();
+#endregion
