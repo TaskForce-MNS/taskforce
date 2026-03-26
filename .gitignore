@@ -164,10 +164,19 @@ infra/postgres-data/
 postgres_data/
 **/*postgres-data/
 
-# Ignore les données de la base de données
-infra/
-postgres-data/
 
 # Ignore les fichiers binaires .NET (partout)
+**/bin/
+**/obj/
+
+# ─── Docker & Base de données ───
+infra/postgres-data/
+
+# ─── Node.js & pnpm ─────────────
+node_modules/
+.pnpm-store/
+.pnpm/
+
+# ─── .NET ───────────────────────
 **/bin/
 **/obj/
