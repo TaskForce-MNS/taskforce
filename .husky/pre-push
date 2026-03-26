@@ -1,15 +1,15 @@
 
-# echo "🚧 Lancement des tests C# avant le push..."
+echo "🚧 Lancement des tests C# avant le push..."
 
-# dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj
+dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj
 
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# #!/bin/sh
+# . "$(dirname "$0")/_/husky.sh"
 
-echo "⏳ Exécution des tests unitaires .NET via Docker..."
-# On lance un conteneur jetable (--rm) juste pour faire les tests
-docker run --rm \
-  -v $(pwd):/workspace \
-  -w /workspace/apps/api.back.unittest \
-  mcr.microsoft.com/dotnet/sdk:10.0 \
-  dotnet test
+# echo "⏳ Exécution des tests unitaires .NET via Docker..."
+# # On lance un conteneur jetable (--rm) juste pour faire les tests
+# docker run --rm \
+#   -v $(pwd):/workspace \
+#   -w /workspace/apps/api.back.unittest \
+#   mcr.microsoft.com/dotnet/sdk:10.0 \
+#   dotnet test
