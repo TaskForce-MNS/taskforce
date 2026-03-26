@@ -130,7 +130,7 @@ exit
 
 Pour ajouter un package NuGet dans ton API .NET :
 
-Bash
+
 docker exec -it taskforce_api bash
 # Une fois dedans (/workspace/apps/api.back)
 dotnet add package Nom.Du.Package
@@ -138,7 +138,6 @@ exit
 
 Pour voir les logs en direct (très utile pour voir si ton code compile quand tu le sauvegardes) :
 
-Bash
 docker logs -f taskforce_api
 # ou
 docker logs -f taskforce_webapp

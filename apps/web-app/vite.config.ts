@@ -7,8 +7,10 @@ export default defineConfig({
   clearScreen: false,
   base: "./",
   server: {
+    host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    allowedHosts: ['app.taskforce.local']
   },
   build: {
     target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "safari13",

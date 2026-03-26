@@ -51,7 +51,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:4321")
+        policy.WithOrigins("http://app.taskforce.local",
+            "http://taskforce.local",
+            "http://localhost:5173", 
+            "http://localhost:4321")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

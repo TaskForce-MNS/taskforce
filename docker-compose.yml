@@ -2,12 +2,12 @@ services:
   # ─── Base de données PostgreSQL ─────────────────────────────────
   db:
     image: postgres:15
-    container_name: taskforce_db
+    container_name: ${DB_HOST}
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: taskforce_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5433:5432"
     volumes:
@@ -15,19 +15,18 @@ services:
       
   # ─── API .NET ───────────────────────────────────────────────────
   api:
-    image: mcr.microsoft.com/dotnet/sdk:10.0 # On utilise directement l'image SDK (pas besoin de Dockerfile pour le dev !)
+    image: mcr.microsoft.com/dotnet/sdk:10.0
     container_name: taskforce_api
     working_dir: /workspace/apps/Api.Back
     ports:
       - "7250:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Database=taskforce_db;Username=admin;Password=password123
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
     volumes:
-      - ./:/workspace # On monte TOUT le projet
+      - ./:/workspace
     depends_on:
       - db
-    # On restaure les paquets et on lance le hot-reload
     command: >
       bash -c "dotnet restore && dotnet watch run --urls http://0.0.0.0:8080"
 
@@ -40,7 +39,6 @@ services:
       - "5173:5173"
     volumes:
       - ./:/workspace
-    # On active pnpm, on installe les libs à la racine, et on lance Vite
     command: >
       sh -c "corepack enable pnpm && pnpm install && pnpm run dev --host 0.0.0.0"
 
@@ -53,6 +51,18 @@ services:
       - "4321:4321"
     volumes:
       - ./:/workspace
-    # Idem pour Astro
     command: >
       sh -c "corepack enable pnpm && pnpm install && pnpm run dev --host 0.0.0.0"
+
+# ─── Reverse Proxy (Nginx) ──────────────────────────────────────
+  proxy:
+    image: nginx:alpine
+    container_name: taskforce_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+      - web-app
+      - landing-page
