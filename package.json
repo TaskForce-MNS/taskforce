@@ -3,7 +3,7 @@
     "dev:desktop": "pnpm --filter desktop tauri dev",
     "dev:landing": "pnpm --filter landing-page dev",
     "dev:web": "pnpm --filter web-app dev",
-    "dev": "concurrently \"pnpm dev:landing\" \"pnpm dev:desktop\"",
+    "dev": "pnpm run dev:desktop",
     "build": "pnpm --filter landing-page build && pnpm --filter desktop tauri build",
     "prepare": "husky"
   },
