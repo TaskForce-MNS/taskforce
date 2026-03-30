@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import dayjs from 'dayjs';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,10 @@ export default function App() {
             fill="black"
           />
         </svg>
+        <div style={{ padding: "20px" }}>
+          <p>Test d'un vrai paquet (Day.js) :</p>
+          <p>Nous sommes le : <strong>{dayjs().format('DD/MM/YYYY à HH:mm')}</strong></p>
+        </div>
       </BrowserRouter>
     </QueryClientProvider>
   );
