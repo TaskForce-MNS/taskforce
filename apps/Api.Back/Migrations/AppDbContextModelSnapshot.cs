@@ -17,62 +17,40 @@ namespace Api.Back.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Api.Back.Models.DbUser", b =>
+            modelBuilder.Entity("Api.Back.Models.DbIdentity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id_users");
+                        .HasColumnName("id_identity");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("creation_date_users");
+                        .HasColumnName("creation_date_identity");
 
                     b.Property<decimal>("CurrentWorkload")
                         .HasColumnType("decimal(5,2)")
-                        .HasColumnName("current_workload_percentage_users");
+                        .HasColumnName("current_workload_percentage_identity");
 
-                    b.Property<string>("Email")
+                    b.Property<byte[]>("EncryptedProfile")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("email_users");
+                        .HasColumnType("bytea")
+                        .HasColumnName("encrypted_profile_blob");
 
                     b.Property<string>("Experience")
                         .IsRequired()
                         .HasMaxLength(2)
                         .HasColumnType("character varying(2)")
-                        .HasColumnName("experience_users");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("firstname_users");
+                        .HasColumnName("experience_identity");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
-                        .HasColumnName("isDeleted_users");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .HasColumnType("boolean")
-                        .HasColumnName("email_verified_users");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("name_users");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("password_hash_users");
+                        .HasColumnName("isDeleted_identity");
 
                     b.Property<Guid>("PreferenceId")
                         .HasColumnType("uuid")
@@ -81,25 +59,25 @@ namespace Api.Back.Migrations
                     b.Property<string>("Title")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("title_users");
+                        .HasColumnName("title_identity");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("update_date_users");
+                        .HasColumnName("update_date_identity");
 
                     b.Property<decimal>("WorkloadPoints")
                         .HasColumnType("decimal(5,2)")
-                        .HasColumnName("workload_point_users");
+                        .HasColumnName("workload_point_identity");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PreferenceId")
                         .IsUnique();
 
-                    b.ToTable("USERS");
+                    b.ToTable("IDENTITIES");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.Preference", b =>
+            modelBuilder.Entity("Api.Back.Models.DbPreference", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,16 +111,15 @@ namespace Api.Back.Migrations
                     b.ToTable("PREFERENCES");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.UserCredential", b =>
+            modelBuilder.Entity("Api.Back.Models.DbUserCredential", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id_users_crendentials");
+                        .HasColumnName("id_credential");
 
-                    b.Property<string>("AaGuid")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                    b.Property<Guid?>("AaGuid")
+                        .HasColumnType("uuid")
                         .HasColumnName("aa_guid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -155,9 +132,13 @@ namespace Api.Back.Migrations
                         .HasColumnName("descriptor_id");
 
                     b.Property<string>("DeviceName")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("device_name");
+
+                    b.Property<Guid>("IdentityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id_identity");
 
                     b.Property<byte[]>("PublicKey")
                         .IsRequired()
@@ -168,53 +149,48 @@ namespace Api.Back.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("signature_counter");
 
-                    b.Property<string>("UserHandle")
+                    b.Property<byte[]>("UserHandle")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("bytea")
                         .HasColumnName("user_handle");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id_users");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("IdentityId");
 
-                    b.ToTable("USERS_CREDENTIALS");
+                    b.ToTable("USER_CREDENTIALS");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.DbUser", b =>
+            modelBuilder.Entity("Api.Back.Models.DbIdentity", b =>
                 {
-                    b.HasOne("Api.Back.Models.Preference", "Preference")
-                        .WithOne("User")
-                        .HasForeignKey("Api.Back.Models.DbUser", "PreferenceId")
+                    b.HasOne("Api.Back.Models.DbPreference", "Preference")
+                        .WithOne("Identity")
+                        .HasForeignKey("Api.Back.Models.DbIdentity", "PreferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Preference");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.UserCredential", b =>
+            modelBuilder.Entity("Api.Back.Models.DbUserCredential", b =>
                 {
-                    b.HasOne("Api.Back.Models.DbUser", "User")
+                    b.HasOne("Api.Back.Models.DbIdentity", "Identity")
                         .WithMany("Credentials")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Identity");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.DbUser", b =>
+            modelBuilder.Entity("Api.Back.Models.DbIdentity", b =>
                 {
                     b.Navigation("Credentials");
                 });
 
-            modelBuilder.Entity("Api.Back.Models.Preference", b =>
+            modelBuilder.Entity("Api.Back.Models.DbPreference", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("Identity");
                 });
 #pragma warning restore 612, 618
         }

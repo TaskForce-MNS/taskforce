@@ -1,10 +1,12 @@
 using Api.Back.Data;
 using Api.Back.Repositories;
 using Api.Back.Services;
-using Api.Back.Validators;
+// using Api.Back.Validators;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Fido2NetLib;
+using Fido2NetLib.Objects;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +15,29 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
-
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("PostgreSQL Database");
 // Repos & Services
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
+// builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddFido2(options =>
+{
+    options.ServerDomain = "taskforce.local";
+    options.ServerName = "TaskForce Zero-Knowledge";
+
+    options.Origins = new HashSet<string>
+    {
+        "https://app.taskforce.local",
+        "https://taskforce.local",
+        "http://localhost:5173",
+        "http://localhost:4321",
+        "tauri://localhost",
+    };
+    options.TimestampDriftTolerance = 300000;
+});
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 #endregion
@@ -51,9 +70,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
     {
-        policy.WithOrigins("http://app.taskforce.local",
-            "http://taskforce.local",
-            "http://localhost:5173", 
+        policy.WithOrigins("https://app.taskforce.local",
+            "https://taskforce.local",
+            "http://localhost:5173",
             "http://localhost:4321")
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -77,13 +96,26 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("DevPolicy");
 }
 else
 {
     app.UseCors("ProdPolicy");
     app.UseHsts();
 }
+app.UseRouting();
+app.UseCors("DevPolicy");
+
+// app.UseRouting();
+
+// // Utilise la bonne politique selon l'environnement
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseCors("DevPolicy");
+// }
+// else
+// {
+//     app.UseCors("ProdPolicy");
+// }
 // Security
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -91,7 +123,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/api/back/v1/health", () => new { message = "L'API TaskForce est en bonne santé !" });
+app.MapHealthChecks("/api/back/v1/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = async (context, report) =>
+    {
+        var result = new
+        {
+            status = report.Status.ToString(),           // Healthy / Unhealthy / Degraded
+            totalDuration = report.TotalDuration,
+            entries = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description ?? "OK",
+                duration = e.Value.Duration,
+                error = e.Value.Exception?.Message
+            }).ToList()
+        };
+
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(result);
+    }
+});
 
 app.Run();
 #endregion

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Api.Back.Models
 {
     [Table("PREFERENCES")]
-    public class Preference
+    public class DbPreference
     {
         #region Identity
         [Key]
@@ -36,7 +36,7 @@ namespace Api.Back.Models
         #endregion
 
         #region Relationships
-        public virtual DbUser? User { get; set; }
+        public virtual DbIdentity? Identity { get; set; }
         #endregion
     }
 }

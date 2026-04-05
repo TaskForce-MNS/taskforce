@@ -5,16 +5,32 @@ namespace Api.Back.Data
 {
     public class AppDbContext : DbContext
     {
-        // Le constructeur permet à .NET de passer la configuration (ex: la chaîne de connexion)
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
-        // Voici tes 3 tables officielles
-        public DbSet<Preference> Preferences { get; set; }
-        public DbSet<DbUser> Users { get; set; }
-        public DbSet<UserCredential> UserCredentials { get; set; }
+        public DbSet<DbIdentity> Identities { get; set; }
+        public DbSet<DbUserCredential> Credentials { get; set; }
+        public DbSet<DbPreference> Preferences { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            ArgumentNullException.ThrowIfNull(modelBuilder);
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<DbIdentity>()
+                .HasOne(i => i.Preference)
+                .WithOne(p => p.Identity)
+                .HasForeignKey<DbIdentity>(i => i.PreferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DbIdentity>()
+                .HasMany(i => i.Credentials)
+                .WithOne(c => c.Identity)
+                .HasForeignKey(c => c.IdentityId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 
 }
