@@ -15,7 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
-
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("PostgreSQL Database");
 // Repos & Services
 builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -122,7 +123,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/api/back/v1/health", () => new { message = "L'API TaskForce est en bonne santé !" });
+app.MapHealthChecks("/api/back/v1/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = async (context, report) =>
+    {
+        var result = new
+        {
+            status = report.Status.ToString(),           // Healthy / Unhealthy / Degraded
+            totalDuration = report.TotalDuration,
+            entries = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description ?? "OK",
+                duration = e.Value.Duration,
+                error = e.Value.Exception?.Message
+            }).ToList()
+        };
+
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(result);
+    }
+});
 
 app.Run();
 #endregion
