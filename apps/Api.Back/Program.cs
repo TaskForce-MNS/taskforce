@@ -1,10 +1,12 @@
 using Api.Back.Data;
 using Api.Back.Repositories;
 using Api.Back.Services;
-using Api.Back.Validators;
+// using Api.Back.Validators;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Fido2NetLib;
+using Fido2NetLib.Objects;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +17,26 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
 
 // Repos & Services
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
+// builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddFido2(options =>
+{
+    options.ServerDomain = "taskforce.local";
+    options.ServerName = "TaskForce Zero-Knowledge";
+
+    options.Origins = new HashSet<string>
+    {
+        "https://app.taskforce.local",
+        "https://taskforce.local",
+        "http://localhost:5173",
+        "http://localhost:4321",
+        "tauri://localhost",
+    };
+    options.TimestampDriftTolerance = 300000;
+});
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 #endregion
@@ -51,9 +69,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevPolicy", policy =>
     {
-        policy.WithOrigins("http://app.taskforce.local",
-            "http://taskforce.local",
-            "http://localhost:5173", 
+        policy.WithOrigins("https://app.taskforce.local",
+            "https://taskforce.local",
+            "http://localhost:5173",
             "http://localhost:4321")
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -77,13 +95,26 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("DevPolicy");
 }
 else
 {
     app.UseCors("ProdPolicy");
     app.UseHsts();
 }
+app.UseRouting();
+app.UseCors("DevPolicy");
+
+// app.UseRouting();
+
+// // Utilise la bonne politique selon l'environnement
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseCors("DevPolicy");
+// }
+// else
+// {
+//     app.UseCors("ProdPolicy");
+// }
 // Security
 app.UseHttpsRedirection();
 app.UseAuthentication();

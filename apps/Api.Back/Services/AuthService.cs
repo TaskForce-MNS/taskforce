@@ -1,77 +1,104 @@
 using Api.Back.DTOs.Requests;
-using Api.Back.DTOs.Responses;
 using Api.Back.Models;
 using Api.Back.Repositories;
-using Api.Back.Tools;
-using Api.Back.Validators;
-using BCrypt.Net;
+using Fido2NetLib;
+using Fido2NetLib.Objects;
+using System.Text;
 
-namespace Api.Back.Services;
-
-public interface IAuthService
+namespace Api.Back.Services
 {
-    Task<UserResponseDto> RegisterUserAsync(UserRegisterDto dto);
-
-}
-public class AuthService : IAuthService
-{
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordValidator _passwordValidator;
-
-    public AuthService(IUserRepository userRepository, IPasswordValidator passwordValidator)
+    public interface IAuthService
     {
-        _userRepository = userRepository;
-        _passwordValidator = passwordValidator;
+        CredentialCreateOptions RequestNewCredential(string rpId);
+        Task<DbIdentity> RegisterIdentityAsync(
+            RegisterIdentityDto dto,
+            CredentialCreateOptions originalOptions,
+            AuthenticatorAttestationRawResponse attestationResponse);
     }
 
-    public async Task<UserResponseDto> RegisterUserAsync(UserRegisterDto dto)
+    public class AuthService : IAuthService
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        private readonly IFido2 _fido2;
+        private readonly IIdentityRepository _identityRepository;
 
-        if (!_passwordValidator.PasswordIsValid(dto.Password))
+        public AuthService(IFido2 fido2, IIdentityRepository identityRepository)
         {
-            throw new WeakPasswordException();
+            ArgumentNullException.ThrowIfNull(fido2);
+            ArgumentNullException.ThrowIfNull(identityRepository);
+
+            _fido2 = fido2;
+            _identityRepository = identityRepository;
         }
 
-        if (await _userRepository.EmailExistsAsync(dto.Email))
+        public CredentialCreateOptions RequestNewCredential(string rpId)
         {
-            throw new EmailAlreadyExistsException();
+            var user = new Fido2User
+            {
+                Name = "Anonyme",
+                Id = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString("N")),
+                DisplayName = "Identité Zéro-Connaissance"
+            };
+
+            var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
+            {
+                User = user,
+                ExcludeCredentials = Array.Empty<PublicKeyCredentialDescriptor>(),
+                AuthenticatorSelection = AuthenticatorSelection.Default,
+                AttestationPreference = AttestationConveyancePreference.None
+            });
+            options.Rp.Id = rpId;
+            return options;
         }
 
-        var defaultPreference = new Preference
+        public async Task<DbIdentity> RegisterIdentityAsync(
+            RegisterIdentityDto dto,
+            CredentialCreateOptions originalOptions,
+            AuthenticatorAttestationRawResponse attestationResponse)
         {
-            Id = Guid.NewGuid(),
-            Theme = "light",
-            Appearance = "modern",
-            FontSize = 14,
-            IsAutoTheme = true
-        };
+            ArgumentNullException.ThrowIfNull(dto);
+            ArgumentNullException.ThrowIfNull(originalOptions);
+            ArgumentNullException.ThrowIfNull(attestationResponse);
 
-        var user = new DbUser
-        {
-            Id = Guid.NewGuid(),
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            FirstName = dto.FirstName,
-            Name = dto.Name,
-            Title = dto.Title,
-            Experience = dto.Experience,
-            CreatedAt = DateTime.UtcNow,
-            CurrentWorkload = 0,
-            PreferenceId = defaultPreference.Id,
-            Preference = defaultPreference
-        };
+            var result = await _fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
+            {
+                AttestationResponse = attestationResponse,
+                OriginalOptions = originalOptions,
+                IsCredentialIdUniqueToUserCallback = async (args, cancellationToken) =>
+                {
+                    var exists = await _identityRepository.PublicKeyExistsAsync(
+                        Convert.ToBase64String(args.CredentialId));
+                    return !exists;
+                }
+            });
 
-        await _userRepository.AddAsync(user);
+            var newIdentity = new DbIdentity
+            {
+                Experience = dto.Experience,
+                Title = dto.Title,
+                CurrentWorkload = 0,
+                WorkloadPoints = 0,
+                EncryptedProfile = Convert.FromBase64String(dto.EncryptedProfileBlob),
 
-        return new UserResponseDto(
-            Id: user.Id,
-            Email: user.Email,
-            FullName: $"{user.FirstName} {user.Name}",
-            Title: user.Title,
-            Workload: user.CurrentWorkload,
-            Experience: user.Experience,
-            CreatedAt: user.CreatedAt
-        );
+                Preference = new DbPreference()
+            };
+
+            var newCredential = new DbUserCredential
+            {
+                DescriptorId = result.Id,
+                PublicKey = result.PublicKey,
+                UserHandle = result.User.Id,
+                SignatureCounter = result.SignCount,
+                AaGuid = result.AaGuid,
+                Identity = newIdentity
+            };
+
+            newIdentity.Credentials.Add(newCredential);
+
+            await _identityRepository.AddAsync(newIdentity);
+
+            return newIdentity;
+
+        }
     }
+
 }

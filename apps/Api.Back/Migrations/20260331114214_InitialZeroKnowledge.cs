@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Back.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuthSystem : Migration
+    public partial class InitialZeroKnowledge : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,29 +28,25 @@ namespace Api.Back.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "USERS",
+                name: "IDENTITIES",
                 columns: table => new
                 {
-                    id_users = table.Column<Guid>(type: "uuid", nullable: false),
-                    name_users = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    firstname_users = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    email_users = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    email_verified_users = table.Column<bool>(type: "boolean", nullable: false),
-                    password_hash_users = table.Column<string>(type: "text", nullable: true),
-                    title_users = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    experience_users = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    current_workload_percentage_users = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
-                    workload_point_users = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
-                    creation_date_users = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    update_date_users = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    isDeleted_users = table.Column<bool>(type: "boolean", nullable: false),
+                    id_identity = table.Column<Guid>(type: "uuid", nullable: false),
+                    encrypted_profile_blob = table.Column<byte[]>(type: "bytea", nullable: false),
+                    experience_identity = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
+                    title_identity = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    current_workload_percentage_identity = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    workload_point_identity = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    creation_date_identity = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    update_date_identity = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    isDeleted_identity = table.Column<bool>(type: "boolean", nullable: false),
                     id_preferences = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_USERS", x => x.id_users);
+                    table.PrimaryKey("PK_IDENTITIES", x => x.id_identity);
                     table.ForeignKey(
-                        name: "FK_USERS_PREFERENCES_id_preferences",
+                        name: "FK_IDENTITIES_PREFERENCES_id_preferences",
                         column: x => x.id_preferences,
                         principalTable: "PREFERENCES",
                         principalColumn: "id_preferences",
@@ -58,50 +54,50 @@ namespace Api.Back.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "users_credentials",
+                name: "USER_CREDENTIALS",
                 columns: table => new
                 {
-                    id_users_crendentials = table.Column<Guid>(type: "uuid", nullable: false),
+                    id_credential = table.Column<Guid>(type: "uuid", nullable: false),
                     descriptor_id = table.Column<byte[]>(type: "bytea", nullable: false),
                     public_key = table.Column<byte[]>(type: "bytea", nullable: false),
-                    user_handle = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    user_handle = table.Column<byte[]>(type: "bytea", nullable: false),
                     signature_counter = table.Column<long>(type: "bigint", nullable: false),
-                    aa_guid = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    aa_guid = table.Column<Guid>(type: "uuid", nullable: true),
+                    device_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    device_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    id_users = table.Column<Guid>(type: "uuid", nullable: false)
+                    id_identity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users_credentials", x => x.id_users_crendentials);
+                    table.PrimaryKey("PK_USER_CREDENTIALS", x => x.id_credential);
                     table.ForeignKey(
-                        name: "FK_users_credentials_USERS_id_users",
-                        column: x => x.id_users,
-                        principalTable: "USERS",
-                        principalColumn: "id_users",
+                        name: "FK_USER_CREDENTIALS_IDENTITIES_id_identity",
+                        column: x => x.id_identity,
+                        principalTable: "IDENTITIES",
+                        principalColumn: "id_identity",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_USERS_id_preferences",
-                table: "USERS",
+                name: "IX_IDENTITIES_id_preferences",
+                table: "IDENTITIES",
                 column: "id_preferences",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_users_credentials_id_users",
-                table: "users_credentials",
-                column: "id_users");
+                name: "IX_USER_CREDENTIALS_id_identity",
+                table: "USER_CREDENTIALS",
+                column: "id_identity");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "users_credentials");
+                name: "USER_CREDENTIALS");
 
             migrationBuilder.DropTable(
-                name: "USERS");
+                name: "IDENTITIES");
 
             migrationBuilder.DropTable(
                 name: "PREFERENCES");
