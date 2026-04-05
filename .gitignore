@@ -180,3 +180,6 @@ node_modules/
 # ─── .NET ───────────────────────
 **/bin/
 **/obj/
+
+# Certificats SSL Locaux
+infra/certs/*.pem
