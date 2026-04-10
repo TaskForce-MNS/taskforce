@@ -13,6 +13,8 @@ public interface IIdentityRepository
     Task AddAsync(DbIdentity identity);
 
     Task<DbIdentity?> GetByCredentialIdAsync(byte[] descriptorId);
+
+    Task UpdateSignatureCounterAsync(byte[] credentialId, uint newCounter);
 }
 
 public class IdentityRepository : IIdentityRepository
@@ -50,5 +52,17 @@ public class IdentityRepository : IIdentityRepository
         return await _context.Identities
             .Include(i => i.Credentials)
             .FirstOrDefaultAsync(i => i.Credentials.Any(c => c.DescriptorId.SequenceEqual(descriptorId)));
+    }
+
+    public async Task UpdateSignatureCounterAsync(byte[] credentialId, uint newCounter)
+    {
+        var credential = await _context.Credentials
+            .FirstOrDefaultAsync(c => c.DescriptorId == credentialId);
+
+        if (credential != null)
+        {
+            credential.SignatureCounter = newCounter;
+            await _context.SaveChangesAsync();
+        }
     }
 }

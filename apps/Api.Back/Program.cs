@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,21 +46,21 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 #endregion
 
 #region AUTHENTICATION
-// builder.Services.AddAuthentication("JwtBearer") // ou "Cookies" selon ton choix
-//     .AddJwtBearer(options =>
-//     {
-//         options.TokenValidationParameters = new TokenValidationParameters
-//         {
-//             ValidateIssuer = true,
-//             ValidateAudience = true,
-//             ValidateLifetime = true,
-//             ValidateIssuerSigningKey = true,
-//             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//             ValidAudience = builder.Configuration["Jwt:Audience"],
-//             IssuerSigningKey = new SymmetricSecurityKey(
-//                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key manquant")))
-//         };
-//     });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key manquant")))
+        };
+    });
 #endregion
 
 #region DB
@@ -91,6 +94,8 @@ var app = builder.Build();
 
 // Middleware
 app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
+app.UseHttpsRedirection();
+app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {
@@ -102,10 +107,8 @@ else
     app.UseCors("ProdPolicy");
     app.UseHsts();
 }
-app.UseRouting();
 app.UseCors("DevPolicy");
 
-// app.UseRouting();
 
 // // Utilise la bonne politique selon l'environnement
 // if (app.Environment.IsDevelopment())
@@ -117,7 +120,6 @@ app.UseCors("DevPolicy");
 //     app.UseCors("ProdPolicy");
 // }
 // Security
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -4,6 +4,9 @@ using Api.Back.Repositories;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Api.Back.Services
 {
@@ -14,6 +17,13 @@ namespace Api.Back.Services
             RegisterIdentityDto dto,
             CredentialCreateOptions originalOptions,
             AuthenticatorAttestationRawResponse attestationResponse);
+        AssertionOptions RequestAssertionOptions(string rpId);
+        Task<string> VerifyAssertionAndLoginAsync(
+            AuthenticatorAssertionRawResponse assertionResponse,
+            AssertionOptions originalOptions,
+            string jwtSecretKey,
+            string jwtIssuer,
+            string jwtAudience);
     }
 
     public class AuthService : IAuthService
@@ -99,6 +109,69 @@ namespace Api.Back.Services
             return newIdentity;
 
         }
-    }
+        public AssertionOptions RequestAssertionOptions(string rpId)
+        {
+            // Dans la v4, on passe un objet unique de configuration (GetAssertionOptionsParams)
+            return _fido2.GetAssertionOptions(new GetAssertionOptionsParams
+            {
+                AllowedCredentials = new List<PublicKeyCredentialDescriptor>(),
+                UserVerification = UserVerificationRequirement.Required
+            });
+        }
 
+        public async Task<string> VerifyAssertionAndLoginAsync(
+            AuthenticatorAssertionRawResponse assertionResponse,
+            AssertionOptions originalOptions,
+            string jwtSecretKey,
+            string jwtIssuer,
+            string jwtAudience)
+        {
+            // Règle CA1062 : On bloque immédiatement si la requête du client est vide
+            ArgumentNullException.ThrowIfNull(assertionResponse);
+
+            var identity = await _identityRepository.GetByCredentialIdAsync(assertionResponse.RawId)
+                ?? throw new InvalidOperationException("Aucune identité trouvée pour ce Passkey.");
+
+            var credential = identity.Credentials.First(c => c.DescriptorId.SequenceEqual(assertionResponse.RawId));
+
+            var makeAssertionParams = new MakeAssertionParams
+            {
+                AssertionResponse = assertionResponse,
+                OriginalOptions = originalOptions,
+                StoredPublicKey = credential.PublicKey,
+                StoredSignatureCounter = credential.SignatureCounter,
+                // Dans la v4, le delegate prend "args" ET "cancellationToken"
+                IsUserHandleOwnerOfCredentialIdCallback = (args, cancellationToken) =>
+                {
+                    return Task.FromResult(true);
+                }
+            };
+
+            var assertionResult = await _fido2.MakeAssertionAsync(makeAssertionParams, cancellationToken: default);
+
+            await _identityRepository.UpdateSignatureCounterAsync(credential.DescriptorId, assertionResult.SignCount);
+
+            return GenerateJwtToken(identity.Id, jwtSecretKey, jwtIssuer, jwtAudience);
+        }
+        private static string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, identityId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2), // Token valide 2 heures
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+    }
 }

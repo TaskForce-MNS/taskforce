@@ -10,23 +10,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@shadcn/ui": "^0.0.4",
     "@simplewebauthn/browser": "^13.3.0",
     "@tanstack/react-query": "^5.96.0",
+    "@tanstack/react-router": "^1.168.10",
     "autoprefixer": "^10.4.27",
-    "axios": "1.13.6",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.20",
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.1",
     "tailwindcss": "^4.2.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@tanstack/router-plugin": "^1.167.12",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.12.0",
