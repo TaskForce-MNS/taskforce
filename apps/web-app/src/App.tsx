@@ -53,11 +53,11 @@
 // }
 import { useState } from 'react';
 import { startRegistration } from '@simplewebauthn/browser';
+import { LoginButton } from './LoginButton';
 
 export default function App() {
   const [status, setStatus] = useState<string>("Prêt pour le test.");
 
-  // Remplace par l'URL de ton API .NET (ex: https://localhost:7001 ou http://localhost:5000)
   const API_BASE_URL = "https://api.taskforce.local/api/v1/back/auth";
 
   const handleRegisterZeroKnowledge = async () => {
@@ -125,6 +125,7 @@ export default function App() {
       <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#755454', borderRadius: '8px' }}>
         <strong>Statut :</strong> <br/> {status}
       </div>
+      <LoginButton/>
     </div>
   );
 }
