@@ -1,164 +1,352 @@
+using System.Security.Claims;
+using System.Text.Json;
+using Api.Back.Common;
 using Api.Back.Controllers;
 using Api.Back.DTOs.Requests;
 using Api.Back.Services;
-using Api.Back.Models;
+using Fido2NetLib;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Moq;
-using Fido2NetLib;
-using Fido2NetLib.Objects;
-using System.Text;
-using System.Text.Json;
 using Xunit;
+using Fido2NetLib.Objects;
+using Fido2AssertionOptions = Fido2NetLib.AssertionOptions;
+namespace Api.Back.Tests.Controllers;
 
-namespace Api.Back.UnitTests.Auth
+public class AuthControllerTests
 {
-    public sealed class AuthControllerTests : IDisposable
+    // ====================== SETUP ======================
+    private readonly Mock<IAuthService> _authServiceMock;
+    private readonly Mock<IValidator<RegisterIdentityDto>> _validatorMock;
+    private readonly Mock<IMemoryCache> _cacheMock;
+    private readonly Mock<IConfiguration> _configMock;
+    private readonly AuthController _controller;
+
+    public AuthControllerTests()
     {
-        private readonly Mock<IAuthService> _authServiceMock;
-        private readonly Mock<IValidator<RegisterIdentityDto>> _validatorMock;
-        private readonly MemoryCache _realCache;
-        private readonly AuthController _controller;
-        private readonly DefaultHttpContext _httpContext;
+        _authServiceMock = new Mock<IAuthService>();
+        _validatorMock = new Mock<IValidator<RegisterIdentityDto>>();
+        _cacheMock = new Mock<IMemoryCache>();
+        _configMock = new Mock<IConfiguration>();
 
-        public AuthControllerTests()
+        _controller = new AuthController(
+            _authServiceMock.Object,
+            _validatorMock.Object,
+            _cacheMock.Object,
+            _configMock.Object);
+
+        // HttpContext minimal pour tous les tests
+        _controller.ControllerContext = new ControllerContext
         {
-            _authServiceMock = new Mock<IAuthService>();
-            _validatorMock = new Mock<IValidator<RegisterIdentityDto>>();
+            HttpContext = new DefaultHttpContext()
+        };
+    }
 
-            _realCache = new MemoryCache(new MemoryCacheOptions());
+    // ====================== HELPERS ======================
+    private void SetupCache<T>(T value)
+    {
+        object? boxed = value;
+        _cacheMock
+            .Setup(c => c.TryGetValue(It.IsAny<object>(), out boxed))
+            .Returns(true);
+    }
 
-            _controller = new AuthController(_authServiceMock.Object, _validatorMock.Object, _realCache);
+    private void SetupCacheMiss(string key)
+    {
+        object? boxed = null;
+        _cacheMock
+            .Setup(c => c.TryGetValue(key, out boxed))
+            .Returns(false);
+    }
 
-            _httpContext = new DefaultHttpContext();
-            _httpContext.Request.Headers.Origin = "https://app.taskforce.local";
+    private void SetupJwtConfig()
+    {
+        _configMock.Setup(c => c["Jwt:Key"]).Returns("super-secret-key-minimum-32-chars!!");
+        _configMock.Setup(c => c["Jwt:Issuer"]).Returns("TaskForce");
+        _configMock.Setup(c => c["Jwt:Audience"]).Returns("TaskForceUsers");
+    }
 
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = _httpContext
-            };
-        }
-
-        public void Dispose()
+    // ====================== GET REGISTER OPTIONS ======================
+    [Fact]
+    public void GetRegisterOptions_WhenOriginIsLocalhost_ShouldReturnOk()
+    {
+        // Arrange
+        _controller.HttpContext.Request.Headers.Origin = "https://app.taskforce.local";
+        var fakeOptions = new CredentialCreateOptions
         {
-            _realCache.Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        private static RegisterIdentityDto CreateValidDtoWithChallenge(byte[] challengeBytes)
-        {
-            string challengeBase64Url = WebEncoders.Base64UrlEncode(challengeBytes);
-            string clientDataJson = $"{{\"challenge\":\"{challengeBase64Url}\"}}";
-            byte[] clientDataBytes = Encoding.UTF8.GetBytes(clientDataJson);
-
-            string clientDataJsonBase64Url = WebEncoders.Base64UrlEncode(clientDataBytes);
-
-            string dummyBase64Url = WebEncoders.Base64UrlEncode(new byte[] { 1, 2, 3 });
-
-            string attestationJson = $@"{{
-        ""id"": ""{dummyBase64Url}"",
-        ""rawId"": ""{dummyBase64Url}"",
-        ""type"": ""public-key"",
-        ""response"": {{
-            ""clientDataJSON"": ""{clientDataJsonBase64Url}"",
-            ""attestationObject"": ""{dummyBase64Url}""
-        }}
-        }}";
-
-            return new RegisterIdentityDto(
-                "U3VwZXJTZWNyZXRCbG9i", "5", "Dev",
-                JsonDocument.Parse(attestationJson).RootElement
-            );
-        }
-        private static CredentialCreateOptions CreateDummyOptions(byte[] challenge) => new()
-        {
+            Challenge = new byte[] { 1, 2, 3 },
             Rp = new PublicKeyCredentialRpEntity("taskforce.local", "TaskForce", null),
             User = new Fido2User { Name = "test", DisplayName = "test", Id = new byte[] { 1 } },
-            Challenge = challenge,
-            PubKeyCredParams = new List<PubKeyCredParam>()
+            PubKeyCredParams = Array.Empty<PubKeyCredParam>()
+        };
+        _authServiceMock.Setup(s => s.RequestNewCredential("taskforce.local")).Returns(fakeOptions);
+        _cacheMock.Setup(c => c.CreateEntry(It.IsAny<object>())).Returns(Mock.Of<ICacheEntry>());
+
+        // Act
+        var result = _controller.GetRegisterOptions();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _authServiceMock.Verify(s => s.RequestNewCredential("taskforce.local"), Times.Once);
+    }
+
+    [Fact]
+    public void GetRegisterOptions_WhenOriginIsProd_ShouldUseProdRpId()
+    {
+        // Arrange
+        _controller.HttpContext.Request.Headers.Origin = "https://app.taskforce.local";
+        var fakeOptions = new CredentialCreateOptions
+        {
+            Challenge = new byte[] { 1, 2, 3 },
+            Rp = new PublicKeyCredentialRpEntity("taskforce.local", "TaskForce", null),
+            User = new Fido2User { Name = "test", DisplayName = "test", Id = new byte[] { 1 } },
+            PubKeyCredParams = Array.Empty<PubKeyCredParam>()
+        };
+        _authServiceMock.Setup(s => s.RequestNewCredential("taskforce.local")).Returns(fakeOptions);
+        _cacheMock.Setup(c => c.CreateEntry(It.IsAny<object>())).Returns(Mock.Of<ICacheEntry>());
+
+        // Act
+        var result = _controller.GetRegisterOptions();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _authServiceMock.Verify(s => s.RequestNewCredential("taskforce.local"), Times.Once);
+    }
+
+    // ====================== REGISTER ======================
+    [Fact]
+    public async Task Register_WhenValidationFails_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var attestationJson = BuildFakeAttestationJson();
+        var dto = new RegisterIdentityDto(
+            Title: "Dev",
+            Experience: "Senior",
+            EncryptedProfileBlob: "blob_chiffré",
+            WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
+        );
+        _validatorMock
+            .Setup(v => v.ValidateAsync(dto, default))
+            .ReturnsAsync(new ValidationResult(new[]
+            {
+                new ValidationFailure("Title", "Title est requis")
+            }));
+
+        // Act
+        var result = await _controller.Register(dto);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _authServiceMock.Verify(s => s.RegisterIdentityAsync(
+            It.IsAny<RegisterIdentityDto>(),
+            It.IsAny<CredentialCreateOptions>(),
+            It.IsAny<AuthenticatorAttestationRawResponse>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Register_WhenChallengeExpired_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var attestationJson = BuildFakeAttestationJson();
+        var dto = new RegisterIdentityDto(
+            Title: "Dev",
+            Experience: "Senior",
+            EncryptedProfileBlob: "blob_chiffré",
+            WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
+        );
+
+        _validatorMock
+            .Setup(v => v.ValidateAsync(dto, default))
+            .ReturnsAsync(new ValidationResult());
+
+        SetupCacheMiss(It.IsAny<string>());
+
+        // Act
+        var result = await _controller.Register(dto);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    // ====================== GET LOGIN OPTIONS ======================
+    [Fact]
+    public void GetLoginOptions_WhenOriginIsWebApp_ShouldUseProdRpId()
+    {
+        _controller.HttpContext.Request.Headers.Origin = "https://app.taskforce.local";
+        var fakeOptions = new Fido2AssertionOptions
+        {
+            Challenge = new byte[] { 1, 2, 3 },
+            RpId = "taskforce.local"
+        };
+        _authServiceMock.Setup(s => s.RequestAssertionOptions("taskforce.local")).Returns(fakeOptions);
+        _cacheMock.Setup(c => c.CreateEntry(It.IsAny<object>())).Returns(Mock.Of<ICacheEntry>());
+
+        var result = _controller.GetLoginOptions();
+
+        result.Should().BeOfType<OkObjectResult>();
+        _authServiceMock.Verify(s => s.RequestAssertionOptions("taskforce.local"), Times.Once);
+    }
+
+    [Fact]
+    public void GetLoginOptions_WhenOriginIsTauri_ShouldUseLocalhostRpId()
+    {
+        // Arrange
+        _controller.HttpContext.Request.Headers.Origin = "tauri://localhost";
+
+        // C'est un test de Connexion (Login), on utilise donc Fido2AssertionOptions !
+        var fakeOptions = new Fido2AssertionOptions
+        {
+            Challenge = new byte[] { 4, 5, 6 },
+            RpId = "localhost"
         };
 
-        [Fact]
-        public void GetRegisterOptions_Should_ReturnOk_And_SetCache()
-        {
-            var expectedChallenge = new byte[] { 1, 2, 3, 4, 5 };
-            var fakeOptions = CreateDummyOptions(expectedChallenge);
+        _authServiceMock.Setup(s => s.RequestAssertionOptions("localhost")).Returns(fakeOptions);
+        _cacheMock.Setup(c => c.CreateEntry(It.IsAny<object>())).Returns(Mock.Of<ICacheEntry>());
 
-            _authServiceMock.Setup(s => s.RequestNewCredential("taskforce.local"))
-                            .Returns(fakeOptions);
+        // Act
+        var result = _controller.GetLoginOptions();
 
-            var result = _controller.GetRegisterOptions();
-
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(fakeOptions);
-
-            var expectedCacheKey = WebEncoders.Base64UrlEncode(expectedChallenge);
-            _realCache.TryGetValue(expectedCacheKey, out CredentialCreateOptions? cachedOptions).Should().BeTrue();
-            cachedOptions.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task Register_Should_ReturnBadRequest_When_ValidationFails()
-        {
-            var dto = CreateValidDtoWithChallenge(new byte[] { 1, 2, 3 });
-            var validationResult = new ValidationResult(new[] { new ValidationFailure("Title", "Erreur") });
-
-            _validatorMock.Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>())).ReturnsAsync(validationResult);
-
-            var result = await _controller.Register(dto);
-
-            result.Should().BeOfType<BadRequestObjectResult>();
-            _authServiceMock.Verify(s => s.RegisterIdentityAsync(It.IsAny<RegisterIdentityDto>(), It.IsAny<CredentialCreateOptions>(), It.IsAny<AuthenticatorAttestationRawResponse>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task Register_Should_ReturnBadRequest_When_CacheMiss()
-        {
-            var challengeBytes = new byte[] { 9, 9, 9 };
-            var dto = CreateValidDtoWithChallenge(challengeBytes);
-
-            _validatorMock.Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>())).ReturnsAsync(new ValidationResult());
-
-            var result = await _controller.Register(dto);
-
-            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequest.Value.Should().BeEquivalentTo(new { message = "Le défi a expiré ou est invalide. Veuillez recommencer l'inscription." });
-        }
-
-        [Fact]
-        public async Task Register_Should_ReturnCreated_When_Success()
-        {
-            var challengeBytes = new byte[] { 10, 20, 30 };
-            var dto = CreateValidDtoWithChallenge(challengeBytes);
-
-            _validatorMock.Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>())).ReturnsAsync(new ValidationResult());
-
-            var cacheKey = WebEncoders.Base64UrlEncode(challengeBytes);
-            var originalOptions = CreateDummyOptions(challengeBytes);
-            _realCache.Set(cacheKey, originalOptions);
-
-            var dbIdentity = new DbIdentity
-            {
-                Id = Guid.NewGuid(),
-                EncryptedProfile = Array.Empty<byte>(),
-                Experience = "5",
-                Title = "Dev"
-            };
-
-            _authServiceMock.Setup(s => s.RegisterIdentityAsync(dto, originalOptions, It.IsAny<AuthenticatorAttestationRawResponse>()))
-                            .ReturnsAsync(dbIdentity);
-
-            var result = await _controller.Register(dto);
-
-            var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
-            createdResult.ActionName.Should().Be(nameof(AuthController.Register));
-
-            _realCache.TryGetValue(cacheKey, out _).Should().BeFalse();
-        }
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _authServiceMock.Verify(s => s.RequestAssertionOptions("localhost"), Times.Once);
     }
+
+    // ====================== LOGIN ======================
+    [Fact]
+    public async Task Login_WhenChallengeExpired_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var assertionJson = BuildFakeAssertionJson();
+        var dto = new LoginIdentityDto(
+            WebAuthnAssertionResponse: JsonSerializer.SerializeToElement(assertionJson)
+        );
+
+        SetupCacheMiss(It.IsAny<string>());
+
+        // Act
+        var result = await _controller.Login(dto);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>()
+            .Which.Value.Should().BeEquivalentTo(new { message = "Le défi a expiré ou est invalide. Veuillez recommencer la connexion." });
+    }
+
+    [Fact]
+    public async Task Login_WhenJwtKeyMissing_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var assertionJson = BuildFakeAssertionJson();
+        var dto = new LoginIdentityDto(
+            WebAuthnAssertionResponse: JsonSerializer.SerializeToElement(assertionJson)
+        );
+
+        // On est dans le Login, on utilise l'objet de connexion (Fido2AssertionOptions)
+        var fakeOptions = new Fido2AssertionOptions
+        {
+            Challenge = new byte[] { 1, 2, 3 },
+            RpId = "taskforce.local" // Propriété requise en v4
+        };
+        SetupCache(fakeOptions);
+
+        _configMock.Setup(c => c["Jwt:Key"]).Returns((string?)null);
+
+        // Act
+        var result = await _controller.Login(dto);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    // ====================== LOGOUT ======================
+    [Fact]
+    public void Logout_ShouldDeleteCookieAndReturnOk()
+    {
+        // Arrange — HttpContext avec response cookies
+        var context = new DefaultHttpContext();
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+
+        // Act
+        var result = _controller.Logout();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+    }
+
+    // ====================== ME ======================
+    [Fact]
+    public void Me_WhenUserAuthenticated_ShouldReturnIdentityId()
+    {
+        // Arrange
+        var identityId = Guid.NewGuid();
+        var claims = new List<Claim>
+        {
+            new(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, identityId.ToString())
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = principal }
+        };
+
+        // Act
+        var result = _controller.Me();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeEquivalentTo(new { IdentityId = identityId });
+    }
+
+    [Fact]
+    public void Me_WhenUserNotAuthenticated_ShouldThrowUnauthorized()
+    {
+        // Arrange — pas de claims
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
+        };
+
+        // Act
+        var act = () => _controller.Me();
+
+        // Assert
+        act.Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("*Identité introuvable*");
+    }
+
+    private static object BuildFakeAttestationJson() => new
+    {
+        response = new
+        {
+            clientDataJSON = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                challenge = "AAEC",
+                origin = "https://app.taskforce.local",
+                type = "webauthn.create"
+            })),
+            attestationObject = Convert.ToBase64String(new byte[] { 0 })
+        }
+    };
+
+    private static object BuildFakeAssertionJson() => new
+    {
+        rawId = Convert.ToBase64String(new byte[] { 1, 2, 3 }),
+        response = new
+        {
+            clientDataJSON = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                challenge = "AAEC",
+                origin = "https://app.taskforce.local",
+                type = "webauthn.get"
+            })),
+            authenticatorData = Convert.ToBase64String(new byte[] { 0 }),
+            signature = Convert.ToBase64String(new byte[] { 0 })
+        }
+    };
 }

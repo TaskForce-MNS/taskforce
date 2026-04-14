@@ -17,16 +17,14 @@ const root = createRoot(rootElement);
 useAuthStore.getState().checkSession().then(() => {
   root.render(
     <StrictMode>
-       <QueryClientProvider client={queryClient}>
-
-      <RouterProvider
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider
           router={router}
           context={{
-            queryClient,
-            auth: useAuthStore.getState(),
+            queryClient
           }}
         />
-       </QueryClientProvider>
+      </QueryClientProvider>
     </StrictMode>
   );
 });

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { startAuthentication } from '@simplewebauthn/browser';
-import { API_BASE_URL } from '@/config/api';
+import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON} from '@simplewebauthn/browser';
+import { authMe, authn, login, loginOptions, logout } from '@/config/api';
+import { apiClient } from '@/api/Client';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -13,29 +14,23 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()((set) => ({
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 
   loginWithPasskey: async () => {
     set({ isLoading: true, error: null });
-    try {
-      const optionsRes = await fetch(`${API_BASE_URL}/auth/login/options`, {
+   try {
+      const options = await apiClient<PublicKeyCredentialRequestOptionsJSON>(`${authn}${login}${loginOptions}`, {
         method: 'POST',
-        credentials: 'include', // 🔑 envoie et reçoit les cookies
-        headers: { 'Content-Type': 'application/json' },
       });
-      if (!optionsRes.ok) throw new Error("Impossible de récupérer les options.");
+  const assertionResponse = await startAuthentication({ 
+    optionsJSON: options
+  });
 
-      const options = await optionsRes.json();
-      const assertionResponse = await startAuthentication(options);
-
-      const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {
+     await apiClient(`${authn}${login}`, {
         method: 'POST',
-        credentials: 'include', // 🔑 le backend pose le cookie ici
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ WebAuthnAssertionResponse: assertionResponse }),
       });
-      if (!loginRes.ok) throw new Error("Échec de la validation biométrique.");
 
       set({ isAuthenticated: true, isLoading: false });
 
@@ -45,23 +40,23 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
   },
 
-  logout: async () => {
-    // Appel backend pour invalider la session ET effacer le cookie
-    await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    set({ isAuthenticated: false });
+ logout: async () => {
+    try {
+      // On prévient le backend de détruire le cookie
+      await apiClient(`${authn}${logout}`, { method: 'POST' });
+    } catch (error) {
+      console.warn("Erreur lors de la déconnexion backend, mais on vide le state local.", error);
+    } finally {
+      set({ isAuthenticated: false });
+    }
   },
 
   // À appeler au démarrage de l'app pour vérifier si une session existe
   checkSession: async () => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include',
-      });
-      set({ isAuthenticated: res.ok, isLoading: false });
+      await apiClient(`${authn}${authMe}`);
+      set({ isAuthenticated: true, isLoading: false });
     } catch {
       set({ isAuthenticated: false, isLoading: false });
     }

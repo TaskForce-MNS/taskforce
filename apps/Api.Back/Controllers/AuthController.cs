@@ -11,11 +11,12 @@ using Fido2NetLib.Objects;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Back.Controllers
 {
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
         private readonly IValidator<RegisterIdentityDto> _validator;
@@ -34,6 +35,7 @@ namespace Api.Back.Controllers
             _configuration = configuration;
         }
 
+        [AllowAnonymous]
         [HttpPost($"{BackUrls.Register}/options")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SwaggerOperation(Summary = "Get Passkey registration options", Description = "Returns the cryptographic challenge required for Passkey creation.")]
@@ -56,6 +58,7 @@ namespace Api.Back.Controllers
             return Ok(options);
         }
 
+        [AllowAnonymous]
         [HttpPost(BackUrls.Register)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,6 +110,8 @@ namespace Api.Back.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [AllowAnonymous]
         [HttpPost($"{BackUrls.Login}/options")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SwaggerOperation(Summary = "Get Passkey login options", Description = "Returns the cryptographic challenge required for Passkey authentication.")]
@@ -132,6 +137,8 @@ namespace Api.Back.Controllers
 
             return Ok(options);
         }
+
+        [AllowAnonymous]
         [HttpPost(BackUrls.Login)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -173,11 +180,18 @@ namespace Api.Back.Controllers
                     jwtIssuer,
                     jwtAudience);
 
+                Response.Cookies.Append("session", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    MaxAge = TimeSpan.FromHours(1),
+                    Path = "/"
+                });
                 _cache.Remove(cacheKey);
 
                 return Ok(new
                 {
-                    Token = token,
                     Message = "Connexion Zéro-Connaissance réussie !"
                 });
             }
@@ -189,6 +203,19 @@ namespace Api.Back.Controllers
             {
                 return BadRequest(new { message = "Erreur inattendue lors de la connexion." });
             }
+        }
+
+        [HttpPost(BackUrls.Logout)]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete(SharedConstants.SessionCookieName);
+            return Ok(new { Message = "Déconnexion réussie." });
+        }
+
+        [HttpGet(BackUrls.Me)]
+        public IActionResult Me()
+        {
+            return Ok(new { IdentityId = GetCurrentIdentityId() });
         }
     }
 }

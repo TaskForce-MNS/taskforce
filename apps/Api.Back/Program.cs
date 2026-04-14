@@ -1,15 +1,13 @@
 using Api.Back.Data;
 using Api.Back.Repositories;
 using Api.Back.Services;
-// using Api.Back.Validators;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Api.Back.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,26 +21,30 @@ builder.Services.AddHealthChecks()
 // Repos & Services
 builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-// builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 
 builder.Services.AddMemoryCache();
+// Validators
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
 builder.Services.AddFido2(options =>
 {
     options.ServerDomain = "taskforce.local";
     options.ServerName = "TaskForce Zero-Knowledge";
-
-    options.Origins = new HashSet<string>
-    {
-        "https://app.taskforce.local",
-        "https://taskforce.local",
-        "http://localhost:5173",
-        "http://localhost:4321",
-        "tauri://localhost",
-    };
+    options.Origins = builder.Environment.IsDevelopment()
+          ? new HashSet<string>
+          {
+            "https://app.taskforce.local",
+            "http://localhost:5173",
+            "tauri://localhost",
+          }
+          : new HashSet<string>
+          {
+            "https://app.taskforce.local",
+            "https://taskforce.local",
+          };
     options.TimestampDriftTolerance = 300000;
 });
-// Validators
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
 #endregion
 
 #region AUTHENTICATION
@@ -55,10 +57,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key manquant")))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                ctx.Token = ctx.Request.Cookies[SharedConstants.SessionCookieName];
+                return Task.CompletedTask;
+            },
+            OnChallenge = ctx =>
+            {
+                ctx.HandleResponse();
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "application/json";
+                return ctx.Response.WriteAsync("{\"error\":\"Non autorisé\"}");
+            },
+            OnForbidden = ctx =>
+            {
+                ctx.Response.StatusCode = 403;
+                ctx.Response.ContentType = "application/json";
+                return ctx.Response.WriteAsync("{\"error\":\"Accès refusé\"}");
+            }
         };
     });
 #endregion
@@ -82,7 +106,8 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
     options.AddPolicy("ProdPolicy", policy =>
-        policy.WithOrigins("https://{prod-domaine}", "https://{prod-domaine}")
+        policy.WithOrigins("https://app.taskforce.local",
+                "https://taskforce.local")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());
@@ -101,28 +126,17 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors("DevPolicy");
 }
 else
 {
-    app.UseCors("ProdPolicy");
     app.UseHsts();
+    app.UseCors("ProdPolicy");
 }
-app.UseCors("DevPolicy");
 
-
-// // Utilise la bonne politique selon l'environnement
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseCors("DevPolicy");
-// }
-// else
-// {
-//     app.UseCors("ProdPolicy");
-// }
 // Security
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.MapHealthChecks("/api/back/v1/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

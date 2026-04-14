@@ -36,7 +36,7 @@ export const apiClient = async <T>(
 
   if (response.status === 401) {
     // Cookie invalide/expiré → on remet l'état local à zéro
-    useAuthStore.getState().logout();
+    useAuthStore.setState({ isAuthenticated: false, isLoading: false });
     throw new Error('Session expirée. Veuillez vous reconnecter.');
   }
 
