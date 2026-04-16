@@ -43,7 +43,7 @@ namespace Api.Back.Controllers
         {
             var origin = Request.Headers.Origin.ToString();
             if (string.IsNullOrEmpty(origin)) origin = Request.Headers.Referer.ToString();
-            string rpId = "taskforce.local"; // Valeur par défaut (Prod)
+            string rpId = "taskforce.local";
 
             if (origin.Contains("localhost", StringComparison.OrdinalIgnoreCase) || origin.Contains("tauri", StringComparison.OrdinalIgnoreCase))
             {
@@ -120,7 +120,7 @@ namespace Api.Back.Controllers
             var origin = Request.Headers.Origin.ToString();
             if (string.IsNullOrEmpty(origin)) origin = Request.Headers.Referer.ToString();
 
-            string rpId = "taskforce.local"; // Prod par défaut
+            string rpId = "taskforce.local";
 
             if (origin.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
                 origin.Contains("tauri", StringComparison.OrdinalIgnoreCase))
@@ -128,7 +128,7 @@ namespace Api.Back.Controllers
                 rpId = "localhost";
             }
 
-            // On demande un défi d'Assertion (Connexion)
+            // On demande un défi d'Assertion 
             var options = _authService.RequestAssertionOptions(rpId);
 
             // On stocke le défi dans le cache comme pour l'inscription
@@ -180,11 +180,11 @@ namespace Api.Back.Controllers
                     jwtIssuer,
                     jwtAudience);
 
-                Response.Cookies.Append("session", token, new CookieOptions
+                Response.Cookies.Append(SharedConstants.SessionCookieName, token, new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     MaxAge = TimeSpan.FromHours(1),
                     Path = "/"
                 });
