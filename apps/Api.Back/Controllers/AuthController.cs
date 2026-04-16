@@ -98,6 +98,21 @@ namespace Api.Back.Controllers
 
                 _cache.Remove(cacheKey);
 
+                var jwtSecret = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("La clé secrète JWT est introuvable.");
+                var jwtIssuer = _configuration["Jwt:Issuer"] ?? "TaskForce";
+                var jwtAudience = _configuration["Jwt:Audience"] ?? "TaskForceUsers";
+
+                var token = _authService.GenerateJwtToken(identityCreated.Id, jwtSecret, jwtIssuer, jwtAudience);
+
+                Response.Cookies.Append(SharedConstants.SessionCookieName, token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    Domain = ".taskforce.local",
+                    SameSite = SameSiteMode.None,
+                    MaxAge = TimeSpan.FromHours(1),
+                    Path = "/"
+                });
                 return CreatedAtAction(nameof(Register), new { id = identityCreated.Id }, new { Message = "Identité Zéro-Connaissance créée !", IdentityId = identityCreated.Id });
             }
             // Tu pourras recréer tes propres exceptions personnalisées (ex: PublicKeyAlreadyExistsException) plus tard !

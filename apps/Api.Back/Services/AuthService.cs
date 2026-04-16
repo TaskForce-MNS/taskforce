@@ -24,6 +24,7 @@ namespace Api.Back.Services
             string jwtSecretKey,
             string jwtIssuer,
             string jwtAudience);
+        string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience);
     }
 
     public class AuthService : IAuthService
@@ -85,7 +86,7 @@ namespace Api.Back.Services
             {
                 Experience = dto.Experience,
                 Title = dto.Title,
-                FirstName= dto.FirstName,
+                FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 CurrentWorkload = 0,
                 WorkloadPoints = 0,
@@ -152,7 +153,7 @@ namespace Api.Back.Services
 
             return GenerateJwtToken(identity.Id, jwtSecretKey, jwtIssuer, jwtAudience);
         }
-        private static string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience)
+        public string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
