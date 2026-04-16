@@ -1,49 +1,139 @@
 import { create } from 'zustand';
-import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON} from '@simplewebauthn/browser';
-import { authMe, authn, login, loginOptions, logout } from '@/config/api';
+import {
+  startAuthentication,
+  startRegistration,
+  type PublicKeyCredentialRequestOptionsJSON,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type RegistrationResponseJSON
+} from '@simplewebauthn/browser';
+import { authMe, auth, login, authOptions, logout, register } from '@/config/api';
 import { apiClient } from '@/api/Client';
 
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  loginWithPasskey: () => Promise<void>;
+  pendingAttestation: RegistrationResponseJSON | null;
+  loginWithPasskey: () => Promise<boolean>;
+  // registerWithPasskey: () => Promise<void>;
+  startRegistrationStep1: () => Promise<boolean>;
+  finalizeRegistrationStep2: (profileData: { firstname: string, lastname: string, title: string; experience: string }) => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  pendingAttestation: null,
 
   loginWithPasskey: async () => {
     set({ isLoading: true, error: null });
-   try {
-      const options = await apiClient<PublicKeyCredentialRequestOptionsJSON>(`${authn}${login}${loginOptions}`, {
+    try {
+      const options = await apiClient<PublicKeyCredentialRequestOptionsJSON>(`${auth}${login}${authOptions}`, {
         method: 'POST',
       });
-  const assertionResponse = await startAuthentication({ 
-    optionsJSON: options
-  });
+      const assertionResponse = await startAuthentication({
+        optionsJSON: options
+      });
 
-     await apiClient(`${authn}${login}`, {
+      await apiClient(`${auth}${login}`, {
         method: 'POST',
         body: JSON.stringify({ WebAuthnAssertionResponse: assertionResponse }),
       });
 
       set({ isAuthenticated: true, isLoading: false });
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erreur de connexion.";
+      if (message.includes("operation")) {
+        set({ error: "L'authentification a été annulée.", isLoading: false });
+      } else {
+        set({ error: message, isLoading: false });
+      }
+      return false;
+    }
+  },
+  // registerWithPasskey: async () => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const options = await apiClient<PublicKeyCredentialCreationOptionsJSON>(`${auth}${register}${authOptions}`, {
+  //       method: 'POST',
+  //     });
+
+  //     const attestationResponse = await startRegistration({
+  //       optionsJSON: options
+  //     });
+
+  //     await apiClient(`${auth}${register}`, {
+  //       method: 'POST',
+  //       body: JSON.stringify({ WebAuthnAttestationResponse: attestationResponse }),
+  //     });
+
+  //     set({ isAuthenticated: true, isLoading: false });
+
+  //   } catch (err) {
+  //     const message = err instanceof Error ? err.message : "Erreur lors de l'inscription.";
+  //     if (message.includes("cancelled")) {
+  //       set({ error: "L'authentification a été annulée.", isLoading: false });
+  //     } else {
+  //       set({ error: message, isLoading: false });
+  //     }
+  //   }
+  // },
+  startRegistrationStep1: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const options = await apiClient<PublicKeyCredentialCreationOptionsJSON>(`${auth}${register}${authOptions}`, {
+        method: 'POST',
+      });
+
+      const attestationResponse = await startRegistration({ optionsJSON: options });
+
+      set({ pendingAttestation: attestationResponse, isLoading: false });
+      return true;
 
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erreur de connexion inconnue.";
+      const message = err instanceof Error ? err.message : "Erreur d'inscription.";
+      if (message.includes("operation")) {
+        set({ error: "L'inscription a été annulée.", isLoading: false });
+      } else {
+        set({ error: message, isLoading: false });
+      }
+      return false;
+    }
+  },
+  finalizeRegistrationStep2: async (profileData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { pendingAttestation } = get();
+
+      if (!pendingAttestation) throw new Error("Passkey manquant. Veuillez recommencer.");
+
+      await apiClient(`${auth}${register}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          EncryptedProfileBlob: "dGVtcA==",
+          FirstName: profileData.firstname,
+          LastName: profileData.lastname,
+          Experience: profileData.experience,
+          Title: profileData.title,
+          WebAuthnAttestationResponse: pendingAttestation
+        }),
+      });
+
+      set({ isAuthenticated: true, pendingAttestation: null, isLoading: false });
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erreur lors de la création du profil.";
       set({ error: message, isLoading: false });
     }
   },
-
- logout: async () => {
+  logout: async () => {
     try {
       // On prévient le backend de détruire le cookie
-      await apiClient(`${authn}${logout}`, { method: 'POST' });
+      await apiClient(`${auth}${logout}`, { method: 'POST' });
     } catch (error) {
       console.warn("Erreur lors de la déconnexion backend, mais on vide le state local.", error);
     } finally {
@@ -51,11 +141,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
   },
 
-  // À appeler au démarrage de l'app pour vérifier si une session existe
   checkSession: async () => {
     set({ isLoading: true });
     try {
-      await apiClient(`${authn}${authMe}`);
+      await apiClient(`${auth}${authMe}`);
       set({ isAuthenticated: true, isLoading: false });
     } catch {
       set({ isAuthenticated: false, isLoading: false });

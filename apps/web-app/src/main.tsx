@@ -6,7 +6,9 @@ import { router } from '@/router';
 import { queryClient } from '@/config/queryClient';
 import { useAuthStore } from '@/stores/useAuthStore';
 import './index.css';
-
+import '@fontsource/inter';
+import '@fontsource/montserrat';
+import '@fontsource/plus-jakarta-sans';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Élément root introuvable');

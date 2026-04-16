@@ -162,6 +162,29 @@ app.MapHealthChecks("/api/back/v1/health", new Microsoft.AspNetCore.Diagnostics.
         await context.Response.WriteAsJsonAsync(result);
     }
 });
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        var logMigrationError = LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(1, "DbMigrationError"),
+            "Une erreur est survenue pendant la migration de la base de données."
+        );
+
+        logMigrationError(logger, ex);
+
+        throw;
+    }
+}
 
 app.Run();
 #endregion

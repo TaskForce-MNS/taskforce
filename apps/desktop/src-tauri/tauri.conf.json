@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.taskforce.app",
   "build": {
-    "beforeDevCommand": "pnpm --filter web-app dev",
+    "beforeDevCommand": "",
     "beforeBuildCommand": "pnpm --filter web-app build",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "https://app.taskforce.local/login",
     "frontendDist": "../../web-app/dist"
   },
   "app": {
