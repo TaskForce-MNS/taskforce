@@ -31,18 +31,25 @@ export const apiClient = async <T>(
     ...options,
     headers,
     body,
-    credentials: 'include', // 🔑 cookie envoyé automatiquement à chaque requête
+    credentials: 'include',
   });
 
   if (response.status === 401) {
-    // Cookie invalide/expiré → on remet l'état local à zéro
     useAuthStore.setState({ isAuthenticated: false, isLoading: false });
     throw new Error('Session expirée. Veuillez vous reconnecter.');
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorData = await response.json().catch(() => null);
+
+    if (errorData && Array.isArray(errorData) && errorData.length > 0 && errorData[0].errorMessage) {
+      throw new Error(errorData[0].errorMessage);
+    }
+
+    if (errorData?.title) {
+      throw new Error(errorData.title);
+    }
+    throw new Error(errorData.message);
   }
 
   if (response.status === 204) return undefined as T;
