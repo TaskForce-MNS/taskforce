@@ -46,7 +46,7 @@ namespace Api.Back.Services
             {
                 Name = "Anonyme",
                 Id = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString("N")),
-                DisplayName = "Identité Zéro-Connaissance"
+                DisplayName = "Identité"
             };
 
             var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
@@ -85,6 +85,8 @@ namespace Api.Back.Services
             {
                 Experience = dto.Experience,
                 Title = dto.Title,
+                FirstName= dto.FirstName,
+                LastName = dto.LastName,
                 CurrentWorkload = 0,
                 WorkloadPoints = 0,
                 EncryptedProfile = Convert.FromBase64String(dto.EncryptedProfileBlob),
@@ -111,7 +113,6 @@ namespace Api.Back.Services
         }
         public AssertionOptions RequestAssertionOptions(string rpId)
         {
-            // Dans la v4, on passe un objet unique de configuration (GetAssertionOptionsParams)
             return _fido2.GetAssertionOptions(new GetAssertionOptionsParams
             {
                 AllowedCredentials = new List<PublicKeyCredentialDescriptor>(),
@@ -126,7 +127,6 @@ namespace Api.Back.Services
             string jwtIssuer,
             string jwtAudience)
         {
-            // Règle CA1062 : On bloque immédiatement si la requête du client est vide
             ArgumentNullException.ThrowIfNull(assertionResponse);
 
             var identity = await _identityRepository.GetByCredentialIdAsync(assertionResponse.RawId)
@@ -140,7 +140,6 @@ namespace Api.Back.Services
                 OriginalOptions = originalOptions,
                 StoredPublicKey = credential.PublicKey,
                 StoredSignatureCounter = credential.SignatureCounter,
-                // Dans la v4, le delegate prend "args" ET "cancellationToken"
                 IsUserHandleOwnerOfCredentialIdCallback = (args, cancellationToken) =>
                 {
                     return Task.FromResult(true);

@@ -13,6 +13,12 @@ namespace Api.Back.Models
 
         [Column("encrypted_profile_blob")]
         public required byte[] EncryptedProfile { get; set; }
+
+        [Column("firstname_identity")]
+        public required string FirstName {get;set;}
+
+        [Column("Lastname_identity")]
+        public required string LastName  { get; set; }
         #endregion
 
         #region Professional Details
