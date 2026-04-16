@@ -8,7 +8,7 @@ namespace Api.Back.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route($"{BackUrls.BasePath}/[controller]")]
+    // [Route($"{BackUrls.BasePath}/[controller]")]
     public abstract class BaseController : ControllerBase
     {
         protected Guid GetCurrentIdentityId()
