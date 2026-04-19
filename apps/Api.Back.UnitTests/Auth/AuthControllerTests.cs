@@ -128,7 +128,7 @@ public class AuthControllerTests
             EncryptedProfileBlob: "blob_chiffré",
             FirstName: "John",
             LastName: "Doe",
-            Experience: "Senior",
+            Experience: "7",
             Title: "Dev",
             WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
         );
@@ -159,7 +159,7 @@ public class AuthControllerTests
             EncryptedProfileBlob: "blob_chiffré",
             FirstName: "John",
             LastName: "Doe",
-            Experience: "Senior",
+            Experience: "7",
             Title: "Dev",
             WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
         );

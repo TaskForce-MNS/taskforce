@@ -15,10 +15,10 @@ namespace Api.Back.UnitTests.Validators
         {
             return new RegisterIdentityDto(
                 "U3VwZXJTZWNyZXRCbG9i", // EncryptedProfileBlob
-                "Développeur Fullstack",// Title
                 "John",                 // FirstName
                 "Doe",                  // LastName
                 "5",                    // Experience
+                "Développeur Fullstack",// Title
                 JsonDocument.Parse("{\"id\":\"123456\"}").RootElement // WebAuthnAttestationResponse
             );
         }

@@ -72,7 +72,7 @@ public class AuthServiceTests
                 "John",
                 "Doe",
                 "Dev",
-                "Junior",
+                "7",
                 JsonDocument.Parse("{}").RootElement);
 
         var options = isOptionsNull ? null : CreateValidOptions();
@@ -124,7 +124,7 @@ public class AuthServiceTests
         var jsonElement = JsonDocument.Parse("{}").RootElement;
 
         // Ordre CORRECT du record : (EncryptedProfileBlob, FirstName, LastName, Experience, Title, WebAuthnAttestationResponse)
-        var dto = new RegisterIdentityDto(blob,"John", "Doe", "Expert", "Architecte", jsonElement);
+        var dto = new RegisterIdentityDto(blob, "John", "Doe", "8", "Architecte", jsonElement);
 
         var options = CreateValidOptions();
         var attestation = new AuthenticatorAttestationRawResponse();
@@ -156,7 +156,7 @@ public class AuthServiceTests
         result.Should().NotBeNull();
         saved.Should().NotBeNull();
 
-        saved!.Experience.Should().Be("Expert");
+        saved!.Experience.Should().Be("8");
         saved.Title.Should().Be("Architecte");
         saved.EncryptedProfile.Should().BeEquivalentTo(profileBytes);
 
