@@ -56,11 +56,11 @@ public class AuthControllerTests
             .Returns(true);
     }
 
-    private void SetupCacheMiss(string key)
+    private void SetupCacheMissForAnyKey()
     {
         object? boxed = null;
         _cacheMock
-            .Setup(c => c.TryGetValue(key, out boxed))
+            .Setup(c => c.TryGetValue(It.IsAny<object>(), out boxed))
             .Returns(false);
     }
 
@@ -125,9 +125,11 @@ public class AuthControllerTests
         // Arrange
         var attestationJson = BuildFakeAttestationJson();
         var dto = new RegisterIdentityDto(
-            Title: "Dev",
-            Experience: "Senior",
             EncryptedProfileBlob: "blob_chiffré",
+            FirstName: "John",
+            LastName: "Doe",
+            Experience: "Senior",
+            Title: "Dev",
             WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
         );
         _validatorMock
@@ -154,9 +156,11 @@ public class AuthControllerTests
         // Arrange
         var attestationJson = BuildFakeAttestationJson();
         var dto = new RegisterIdentityDto(
-            Title: "Dev",
-            Experience: "Senior",
             EncryptedProfileBlob: "blob_chiffré",
+            FirstName: "John",
+            LastName: "Doe",
+            Experience: "Senior",
+            Title: "Dev",
             WebAuthnAttestationResponse: JsonSerializer.SerializeToElement(attestationJson)
         );
 
@@ -164,7 +168,7 @@ public class AuthControllerTests
             .Setup(v => v.ValidateAsync(dto, default))
             .ReturnsAsync(new ValidationResult());
 
-        SetupCacheMiss(It.IsAny<string>());
+        SetupCacheMissForAnyKey();
 
         // Act
         var result = await _controller.Register(dto);
@@ -226,7 +230,7 @@ public class AuthControllerTests
             WebAuthnAssertionResponse: JsonSerializer.SerializeToElement(assertionJson)
         );
 
-        SetupCacheMiss(It.IsAny<string>());
+        SetupCacheMissForAnyKey();
 
         // Act
         var result = await _controller.Login(dto);

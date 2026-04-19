@@ -15,8 +15,10 @@ namespace Api.Back.UnitTests.Validators
         {
             return new RegisterIdentityDto(
                 "U3VwZXJTZWNyZXRCbG9i", // EncryptedProfileBlob
-                "5",                    // Experience
                 "Développeur Fullstack",// Title
+                "John",                 // FirstName
+                "Doe",                  // LastName
+                "5",                    // Experience
                 JsonDocument.Parse("{\"id\":\"123456\"}").RootElement // WebAuthnAttestationResponse
             );
         }
@@ -33,7 +35,6 @@ namespace Api.Back.UnitTests.Validators
         [InlineData("")]
         public void Should_HaveError_When_EncryptedProfileBlob_IsMissing(string invalidBlob)
         {
-            // 👇 Utilisation de 'with' pour cloner le record immuable !
             var dto = CreateValidDto() with { EncryptedProfileBlob = invalidBlob };
             var result = _validator.TestValidate(dto);
 
