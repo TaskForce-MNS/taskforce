@@ -1,6 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
-// ====================== TYPES ======================
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'link';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type ButtonRadius = 'sm' | 'md' | 'lg' | 'full';
@@ -15,7 +14,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     fullWidth?: boolean;
 }
 
-// ====================== STYLES ======================
 const base = [
     'inline-flex items-center justify-center gap-2',
     'font-semibold tracking-wide',
@@ -55,9 +53,8 @@ const variants: Record<ButtonVariant, string> = {
         'active:scale-[0.97]',
     ].join(' '),
     link: [
-        'bg-transparent text-white-accent-light', // Pas de fond, texte couleur principale
+        'bg-transparent text-white-accent-light',
         'underline underline-offset-4',
-        // Souligné avec un joli décalage de 4px (plus lisible)            // S'éclaircit (ou s'assombrit) au survol
         'focus-visible:ring-primary-default',
         'active:scale-[0.97]',
 
@@ -101,7 +98,6 @@ const Spinner = () => (
     </svg>
 );
 
-// ====================== COMPONENT ======================
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (
         {

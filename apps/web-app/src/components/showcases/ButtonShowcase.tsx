@@ -8,7 +8,7 @@ export const ButtonShowcase = () => {
             </h2>
 
             <div className="space-y-8">
-                {/* Test des Couleurs (Variants) */}
+                {/* Test des Variants */}
                 <div>
                     <h3 className="text-sm text-white-accent-dark  mb-3 uppercase tracking-wider">Variants</h3>
                     <div className="flex flex-wrap gap-4">
@@ -36,7 +36,7 @@ export const ButtonShowcase = () => {
                         <Button className="w-100">Custom Width (w-100)</Button>
                     </div>
                 </div>
-                {/* Test des États (Loading / Disabled) */}
+                {/* Test des États */}
                 <div>
                     <h3 className="text-sm text-white-accent-dark  mb-3 uppercase tracking-wider">États Spéciaux</h3>
                     <div className="flex flex-wrap gap-4">
@@ -51,7 +51,6 @@ export const ButtonShowcase = () => {
                         </svg>
 
                         }>dissmiss button</Button>
-
 
                         <Button leftIcon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m7.49 12-3.75 3.75m0 0 3.75 3.75m-3.75-3.75h16.5V4.499" />
