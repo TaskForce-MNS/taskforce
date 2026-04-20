@@ -18,9 +18,9 @@
     "@tanstack/react-router": "^1.168.22",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.20",
-    "react": "^19.2.4",
+    "react": "19.2.5",
     "react-chartjs-2": "^5.3.1",
-    "react-dom": "^19.2.5",
+    "react-dom": "19.2.5",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
