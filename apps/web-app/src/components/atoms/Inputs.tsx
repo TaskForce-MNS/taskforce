@@ -95,7 +95,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         {error}
                     </span>
                 ) : helperText ? (
-                    <span id={`${inputId}-helper`} className="text-sm text-primary-default">
+                    <span id={`${inputId}-helper`} className="text-sm text-white-accent-default/80">
                         {helperText}
                     </span>
                 ) : null}

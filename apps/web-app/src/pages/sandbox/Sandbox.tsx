@@ -1,5 +1,6 @@
 import { ButtonShowcase } from '@/components/showcases/ButtonShowcase';
 import { InputShowcase } from '@/components/showcases/InputShowcase';
+import { TextareaShowcase } from '@/components/showcases/TextareaShowcase';
 
 export const Sandbox = () => {
     return (
@@ -11,6 +12,7 @@ export const Sandbox = () => {
                 </p>
                 <ButtonShowcase />
                 <InputShowcase />
+                <TextareaShowcase />
             </div>
         </div>
     );

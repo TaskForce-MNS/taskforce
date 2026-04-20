@@ -71,7 +71,7 @@ const radiuses: Record<ButtonRadius, string> = {
 
 const sizes: Record<ButtonSize, string> = {
     sm: 'h-8  px-4  text-sm',
-    md: 'h-10 px-6  text-md',
+    md: 'h-10 px-6  text-base',
     lg: 'h-10 px-18  text-lg',
 };
 
@@ -110,6 +110,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             fullWidth = false,
             disabled,
             children,
+            type = 'button',
             className = '',
             ...props
         },
@@ -129,6 +130,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         return (
             <button
                 ref={ref}
+                type={type}
                 disabled={disabled || isLoading}
                 aria-busy={isLoading}
                 className={classes}
