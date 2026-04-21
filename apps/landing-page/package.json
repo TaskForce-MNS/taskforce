@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@shadcn/ui": "^0.0.4",
-    "astro": "^5.18.1",
+    "astro": "^6.1.6",
     "autoprefixer": "^10.5.0",
     "chart.js": "^4.5.1",
     "postcss": "^8.5.9",
