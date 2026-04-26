@@ -15,6 +15,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base = [
+    'relative',
     'inline-flex items-center justify-center gap-2',
     'font-semibold tracking-wide',
     'hover:opacity-80',
@@ -127,6 +128,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             .filter(Boolean)
             .join(' ');
 
+
         return (
             <button
                 ref={ref}
@@ -136,17 +138,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 className={classes}
                 {...props}
             >
-                {isLoading ? (
-                    <>
+                <span className={`inline-flex items-center justify-center gap-2 transition-opacity duration-100 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+                    {leftIcon && <span aria-hidden="true">{leftIcon}</span>}
+                    <span>{children}</span>
+                    {rightIcon && <span aria-hidden="true">{rightIcon}</span>}
+                </span>
+
+                {isLoading && (
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-current">
                         <Spinner />
-                        <span>{children}</span>
-                    </>
-                ) : (
-                    <>
-                        {leftIcon && <span aria-hidden="true">{leftIcon}</span>}
-                        <span>{children}</span>
-                        {rightIcon && <span aria-hidden="true">{rightIcon}</span>}
-                    </>
+                    </span>
                 )}
             </button>
         );

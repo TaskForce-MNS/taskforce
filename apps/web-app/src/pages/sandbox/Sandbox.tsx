@@ -1,5 +1,7 @@
+import { AlertShowcase } from '@/components/showcases/AlertShowcase';
 import { ButtonShowcase } from '@/components/showcases/ButtonShowcase';
 import { InputShowcase } from '@/components/showcases/InputShowcase';
+import { TestFluxShowcase } from '@/components/showcases/TestFluxShowcase';
 import { TextareaShowcase } from '@/components/showcases/TextareaShowcase';
 
 export const Sandbox = () => {
@@ -13,6 +15,8 @@ export const Sandbox = () => {
                 <ButtonShowcase />
                 <InputShowcase />
                 <TextareaShowcase />
+                <AlertShowcase />
+                <TestFluxShowcase />
             </div>
         </div>
     );
