@@ -1,0 +1,27 @@
+# ==========================================
+# ÉTAPE 1 : L'USINE D'ASSEMBLAGE (Builder)
+# ==========================================
+FROM node:22-alpine3.20 AS builder
+WORKDIR /app
+
+RUN corepack enable pnpm
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
+
+COPY . .
+
+# Astro va générer tout le site statique dans le dossier /app/dist
+RUN pnpm run build
+
+# ==========================================
+# ÉTAPE 2 : LE SERVEUR WEB (Nginx)
+# ==========================================
+FROM nginx:alpine
+
+# On récupère le site statique compilé pour le mettre dans Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Optionnel : Si tu veux remplacer le port 80 par défaut de Nginx
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

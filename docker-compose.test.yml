@@ -1,0 +1,23 @@
+services:
+  # ─── Base de données PostgreSQL ─────────────────────────────────
+  db-test:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  # ─── Tests unitaires Api ────────────────────────────────────────
+  api-tests:
+    build: 
+      context: ./apps/Api.Back
+      dockerfile: Dockerfile.test 
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db-test;Database=test;Username=test;Password=test
+    depends_on:
+      db-test:
+        condition: service_healthy

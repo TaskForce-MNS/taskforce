@@ -83,8 +83,8 @@ export const InputShowcase = () => {
                         label="Amount"
                         type="number" min="0.00" step="any"
                         placeholder="0.00"
-                        leftIcon={<span className="text-sm font-bold pl-1">$</span>}
-                        rightIcon={<span className="text-xs font-bold pr-1">USD</span>}
+                        leftIcon={<span className="text-sm font-bold pl-1">€</span>}
+                        rightIcon={<span className="text-xs font-bold pr-1">EUR</span>}
                     />
                 </div>
 
