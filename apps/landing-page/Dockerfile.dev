@@ -1,0 +1,18 @@
+FROM node:22-alpine3.20
+WORKDIR /app
+
+# Activation de pnpm
+RUN corepack enable pnpm
+
+# Optimisation du cache d'installation
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
+
+# On copie le code
+COPY . .
+
+# Le port standard d'Astro
+EXPOSE 4321
+
+# On lance le serveur de dev avec l'écoute sur toutes les interfaces réseau
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]

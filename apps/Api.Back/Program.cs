@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Api.Back.Common;
+using System.Data.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -185,6 +186,20 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
+
+// Endpoint temporaire pour tester le flux Docker
+app.MapGet("/api/debug/test-db", async (AppDbContext db) =>
+{
+    try
+    {
+        var data = await db.Identities.Take(3).ToListAsync();
+        return Results.Ok(new { message = "Connexion DB réussie !", data });
+    }
+    catch (DbException ex)
+    {
+        return Results.Problem($"Erreur de DB : {ex.Message}");
+    }
+});
 
 app.Run();
 #endregion
