@@ -15,7 +15,7 @@
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@simplewebauthn/browser": "^13.3.0",
     "@tanstack/react-query": "^5.100.5",
-    "@tanstack/react-router": "^1.168.23",
+    "@tanstack/react-router": "^1.168.25",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.20",
     "react": "19.2.5",
