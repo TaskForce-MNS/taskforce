@@ -9,6 +9,7 @@ import './index.css';
 import '@fontsource/inter';
 import '@fontsource/montserrat';
 import '@fontsource/plus-jakarta-sans';
+import { ToastContainer } from './components/atoms/Toast';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Élément root introuvable');
@@ -20,6 +21,7 @@ useAuthStore.getState().checkSession().then(() => {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
+        <ToastContainer />
         <RouterProvider
           router={router}
           context={{

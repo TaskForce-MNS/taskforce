@@ -3,10 +3,11 @@ import { ButtonShowcase } from '@/components/showcases/ButtonShowcase';
 import { InputShowcase } from '@/components/showcases/InputShowcase';
 import { TestFluxShowcase } from '@/components/showcases/TestFluxShowcase';
 import { TextareaShowcase } from '@/components/showcases/TextareaShowcase';
+import { ToastShowcase } from '@/components/showcases/ToastShowcase';
 
 export const Sandbox = () => {
     return (
-        <div className="min-h-screen bg-white-accent-light p-10 text-white-light ">
+        <div className="min-h-screen bg-black-accent-light p-10 text-white-accent-light ">
             <div className="max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold mb-2">Laboratoire de Composants 🧪</h1>
                 <p className="text-slate-400 mb-10">
@@ -16,6 +17,7 @@ export const Sandbox = () => {
                 <InputShowcase />
                 <TextareaShowcase />
                 <AlertShowcase />
+                <ToastShowcase />
                 <TestFluxShowcase />
             </div>
         </div>
