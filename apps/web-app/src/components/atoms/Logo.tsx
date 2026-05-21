@@ -107,7 +107,7 @@ export const Logo = forwardRef<HTMLDivElement, LogoProps>(
             );
         }
 
-        return (
+       return (
             <div
                 ref={ref}
                 className={`inline-flex items-center select-none ${gapClass} ${COLOR_CLASSES[colorTheme]} ${className}`}
@@ -117,16 +117,14 @@ export const Logo = forwardRef<HTMLDivElement, LogoProps>(
                     <LogoIcon className={iconClass} isGradient={isGradient} />
                 )}
 
-                {variant !== 'icon-only' && (
-                    <span
-                        className={`font-extrabold tracking-tight ${textClass} ${isGradient
-                            ? 'bg-gradient-to-br from-primary-default to-secondary-default bg-clip-text text-transparent'
-                            : ''
-                            } ${textClassName ?? ''}`}
-                    >
-                        Taskforce
-                    </span>
-                )}
+                <span
+                    className={`font-extrabold tracking-tight ${textClass} ${isGradient
+                        ? 'bg-gradient-to-br from-primary-default to-secondary-default bg-clip-text text-transparent'
+                        : ''
+                        } ${textClassName ?? ''}`}
+                >
+                    Taskforce
+                </span>
             </div>
         );
     }

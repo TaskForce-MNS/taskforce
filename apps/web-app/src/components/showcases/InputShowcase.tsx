@@ -1,4 +1,4 @@
-import { Input } from "../atoms/Inputs";
+import { Input } from "../atoms/Input";
 
 export const InputShowcase = () => {
     return (

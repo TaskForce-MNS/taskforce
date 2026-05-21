@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         };
 
         const baseInputStyles = [
-            ' w-full rounded-large border bg-transparent text-white-accent-light placeholder-white-accent-dark',
+            ' w-full rounded-large border bg-black-accent-light text-white-accent-light placeholder-white-accent-dark',
             'transition-all duration-200 ease-in-out',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-black-accent-light',
