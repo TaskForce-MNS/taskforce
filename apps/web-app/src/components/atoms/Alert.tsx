@@ -1,6 +1,5 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 
-// ====================== TYPES ======================
 export type AlertVariant = 'info' | 'success' | 'warning' | 'error';
 
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
@@ -49,7 +48,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         const variantStyles: Record<AlertVariant, string> = {
             info: 'bg-info/10 border-blue-900/50 text-blue-200', //bg-blue-950/10
             success: 'bg-success/5 border-success/50 text-green-200', //bg-green-950/10
-            warning: 'bg-warning/5 border-warning/50 text-yellow-200', //bg-yellow-950/10, sinon un rouge standard
+            warning: 'bg-warning/5 border-warning/50 text-yellow-200', //bg-yellow-950/10
             error: 'bg-error/5 border-error/50 text-red-200', //bg-red-950/30
         };
 
