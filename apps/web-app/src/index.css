@@ -29,6 +29,7 @@
   --color-info: navy;
 
   /* FONTS */
+  --font-logo: 'Dustrone', sans-serif;
   --font-title: 'Montserrat', sans-serif;
   /*(maybe  Dustrone font for titles)*/
   --font-subtitle: 'Plus Jakarta Sans', sans-serif;
