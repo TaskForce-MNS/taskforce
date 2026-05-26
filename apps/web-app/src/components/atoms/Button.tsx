@@ -17,7 +17,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const base = [
     'relative',
     'inline-flex items-center justify-center gap-2',
-    'font-semibold font-text tracking-wide text-md',
+    'font-semibold font-text tracking-wide text-sm',
     'transition-all duration-200 ease-in-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:scale-100',
@@ -42,9 +42,9 @@ const variants: Record<ButtonVariant, string> = {
     ].join(' '),
 
     outline: [
-        'bg-transparent text-white-accent-light',
+        'bg-transparent text-white-accent-default',
         'border border-2 border-primary-dark',
-        'hover:opacity-80',
+        'hover:text-white-accent-light',
         'focus-visible:ring-primary-default',
         'active:scale-[0.97]',
     ].join(' '),
@@ -56,9 +56,9 @@ const variants: Record<ButtonVariant, string> = {
         'active:scale-[0.97]',
     ].join(' '),
     link: [
-        'bg-transparent text-white-accent-light',
+        'bg-transparent text-white-accent-dark',
         'underline underline-offset-4',
-        'hover:opacity-80',
+        'hover:text-white-accent-light',
         'focus-visible:ring-primary-default',
         'active:scale-[0.97]',
         '!p-0 !h-auto min-h-0 min-w-0'

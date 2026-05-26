@@ -71,7 +71,6 @@
   --spacing-l: clamp(1.5rem, 1.1667rem + 1.6667vw, 2.5rem);
   --spacing-xl: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
   --spacing-2xl: clamp(3rem, 2.3333rem + 3.3333vw, 5rem);
-  /* J'ai gardé le 3xl en statique au cas où, tu pourras générer un clamp plus tard si besoin */
   --spacing-3xl: 4.00rem;
 }
 
