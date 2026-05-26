@@ -1,10 +1,10 @@
 import { Logo } from '@/components/atoms/Logo';
 
-export const LogoShowcase = () => {
+export const LogoShowcase = ({ label }: { label: string }) => {
     return (
         <section className="mb-12 rounded-medium border border-white-accent-dark/20 bg-black-accent-default p-2xl shadow-xl backdrop-blur-xl">
             <h2 className="text-xl font-semibold mb-6 border-b border-slate-800 pb-2 text-white-accent-default">
-                ✨ Composant Logo
+                6. {label}
             </h2>
 
             <div className="space-y-12">
@@ -38,9 +38,9 @@ export const LogoShowcase = () => {
                         <Logo colorTheme="white" />
                         <Logo colorTheme="black" />
                         <Logo colorTheme="primary" />
-                        
-                        <Logo colorTheme="gradient" variant="icon-only"/>
-                        <Logo colorTheme="gradient" variant="text-only"/>
+
+                        <Logo colorTheme="gradient" variant="icon-only" />
+                        <Logo colorTheme="gradient" variant="text-only" />
                     </div>
                 </div>
             </div>

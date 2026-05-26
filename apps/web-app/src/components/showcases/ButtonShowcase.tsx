@@ -1,10 +1,10 @@
 import { Button } from '@/components/atoms/Button';
 
-export const ButtonShowcase = () => {
+export const ButtonShowcase = ({ label }: { label: string }) => {
     return (
         <section className="mb-12 rounded-medium border border-white-accent-dark/20 bg-black-accent-default p-2xl shadow-xl backdrop-blur-xl">
             <h2 className="text-xl font-semibold mb-6 border-b border-slate-800 pb-2 text-white-accent-default">
-                1. Component: Button
+                1. {label}
             </h2>
 
             <div className="space-y-8">

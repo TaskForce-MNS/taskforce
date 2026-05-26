@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 export const Route = createFileRoute('/_protected')({
   beforeLoad: () => {
     if (!useAuthStore.getState().isAuthenticated) {
-      throw redirect({ to: '/login' });
+      throw redirect({ to: '/auth' });
     }
   },
   component: () => <Outlet />,

@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'link';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'link' | 'passkey';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type ButtonRadius = 'sm' | 'md' | 'lg' | 'full';
 
@@ -17,11 +17,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const base = [
     'relative',
     'inline-flex items-center justify-center gap-2',
-    'font-semibold tracking-wide',
-    'hover:opacity-80',
+    'font-semibold font-text tracking-wide text-sm',
     'transition-all duration-200 ease-in-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-    'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:scale-100',
     'cursor-pointer select-none',
 ].join(' ');
 
@@ -29,6 +28,7 @@ const variants: Record<ButtonVariant, string> = {
     primary: [
         'bg-primary-default text-white-accent-light',
         'hover:shadow-[inset_0_-1px_0_0_theme(colors.primary.light)]',
+        'hover:opacity-80',
         'focus-visible:ring-primary-default',
         'border border-transparent',
         'active:scale-[0.97]',
@@ -37,12 +37,14 @@ const variants: Record<ButtonVariant, string> = {
     secondary: [
         'bg-secondary-dark text-white-accent-light',
         'border focus-visible:ring-secondary-default',
+        'hover:opacity-80',
         'active:scale-[0.97]',
     ].join(' '),
 
     outline: [
-        'bg-transparent text-white-accent-light',
+        'bg-transparent text-white-accent-default',
         'border border-2 border-primary-dark',
+        'hover:text-white-accent-light',
         'focus-visible:ring-primary-default',
         'active:scale-[0.97]',
     ].join(' '),
@@ -54,12 +56,20 @@ const variants: Record<ButtonVariant, string> = {
         'active:scale-[0.97]',
     ].join(' '),
     link: [
-        'bg-transparent text-white-accent-light',
+        'bg-transparent text-white-accent-dark',
         'underline underline-offset-4',
+        'hover:text-white-accent-light',
         'focus-visible:ring-primary-default',
         'active:scale-[0.97]',
-
         '!p-0 !h-auto min-h-0 min-w-0'
+    ].join(' '),
+    passkey: [
+        'group',
+        'bg-white-accent-light text-black-accent-default',
+        'shadow-[0_0_20px_rgba(255,255,255,0.15)]',
+        'hover:bg-white-accent-default hover:scale-[1.01]',
+        'focus-visible:ring-white-accent-light',
+        'active:scale-[0.99]',
     ].join(' '),
 };
 
@@ -79,7 +89,7 @@ const sizes: Record<ButtonSize, string> = {
 // ====================== SPINNER ======================
 const Spinner = () => (
     <svg
-        className="animate-spin h-4 w-4"
+        className="animate-spin h-5 w-5"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

@@ -1,10 +1,10 @@
-import { Input } from "../atoms/Inputs";
+import { Input } from "../atoms/Input";
 
-export const InputShowcase = () => {
+export const InputShowcase = ({ label }: { label: string }) => {
     return (
         <section className="mb-12 rounded-medium border border-white-accent-dark/20 bg-black-accent-default p-2xl shadow-xl backdrop-blur-xl">
             <h2 className="text-xl font-semibold mb-6 border-b border-slate-800 pb-2 text-white-accent-default">
-                2. Component: Input
+                2. {label}
             </h2>
 
             <div className="space-y-6 max-w-md">
