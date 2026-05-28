@@ -1,21 +1,30 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
-import { apiClient } from '@/api/Client';
-
-// Définir les queryOptions en dehors du composant (réutilisable + preload)
-const dashboardQueryOptions = queryOptions({
-  queryKey: ['dashboard'],
-  queryFn: () => apiClient<{ tasks: unknown[] }>('/tasks'),
-});
+import { dashboardQueryOptions } from '@/api/queries/dashboardQueries';
+import { Dashboard } from '@/pages/Dashboard/Dashboard';
+import { Alert } from '@/components/atoms/Alert';
 
 export const Route = createFileRoute('/_protected/dashboard')({
-  // Preload les données avant le rendu
+  // Pré-chargement des données avant d'afficher la page
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(dashboardQueryOptions),
-  component: DashboardPage,
-});
 
-function DashboardPage() {
-  const { data } = useSuspenseQuery(dashboardQueryOptions);
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
-}
+  // UI pendant le chargement
+  pendingComponent: () => (
+    <div className="flex h-[50vh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-default border-t-transparent" />
+    </div>
+  ),
+
+  // UI en cas d'erreur API
+  errorComponent: ({ error }) => (
+    <div className="p-4">
+      <Alert variant="error" title="Erreur de chargement">
+        <p>Impossible de récupérer les données du tableau de bord.</p>
+        <p className="mt-2 text-xs font-mono opacity-80">{error.message}</p>
+      </Alert>
+    </div>
+  ),
+  // apres rechargement de la page il y a ecran blanc qui apparrait et disparait
+  // Le composant final à afficher
+  component: Dashboard,
+});
