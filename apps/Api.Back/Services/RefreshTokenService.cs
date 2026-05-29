@@ -87,7 +87,7 @@ public class RefreshTokenService : IRefreshTokenService
 
         var keys = server.KeysAsync(pattern: $"{TokenKeyPrefix}:{identityId}:*");
 
-        foreach (var key in keys)
+        await foreach (var key in keys)
         {
             await db.KeyDeleteAsync(key);
         }
