@@ -18,27 +18,34 @@ namespace Api.Back.Services
             CredentialCreateOptions originalOptions,
             AuthenticatorAttestationRawResponse attestationResponse);
         AssertionOptions RequestAssertionOptions(string rpId);
-        Task<string> VerifyAssertionAndLoginAsync(
+        Task<Guid> VerifyAssertionAndLoginAsync(
             AuthenticatorAssertionRawResponse assertionResponse,
             AssertionOptions originalOptions,
             string jwtSecretKey,
             string jwtIssuer,
             string jwtAudience);
-        string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience);
+        string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience, int expirationMinutes);
+        Task<(string accessToken, string refreshToken)> GenerateAuthResponseAsync(Guid identityId, string deviceId);
     }
 
     public class AuthService : IAuthService
     {
         private readonly IFido2 _fido2;
         private readonly IIdentityRepository _identityRepository;
+        private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(IFido2 fido2, IIdentityRepository identityRepository)
+        public AuthService(IFido2 fido2, IIdentityRepository identityRepository, IRefreshTokenService refreshTokenService, IConfiguration configuration)
         {
             ArgumentNullException.ThrowIfNull(fido2);
             ArgumentNullException.ThrowIfNull(identityRepository);
+            ArgumentNullException.ThrowIfNull(refreshTokenService);
+            ArgumentNullException.ThrowIfNull(configuration);
 
             _fido2 = fido2;
             _identityRepository = identityRepository;
+            _refreshTokenService = refreshTokenService;
+            _configuration = configuration;
         }
 
         public CredentialCreateOptions RequestNewCredential(string rpId)
@@ -121,7 +128,7 @@ namespace Api.Back.Services
             });
         }
 
-        public async Task<string> VerifyAssertionAndLoginAsync(
+        public async Task<Guid> VerifyAssertionAndLoginAsync(
             AuthenticatorAssertionRawResponse assertionResponse,
             AssertionOptions originalOptions,
             string jwtSecretKey,
@@ -151,9 +158,9 @@ namespace Api.Back.Services
 
             await _identityRepository.UpdateSignatureCounterAsync(credential.DescriptorId, assertionResult.SignCount);
 
-            return GenerateJwtToken(identity.Id, jwtSecretKey, jwtIssuer, jwtAudience);
+            return identity.Id;
         }
-        public string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience)
+        public string GenerateJwtToken(Guid identityId, string secretKey, string issuer, string audience, int expirationMinutes)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -168,10 +175,34 @@ namespace Api.Back.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public async Task<(string accessToken, string refreshToken)> GenerateAuthResponseAsync(Guid identityId, string deviceId)
+        {
+            var secretKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key manquant");
+            var issuer = _configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer manquant");
+            var audience = _configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience manquant");
+
+            var refreshTokenTtlDays = _configuration.GetValue<int>("Redis:RefreshTokenTtlDays", 30);
+            var accessTokenTtlMinutes = _configuration.GetValue<int>("Jwt:AccessTokenTtlMinutes", 60);
+
+            var jwt = GenerateJwtToken(identityId, secretKey, issuer, audience, accessTokenTtlMinutes);
+
+            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(identityId.ToString(), deviceId);
+            var expirationTime = DateTime.UtcNow.AddDays(refreshTokenTtlDays);
+
+            await _refreshTokenService.StoreRefreshTokenAsync(identityId.ToString(), deviceId, refreshToken, expirationTime);
+
+            return (jwt, refreshToken);
+        }
     }
 }
+// 🚀 4. Le Cache Distribué (Remplacement du MemoryCache)
+// Dans ton AuthController, nous avons utilisé IMemoryCache pour stocker les "Challenges" cryptographiques de FIDO2 pendant 5 minutes.
+// C'est parfait pour le développement. Mais en production, si ton architecture s'agrandit, il vaut mieux utiliser Redis (IDistributedCache en .NET). Ainsi, si un utilisateur demande un Challenge FIDO2 au Serveur A, mais que sa réponse est traitée par le Serveur B, le Serveur B trouvera quand même le défi cryptographique dans Redis ! Tu peux aussi l'utiliser pour mettre en cache des requêtes PostgreSQL très lourdes qui ne changent pas souvent (comme des listes de références ou des catalogues).
+// 🛡️ 3. Le Rate Limiting (Protection de l'API)
+// Pour éviter qu'un robot ou un script malveillant ne spamme ton application (DDoS) ou ne tente d'épuiser tes ressources, tu peux utiliser le middleware de Rate Limiting natif d'ASP.NET Core et le brancher sur Redis.
+// Tu pourras définir des règles strictes partagées sur tout ton réseau : "Une même adresse IP ne peut pas appeler /login/options plus de 5 fois par minute". Redis, avec sa vitesse en mémoire, fera ce compte de manière invisible sans jamais ralentir tes vrais utilisateurs.

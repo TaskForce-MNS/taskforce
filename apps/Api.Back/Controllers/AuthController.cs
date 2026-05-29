@@ -22,17 +22,20 @@ namespace Api.Back.Controllers
         private readonly IValidator<RegisterIdentityDto> _validator;
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _configuration;
+        private readonly IRefreshTokenService _refreshTokenService;
 
         public AuthController(
             IAuthService authService,
             IValidator<RegisterIdentityDto> validator,
             IMemoryCache cache,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IRefreshTokenService refreshTokenService)
         {
             _authService = authService;
             _validator = validator;
             _cache = cache;
             _configuration = configuration;
+            _refreshTokenService = refreshTokenService;
         }
 
         [AllowAnonymous]
@@ -94,31 +97,16 @@ namespace Api.Back.Controllers
                 {
                     return BadRequest(new { message = "Le défi a expiré ou est invalide. Veuillez recommencer l'inscription." });
                 }
-                var identityCreated = await _authService.RegisterIdentityAsync(dto, originalOptions, attestationResponse);
 
+                var identityCreated = await _authService.RegisterIdentityAsync(dto, originalOptions, attestationResponse);
                 _cache.Remove(cacheKey);
 
-                var jwtSecret = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("La clé secrète JWT est introuvable.");
-                var jwtIssuer = _configuration["Jwt:Issuer"] ?? "TaskForce";
-                var jwtAudience = _configuration["Jwt:Audience"] ?? "TaskForceUsers";
+                var deviceId = GetOrCreateDeviceId();
+                var (jwt, refreshToken) = await _authService.GenerateAuthResponseAsync(identityCreated.Id, deviceId);
 
-                var token = _authService.GenerateJwtToken(identityCreated.Id, jwtSecret, jwtIssuer, jwtAudience);
+                SetAuthCookies(jwt, refreshToken, deviceId);
 
-                Response.Cookies.Append(SharedConstants.SessionCookieName, token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    Domain = ".taskforce.local",
-                    SameSite = SameSiteMode.None,
-                    MaxAge = TimeSpan.FromHours(1),
-                    Path = "/"
-                });
-                return CreatedAtAction(nameof(Register), new { id = identityCreated.Id }, new { Message = "Identité Zéro-Connaissance créée !", IdentityId = identityCreated.Id });
-            }
-            // Tu pourras recréer tes propres exceptions personnalisées (ex: PublicKeyAlreadyExistsException) plus tard !
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
+                return CreatedAtAction(nameof(Register), new { id = identityCreated.Id }, new { Message = "Identité créée !", IdentityId = identityCreated.Id });
             }
             catch (Exception ex) when (ex.GetType() != typeof(OutOfMemoryException))
             {
@@ -143,10 +131,8 @@ namespace Api.Back.Controllers
                 rpId = "localhost";
             }
 
-            // On demande un défi d'Assertion 
             var options = _authService.RequestAssertionOptions(rpId);
 
-            // On stocke le défi dans le cache comme pour l'inscription
             var cacheKey = WebEncoders.Base64UrlEncode(options.Challenge);
             _cache.Set(cacheKey, options, TimeSpan.FromMinutes(5));
 
@@ -161,8 +147,6 @@ namespace Api.Back.Controllers
         [SwaggerOperation(Summary = "Login via Passkey", Description = "Verifies the Passkey signature and issues a JWT token.")]
         public async Task<IActionResult> Login([FromBody] LoginIdentityDto dto)
         {
-            ArgumentNullException.ThrowIfNull(dto);
-
             try
             {
                 var assertionResponse = JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(dto.WebAuthnAssertionResponse.GetRawText());
@@ -170,14 +154,12 @@ namespace Api.Back.Controllers
                 if (assertionResponse == null)
                     return BadRequest(new { message = "Réponse WebAuthn invalide." });
 
-                var clientDataJsonBytes = assertionResponse.Response.ClientDataJson;
-                var clientData = JsonSerializer.Deserialize<JsonElement>(clientDataJsonBytes);
+                var clientData = JsonSerializer.Deserialize<JsonElement>(assertionResponse.Response.ClientDataJson);
 
                 var challengeBase64Url = clientData.GetProperty("challenge").GetString()
-                    ?? throw new InvalidOperationException("Challenge non trouvé dans le clientData");
+                    ?? throw new InvalidOperationException("Challenge non trouvé");
 
-                var challengeBytes = WebEncoders.Base64UrlDecode(challengeBase64Url);
-                var cacheKey = WebEncoders.Base64UrlEncode(challengeBytes);
+                var cacheKey = WebEncoders.Base64UrlEncode(WebEncoders.Base64UrlDecode(challengeBase64Url));
 
                 if (!_cache.TryGetValue(cacheKey, out AssertionOptions? originalOptions) || originalOptions == null)
                 {
@@ -188,27 +170,17 @@ namespace Api.Back.Controllers
                 var jwtIssuer = _configuration["Jwt:Issuer"] ?? "TaskForce";
                 var jwtAudience = _configuration["Jwt:Audience"] ?? "TaskForceUsers";
 
-                var token = await _authService.VerifyAssertionAndLoginAsync(
-                    assertionResponse,
-                    originalOptions,
-                    jwtSecret,
-                    jwtIssuer,
-                    jwtAudience);
+                var identityId = await _authService.VerifyAssertionAndLoginAsync(
+                    assertionResponse, originalOptions, jwtSecret, jwtIssuer, jwtAudience);
 
-                Response.Cookies.Append(SharedConstants.SessionCookieName, token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    MaxAge = TimeSpan.FromHours(1),
-                    Path = "/"
-                });
                 _cache.Remove(cacheKey);
 
-                return Ok(new
-                {
-                    Message = "Connexion Zéro-Connaissance réussie !"
-                });
+                var deviceId = GetOrCreateDeviceId();
+                var (jwt, refreshToken) = await _authService.GenerateAuthResponseAsync(identityId, deviceId);
+
+                SetAuthCookies(jwt, refreshToken, deviceId);
+
+                return Ok(new { Message = "Connexion réussie !" });
             }
             catch (InvalidOperationException ex)
             {
@@ -221,9 +193,18 @@ namespace Api.Back.Controllers
         }
 
         [HttpPost(BackUrls.Logout)]
-        public IActionResult Logout()
+        [SwaggerOperation(Summary = "Logout and revoke session")]
+        public async Task<IActionResult> Logout()
         {
-            Response.Cookies.Delete(SharedConstants.SessionCookieName);
+            var deviceId = Request.Cookies[SharedConstants.DeviceIdCookieName];
+            var identityId = GetCurrentIdentityId();
+
+            if (!string.IsNullOrEmpty(deviceId) && identityId != Guid.Empty)
+            {
+                await _refreshTokenService.RevokeRefreshTokenAsync(identityId.ToString(), deviceId);
+            }
+
+            ClearAuthCookies();
             return Ok(new { Message = "Déconnexion réussie." });
         }
 
@@ -232,5 +213,106 @@ namespace Api.Back.Controllers
         {
             return Ok(new { IdentityId = GetCurrentIdentityId() });
         }
+        private string GetOrCreateDeviceId()
+        {
+            if (Request.Cookies.TryGetValue(SharedConstants.DeviceIdCookieName, out var deviceId) && !string.IsNullOrEmpty(deviceId))
+                return deviceId;
+
+            return Guid.NewGuid().ToString("N");
+        }
+
+        private void SetAuthCookies(string jwt, string refreshToken, string deviceId)
+        {
+            var domain = ".taskforce.local";
+            var maxAgeRefresh = TimeSpan.FromDays(_configuration.GetValue("Redis:RefreshTokenTtlDays", 30));
+
+            Response.Cookies.Append(SharedConstants.SessionCookieName, jwt, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = domain,
+                Path = "/",
+                MaxAge = maxAgeRefresh
+            });
+
+            // 2. Le Refresh Token
+            Response.Cookies.Append(SharedConstants.RefreshTokenCookieName, refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = domain,
+                Path = "/",
+                MaxAge = maxAgeRefresh
+            });
+
+            // 3. Le Device ID (Dure 2 ans comme tu l'as défini)
+            Response.Cookies.Append(SharedConstants.DeviceIdCookieName, deviceId, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = domain,
+                Path = "/",
+                MaxAge = TimeSpan.FromDays(365 * 2)
+            });
+        }
+
+        private void ClearAuthCookies()
+        {
+            Response.Cookies.Delete(SharedConstants.SessionCookieName);
+            Response.Cookies.Delete(SharedConstants.RefreshTokenCookieName);
+            // On ne supprime pas le DeviceId pour le reconnaître à sa prochaine connexion !
+        }
+
+        [AllowAnonymous]
+        [HttpPost(BackUrls.Refresh)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [SwaggerOperation(Summary = "Refresh JWT Token", Description = "Uses the HttpOnly refresh token cookie to issue a new session.")]
+        public async Task<IActionResult> Refresh()
+        {
+            var refreshToken = Request.Cookies[SharedConstants.RefreshTokenCookieName];
+            var deviceId = Request.Cookies[SharedConstants.DeviceIdCookieName];
+            var expiredJwt = Request.Cookies[SharedConstants.SessionCookieName];
+
+            if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(deviceId) || string.IsNullOrEmpty(expiredJwt))
+            {
+                return Unauthorized(new { message = "Session invalide ou expirée." });
+            }
+
+            try
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var token = handler.ReadJwtToken(expiredJwt);
+                var identityIdClaim = token.Claims.FirstOrDefault(c => c.Type == "sub");
+
+                if (identityIdClaim == null || !Guid.TryParse(identityIdClaim.Value, out var identityId))
+                {
+                    return Unauthorized(new { message = "IdentityId invalide." });
+                }
+
+                var isValid = await _refreshTokenService.ValidateRefreshTokenAsync(identityId.ToString(), deviceId, refreshToken);
+                if (!isValid)
+                {
+                    ClearAuthCookies();
+                    return Unauthorized(new { message = "Refresh token invalide ou expiré." });
+                }
+
+                await _refreshTokenService.RevokeRefreshTokenAsync(identityId.ToString(), deviceId);
+                var (newAccessToken, newRefreshToken) = await _authService.GenerateAuthResponseAsync(identityId, deviceId);
+
+                SetAuthCookies(newAccessToken, newRefreshToken, deviceId);
+
+                return Ok(new { Message = "Session rafraîchie avec succès." });
+            }
+            catch (Exception)
+            {
+                ClearAuthCookies();
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erreur lors du refresh du token." });
+            }
+        }
+
     }
 }

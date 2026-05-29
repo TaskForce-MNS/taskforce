@@ -4,18 +4,15 @@ import { Dashboard } from '@/pages/Dashboard/Dashboard';
 import { Alert } from '@/components/atoms/Alert';
 
 export const Route = createFileRoute('/_protected/dashboard')({
-  // Pré-chargement des données avant d'afficher la page
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(dashboardQueryOptions),
 
-  // UI pendant le chargement
   pendingComponent: () => (
     <div className="flex h-[50vh] items-center justify-center">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-default border-t-transparent" />
     </div>
   ),
 
-  // UI en cas d'erreur API
   errorComponent: ({ error }) => (
     <div className="p-4">
       <Alert variant="error" title="Erreur de chargement">
@@ -25,6 +22,5 @@ export const Route = createFileRoute('/_protected/dashboard')({
     </div>
   ),
   // apres rechargement de la page il y a ecran blanc qui apparrait et disparait
-  // Le composant final à afficher
   component: Dashboard,
 });

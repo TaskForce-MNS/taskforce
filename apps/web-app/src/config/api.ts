@@ -18,3 +18,6 @@ export const logout = import.meta.env.VITE_LOGOUT_PATH
 
 // REGISTER
 export const register = import.meta.env.VITE_REGISTER_PATH
+
+// REFRESH TOKEN
+export const refreshToken = import.meta.env.VITE_REFRESH_TOKEN_PATH
