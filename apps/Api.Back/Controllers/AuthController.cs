@@ -147,6 +147,7 @@ namespace Api.Back.Controllers
         [SwaggerOperation(Summary = "Login via Passkey", Description = "Verifies the Passkey signature and issues a JWT token.")]
         public async Task<IActionResult> Login([FromBody] LoginIdentityDto dto)
         {
+            ArgumentNullException.ThrowIfNull(dto);
             try
             {
                 var assertionResponse = JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(dto.WebAuthnAssertionResponse.GetRawText());
@@ -307,10 +308,14 @@ namespace Api.Back.Controllers
 
                 return Ok(new { Message = "Session rafraîchie avec succès." });
             }
-            catch (Exception)
+            catch (SecurityTokenException ex)
             {
                 ClearAuthCookies();
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erreur lors du refresh du token." });
+                return Unauthorized("Token invalide ou expiré.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
