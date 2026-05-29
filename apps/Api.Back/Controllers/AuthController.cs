@@ -12,6 +12,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Back.Controllers
 {
@@ -308,7 +309,7 @@ namespace Api.Back.Controllers
 
                 return Ok(new { Message = "Session rafraîchie avec succès." });
             }
-            catch (SecurityTokenException ex)
+            catch (SecurityTokenException)
             {
                 ClearAuthCookies();
                 return Unauthorized("Token invalide ou expiré.");

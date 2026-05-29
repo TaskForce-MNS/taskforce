@@ -85,7 +85,7 @@ public class RefreshTokenService : IRefreshTokenService
         // !! _redis.GetEndPoints().First() suppose un seul noeud Redis,
         var server = _redis.GetServer(_redis.GetEndPoints().First());
 
-        var keys = await server.KeysAsync(pattern: $"{TokenKeyPrefix}:{identityId}:*");
+        var keys = server.KeysAsync(pattern: $"{TokenKeyPrefix}:{identityId}:*");
 
         foreach (var key in keys)
         {
