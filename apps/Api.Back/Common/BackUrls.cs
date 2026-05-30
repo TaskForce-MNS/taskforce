@@ -7,5 +7,7 @@ namespace Api.Back.Common
         public const string Login = BasePath + "/auth/login";
         public const string Logout = BasePath + "/auth/logout";
         public const string Me = BasePath + "/auth/me";
+        public const string Refresh = BasePath + "/auth/login/refresh";
+
     }
 }

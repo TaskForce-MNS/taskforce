@@ -38,7 +38,8 @@ public class AuthControllerTests
             _authServiceMock.Object,
             _validatorMock.Object,
             _cacheMock.Object,
-            _configMock.Object);
+            _configMock.Object,
+            mockRefreshTokenService.Object);
 
         // HttpContext minimal pour tous les tests
         _controller.ControllerContext = new ControllerContext

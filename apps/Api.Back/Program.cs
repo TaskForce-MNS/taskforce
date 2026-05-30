@@ -9,8 +9,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Api.Back.Common;
 using System.Data.Common;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+});
 
 #region SERVICES 
 builder.Services.AddControllers();
@@ -19,11 +25,25 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("PostgreSQL Database");
+// .AddRedis(redisConnection, name: "Redis Cache");
+// dotnet add package AspNetCore.HealthChecks.Redis
 // Repos & Services
 builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddMemoryCache();
+
+// Redis for Refresh Tokens
+var redisConnection = builder.Configuration["Redis:ConnectionString"]
+    ?? throw new InvalidOperationException("Redis:ConnectionString manquant");
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = ConfigurationOptions.Parse(redisConnection);
+    configuration.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
@@ -120,7 +140,10 @@ var app = builder.Build();
 
 // Middleware
 app.UseMiddleware<Api.Back.Middleware.ExceptionMiddleware>();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseRouting();
 
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,20 @@
-import { API_BASE_URL } from '@/config/api';
+import { API_BASE_URL, auth, login, refreshToken } from '@/config/api';
 import { useAuthStore } from '@/stores/useAuthStore';
+
+let isRefreshing = false;
+let failedQueue: { resolve: (value?: unknown) => void; reject: (reason?: unknown) => void; }[] = [];
+
+const processQueue = (error: unknown = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+
+  failedQueue = [];
+}
 
 export const apiClient = async <T>(
   endpoint: string,
@@ -8,9 +23,9 @@ export const apiClient = async <T>(
   const headers = new Headers(options.headers);
 
   if (
-    !headers.has('Content-Type') &&
-    options.body &&
-    !(options.body instanceof FormData)
+    !headers.has('Content-Type')
+    && options.body
+    && !(options.body instanceof FormData)
   ) {
     headers.set('Content-Type', 'application/json');
   }
@@ -26,21 +41,67 @@ export const apiClient = async <T>(
   }
 
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_BASE_URL}${normalizedEndpoint}`;
 
-  const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
+  let response = await fetch(url, {
     ...options,
     headers,
     body,
     credentials: 'include',
   });
 
-  if (response.status === 401) {
-    useAuthStore.setState({ isAuthenticated: false, isLoading: false });
-    throw new Error('Session expirée. Veuillez vous reconnecter.');
+  const isAuthRoute = url.includes('/refresh') ||
+    url.includes('/logout') ||
+    url.includes('/login') ||
+    url.includes('/register');
+
+  if (response.status === 401 && !isAuthRoute) {
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      }).then(() => {
+        return apiClient<T>(endpoint, options);
+      }).catch((err) => {
+        return Promise.reject(err);
+      });
+    }
+
+    isRefreshing = true;
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}${auth}${login}${refreshToken}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (refreshResponse.ok) {
+        processQueue(null);
+        response = await fetch(url, {
+          ...options,
+          headers,
+          body,
+          credentials: 'include',
+        });
+      } else {
+        throw new Error('Refresh token invalide');
+      }
+    } catch (error) {
+      processQueue(error);
+      useAuthStore.setState({ isAuthenticated: false, isLoading: false });
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    } finally {
+      isRefreshing = false;
+    }
   }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+
+    if (response.status === 404) {
+      throw new Error('La ressource demandée est introuvable (404).');
+    }
 
     if (errorData && Array.isArray(errorData) && errorData.length > 0 && errorData[0].errorMessage) {
       throw new Error(errorData[0].errorMessage);
@@ -49,7 +110,12 @@ export const apiClient = async <T>(
     if (errorData?.title) {
       throw new Error(errorData.title);
     }
-    throw new Error(errorData.message);
+
+    if (errorData?.message) {
+      throw new Error(errorData.message);
+    }
+
+    throw new Error('Une erreur inattendue est survenue.');
   }
 
   if (response.status === 204) return undefined as T;
