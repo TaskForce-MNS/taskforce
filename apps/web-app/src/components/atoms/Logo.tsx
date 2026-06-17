@@ -19,7 +19,6 @@ const SIZES: Record<Exclude<LogoSize, 'custom'>, { icon: string; text: string; g
     lg: { icon: 'w-12 h-12', text: 'text-4xl', gap: 'gap-3' },
 };
 
-// ====================== COULEURS ======================
 const COLOR_CLASSES: Record<LogoColor, string> = {
     default: 'text-white-accent-default',
     primary: 'text-primary-default',
@@ -29,7 +28,6 @@ const COLOR_CLASSES: Record<LogoColor, string> = {
     gradient: '',
 };
 
-// ====================== SVG ICON ======================
 interface LogoIconProps {
     className?: string;
     isGradient: boolean;
@@ -69,7 +67,6 @@ const LogoIcon = ({ className, isGradient }: LogoIconProps) => (
     </svg>
 );
 
-// ====================== COMPOSANT PRINCIPAL ======================
 export const Logo = forwardRef<HTMLDivElement, LogoProps>(
     (
         {
