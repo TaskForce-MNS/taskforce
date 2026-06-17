@@ -3,15 +3,20 @@ services:
   db:
     image: postgres:18
     container_name: ${DB_HOST}
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432"
+      - "5433:5432" 
     volumes:
-     - data:/var/lib/postgresql
+      - data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
       
   # ─── API .NET ───────────────────────────────────────────────────
   api:
@@ -25,18 +30,23 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - Redis__ConnectionString=redis:6379
+      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD}
+      - Jwt__Key=${JWT_KEY}        
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
     volumes:
       - ./apps/Api.Back:/app
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/api/back/v1/health || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 15s
       
   # ─── Web App (React Vite) ───────────────────────────────────────
   web-app:
@@ -80,12 +90,13 @@ services:
   proxy:
     image: nginx:alpine
     container_name: taskforce_proxy
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./infra/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
-      - ./infra/certs:/etc/nginx/certs
+      - ./infra/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/certs:/etc/nginx/certs:ro
     depends_on:
       api:
         condition: service_healthy
@@ -98,10 +109,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: taskforce_redis
-    restart: always
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     healthcheck:
