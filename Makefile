@@ -10,7 +10,7 @@ endif
 REGISTRY ?= beselimius
 VERSION  ?= v1.0.0
 
-.PHONY: start stop build clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint build-prod push-prod deploy
+.PHONY: start stop build clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint resume build-prod push-prod deploy
 
 # ==========================================
 # 🏃‍♂️ QUOTIDIEN
@@ -41,14 +41,21 @@ shell-api:
 	docker exec -it taskforce_api bash
 
 shell-db:
-	docker exec -it taskforce_db psql -U $(DB_USER) -d $(DB_NAME)
+	@docker exec -it taskforce_db psql -U $(DB_USER) -d $(DB_NAME)
 
 shell-redis:
-	docker exec -it taskforce_redis redis-cli -a $(REDIS_PASSWORD)
+	@echo "🔌 Connexion sécurisée à Redis..."
+	@docker exec -it -e REDISCLI_AUTH=$(REDIS_PASSWORD) taskforce_redis redis-cli
 
 # ==========================================
 # 🗃️ BASE DE DONNÉES 
 # ==========================================
+db-check:
+	@echo "🔍 Vérification des changements de modèle..."
+	@docker exec taskforce_api dotnet ef migrations has-pending-model-changes \
+		&& echo "✅ Aucun changement en attente." \
+		|| echo "⚠️  Des changements ont été détectés. Lancez : make db-add-migration NAME=NomDeLaMigration"
+
 db-add-migration:
 	@test -n "$(NAME)" || (echo "❌ Usage: make db-add-migration NAME=NomDeLaMigration" && exit 1)
 	@echo "📝 Création de la migration $(NAME)..."
@@ -59,13 +66,14 @@ db-migrate:
 	docker exec -it taskforce_api dotnet ef database update
 
 db-rollback:
-	@echo "⏪ Rollback de la dernière migration..."
-	docker exec -it taskforce_api dotnet ef database update PreviousMigrationName
+	@test -n "$(MIGRATION)" || (echo "❌ Usage: make db-rollback MIGRATION=NomDeLaMigration" && exit 1)
+	@echo "⏪ Rollback vers $(MIGRATION)..."
+	@docker exec -it taskforce_api dotnet ef database update $(MIGRATION)
 
 db-backup:
 	@echo "💾 Backup de la base de données..."
 	mkdir -p backups
-	docker exec taskforce_db pg_dump -U $(DB_USER) $(DB_NAME) > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@docker exec taskforce_db pg_dump -U $(DB_USER) $(DB_NAME) > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
 
 # ==========================================
 # 🧪 QUALITÉ 
@@ -78,6 +86,8 @@ lint:
 	@echo "🔍 Vérification du code frontend..."
 	docker exec taskforce_webapp pnpm lint
 
+resume:
+	@python3 apps/scripts/resume_context.py
 # ==========================================
 # 🚀 PRODUCTION
 # ==========================================
