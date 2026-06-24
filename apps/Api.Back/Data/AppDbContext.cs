@@ -12,6 +12,7 @@ namespace Api.Back.Data
         public DbSet<DbIdentity> Identities { get; set; }
         public DbSet<DbUserCredential> Credentials { get; set; }
         public DbSet<DbPreference> Preferences { get; set; }
+        public DbSet<DbProject> Projects { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +31,12 @@ namespace Api.Back.Data
                 .WithOne(c => c.Identity)
                 .HasForeignKey(c => c.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DbProject>()
+                    .HasOne(p => p.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(p => p.CreatedById)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 

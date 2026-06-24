@@ -31,6 +31,9 @@ builder.Services.AddHealthChecks()
 builder.Services.AddScoped<IIdentityRepository, IdentityRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+
 builder.Services.AddMemoryCache();
 
 // Redis for Refresh Tokens

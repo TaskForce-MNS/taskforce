@@ -249,7 +249,7 @@ namespace Api.Back.Controllers
                 MaxAge = maxAgeRefresh
             });
 
-            // 3. Le Device ID (Dure 2 ans comme tu l'as défini)
+            // 3. Le Device ID 
             Response.Cookies.Append(SharedConstants.DeviceIdCookieName, deviceId, new CookieOptions
             {
                 HttpOnly = true,
@@ -263,8 +263,19 @@ namespace Api.Back.Controllers
 
         private void ClearAuthCookies()
         {
-            Response.Cookies.Delete(SharedConstants.SessionCookieName);
-            Response.Cookies.Delete(SharedConstants.RefreshTokenCookieName);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = ".taskforce.local",
+                Path = "/",
+                MaxAge = TimeSpan.Zero
+            };
+
+            Response.Cookies.Delete(SharedConstants.SessionCookieName, cookieOptions);
+            Response.Cookies.Delete(SharedConstants.RefreshTokenCookieName, cookieOptions);
+
             // On ne supprime pas le DeviceId pour le reconnaître à sa prochaine connexion !
         }
 
