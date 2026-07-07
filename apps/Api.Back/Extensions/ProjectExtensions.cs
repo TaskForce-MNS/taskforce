@@ -7,6 +7,7 @@ namespace Api.Back.Extensions
     {
         public static ProjectResponse ToResponse(this DbProject project)
         {
+            ArgumentNullException.ThrowIfNull(project);
             return new ProjectResponse(
                 project.Id,
                 project.Name,

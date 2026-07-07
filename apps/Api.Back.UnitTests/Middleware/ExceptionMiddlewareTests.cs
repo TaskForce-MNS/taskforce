@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Api.Back.Middleware.Exceptions;
 
 namespace Api.Back.UnitTests.Middleware
 {

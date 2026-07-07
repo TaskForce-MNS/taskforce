@@ -2,6 +2,7 @@ using Api.Back.DTOs.Requests.Projects;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Services;
+using  Api.Back.Middleware.Exceptions;
 using FluentAssertions;
 using Moq;
 using Xunit;

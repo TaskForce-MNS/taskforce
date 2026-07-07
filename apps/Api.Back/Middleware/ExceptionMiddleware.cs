@@ -1,7 +1,7 @@
 using System.Net;
 using Api.Back.DTOs;
 using FluentValidation;
-
+using Api.Back.Middleware.Exceptions;
 namespace Api.Back.Middleware
 {
     public partial class ExceptionMiddleware

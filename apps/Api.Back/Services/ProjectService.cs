@@ -3,6 +3,7 @@ using Api.Back.DTOs.Responses;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Extensions;
+using Api.Back.Middleware.Exceptions;
 
 namespace Api.Back.Services
 {
@@ -25,6 +26,7 @@ namespace Api.Back.Services
 
         public async Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId)
         {
+            ArgumentNullException.ThrowIfNull(request);
             var newProject = new DbProject
             {
                 Name = request.Name,
@@ -57,6 +59,7 @@ namespace Api.Back.Services
 
         public async Task<ProjectResponse> PutProjectAsync(Guid id, PutProjectRequest request, Guid userId)
         {
+            ArgumentNullException.ThrowIfNull(request);
             var project = await GetAndAuthorizeAsync(id, userId);
 
             project.Name = request.Name;
@@ -71,6 +74,7 @@ namespace Api.Back.Services
 
         public async Task<ProjectResponse> PatchProjectAsync(Guid id, PatchProjectRequest request, Guid userId)
         {
+            ArgumentNullException.ThrowIfNull(request);
             var project = await GetAndAuthorizeAsync(id, userId);
 
             project.Name = request.Name ?? project.Name;
