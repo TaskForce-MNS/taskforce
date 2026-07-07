@@ -1,8 +1,7 @@
-
 using System.Net;
 using Api.Back.DTOs;
 using FluentValidation;
-
+using Api.Back.Middleware.Exceptions;
 namespace Api.Back.Middleware
 {
     public partial class ExceptionMiddleware
@@ -15,6 +14,7 @@ namespace Api.Back.Middleware
             _next = next;
             _logger = logger;
         }
+
         [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Erreur de validation id {ErrorId}")]
         private partial void LogValidationError(ValidationException ex, string errorId);
 
@@ -23,10 +23,12 @@ namespace Api.Back.Middleware
 
         [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Erreur interne id {ErrorId}")]
         private partial void LogInternalError(Exception ex, string errorId);
+
         public async Task InvokeAsync(HttpContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
             var errorId = Guid.NewGuid().ToString();
+
             try
             {
                 await _next(context);
@@ -40,6 +42,14 @@ namespace Api.Back.Middleware
             {
                 LogUnauthorizedAccessError(uex, errorId);
                 await HandleExceptionAsync(context, uex, errorId, HttpStatusCode.Unauthorized);
+            }
+            catch (ProjectNotFoundException pnfEx)
+            {
+                await HandleExceptionAsync(context, pnfEx, errorId, HttpStatusCode.NotFound);
+            }
+            catch (ProjectForbiddenException pfEx)
+            {
+                await HandleExceptionAsync(context, pfEx, errorId, HttpStatusCode.Forbidden);
             }
 #pragma warning disable CA1031
             catch (Exception ex)
@@ -64,6 +74,8 @@ namespace Api.Back.Middleware
                 {
                     HttpStatusCode.BadRequest => "Erreur de validation.",
                     HttpStatusCode.Unauthorized => "Accès non autorisé.",
+                    HttpStatusCode.Forbidden => "Accès interdit.",        
+                    HttpStatusCode.NotFound => "Ressource introuvable.", 
                     _ => "Une erreur interne du serveur est survenue."
                 },
                 isDev ? $"{exception.Message} (id: {errorId})" : $"Erreur id: {errorId}"
@@ -73,4 +85,3 @@ namespace Api.Back.Middleware
         }
     }
 }
-

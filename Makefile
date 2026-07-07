@@ -10,7 +10,7 @@ endif
 REGISTRY ?= beselimius
 VERSION  ?= v1.0.0
 
-.PHONY: start stop build clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint build-prod push-prod deploy
+.PHONY: start stop build build-test clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint resume scan-secrets scan-files scan-secrets-debug build-prod push-prod deploy 
 
 # ==========================================
 # 🏃‍♂️ QUOTIDIEN
@@ -27,6 +27,10 @@ build:
 	@echo "🏗️ Reconstruction..."
 	docker compose -f docker-compose.dev.yml up -d --build
 
+build-test:
+	@echo "🏗️ Reconstruction..."
+	docker compose -f docker-compose.test.yml up -d --build
+
 clean:
 	@echo "🧹 Nettoyage complet..."
 	docker compose -f docker-compose.dev.yml down -v
@@ -41,14 +45,21 @@ shell-api:
 	docker exec -it taskforce_api bash
 
 shell-db:
-	docker exec -it taskforce_db psql -U $(DB_USER) -d $(DB_NAME)
+	@docker exec -it taskforce_db psql -U $(DB_USER) -d $(DB_NAME)
 
 shell-redis:
-	docker exec -it taskforce_redis redis-cli -a $(REDIS_PASSWORD)
+	@echo "🔌 Connexion sécurisée à Redis..."
+	@docker exec -it -e REDISCLI_AUTH=$(REDIS_PASSWORD) taskforce_redis redis-cli
 
 # ==========================================
 # 🗃️ BASE DE DONNÉES 
 # ==========================================
+db-check:
+	@echo "🔍 Vérification des changements de modèle..."
+	@docker exec taskforce_api dotnet ef migrations has-pending-model-changes \
+		&& echo "✅ Aucun changement en attente." \
+		|| echo "⚠️  Des changements ont été détectés. Lancez : make db-add-migration NAME=NomDeLaMigration"
+
 db-add-migration:
 	@test -n "$(NAME)" || (echo "❌ Usage: make db-add-migration NAME=NomDeLaMigration" && exit 1)
 	@echo "📝 Création de la migration $(NAME)..."
@@ -59,25 +70,41 @@ db-migrate:
 	docker exec -it taskforce_api dotnet ef database update
 
 db-rollback:
-	@echo "⏪ Rollback de la dernière migration..."
-	docker exec -it taskforce_api dotnet ef database update PreviousMigrationName
+	@test -n "$(MIGRATION)" || (echo "❌ Usage: make db-rollback MIGRATION=NomDeLaMigration" && exit 1)
+	@echo "⏪ Rollback vers $(MIGRATION)..."
+	@docker exec -it taskforce_api dotnet ef database update $(MIGRATION)
 
 db-backup:
 	@echo "💾 Backup de la base de données..."
 	mkdir -p backups
-	docker exec taskforce_db pg_dump -U $(DB_USER) $(DB_NAME) > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@docker exec taskforce_db pg_dump -U $(DB_USER) $(DB_NAME) > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
 
 # ==========================================
 # 🧪 QUALITÉ 
 # ==========================================
 test:
 	@echo "🧪 Lancement des tests..."
-	docker exec taskforce_api dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj
+	docker compose -f docker-compose.test.yml run --rm api-unit-tests
 
 lint:
 	@echo "🔍 Vérification du code frontend..."
 	docker exec taskforce_webapp pnpm lint
 
+resume:
+	@python3 apps/scripts/resume_context.py
+
+	# 🔍 Secret scan avec TruffleHog
+
+scan-secrets:
+	trufflehog git file://$(PWD) --no-update
+
+# 🔍 Scan rapide filesystem (sans Git history)
+scan-files:
+	TRUFFLEHOG_NO_UPDATE=true trufflehog filesystem .
+
+# 🧼 Version verbose (debug utile)
+scan-secrets-debug:
+	trufflehog git file://$(PWD) --no-update --debug
 # ==========================================
 # 🚀 PRODUCTION
 # ==========================================

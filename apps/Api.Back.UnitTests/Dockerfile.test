@@ -1,0 +1,9 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /workspace
+
+COPY . .
+
+WORKDIR /workspace/Api.Back.UnitTests
+
+ENTRYPOINT ["dotnet", "test", "Api.Back.UnitTests.csproj"]

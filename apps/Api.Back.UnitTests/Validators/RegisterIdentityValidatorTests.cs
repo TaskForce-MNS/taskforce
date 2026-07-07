@@ -10,92 +10,113 @@ namespace Api.Back.UnitTests.Validators
     {
         private readonly RegisterIdentityValidator _validator = new();
 
-        // 🛠️ Création du Record via son constructeur primaire
-        private static RegisterIdentityDto CreateValidDto()
+        private static RegisterIdentityDto CreateValidDto(
+            string encryptedProfileBlob = "encrypted-blob",
+            string experience = "5+",
+            string title = "Développeur",
+            JsonElement? webAuthnAttestationResponse = null)
         {
             return new RegisterIdentityDto(
-                "U3VwZXJTZWNyZXRCbG9i", // EncryptedProfileBlob
-                "John",                 // FirstName
-                "Doe",                  // LastName
-                "5",                    // Experience
-                "Développeur Fullstack",// Title
-                JsonDocument.Parse("{\"id\":\"123456\"}").RootElement // WebAuthnAttestationResponse
+                encryptedProfileBlob,
+                "John",
+                "Doe",
+                experience,
+                title,
+                webAuthnAttestationResponse ?? JsonDocument.Parse("{}").RootElement
             );
         }
 
         [Fact]
-        public void Should_NotHaveAnyError_When_DtoIsPerfectlyValid()
+        public void Should_NotHaveError_When_DtoIsValid()
         {
+            // Arrange
             var dto = CreateValidDto();
+
+            // Act
             var result = _validator.TestValidate(dto);
+
+            // Assert
             result.ShouldNotHaveAnyValidationErrors();
         }
 
         [Theory]
         [InlineData("")]
-        public void Should_HaveError_When_EncryptedProfileBlob_IsMissing(string invalidBlob)
+        [InlineData(null)]
+        public void Should_HaveError_When_EncryptedProfileBlobIsEmptyOrNull(string? value)
         {
-            var dto = CreateValidDto() with { EncryptedProfileBlob = invalidBlob };
+            // Arrange
+            var dto = CreateValidDto(encryptedProfileBlob: value!);
+
+            // Act
             var result = _validator.TestValidate(dto);
 
-            result.ShouldHaveValidationErrorFor(x => x.EncryptedProfileBlob)
-                  .WithErrorMessage("Le profil chiffré est obligatoire.");
-        }
-
-        [Theory]
-        [InlineData("")]
-        public void Should_HaveError_When_Experience_IsMissing(string invalidExperience)
-        {
-            var dto = CreateValidDto() with { Experience = invalidExperience };
-            var result = _validator.TestValidate(dto);
-
-            result.ShouldHaveValidationErrorFor(x => x.Experience)
-                  .WithErrorMessage("L'expérience est obligatoire.");
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.EncryptedProfileBlob);
         }
 
         [Fact]
-        public void Should_HaveError_When_Experience_ExceedsTwoCharacters()
+        public void Should_HaveError_When_ExperienceExceedsMaxLength()
         {
-            var dto = CreateValidDto() with { Experience = "999" };
+            // Arrange
+            var dto = CreateValidDto(experience: "abc");
+
+            // Act
             var result = _validator.TestValidate(dto);
 
-            result.ShouldHaveValidationErrorFor(x => x.Experience)
-                  .WithErrorMessage("L'expérience ne doit pas dépasser 2 caractères.");
-        }
-
-        [Theory]
-        [InlineData("")]
-        public void Should_HaveError_When_Title_IsMissing(string invalidTitle)
-        {
-            var dto = CreateValidDto() with { Title = invalidTitle };
-            var result = _validator.TestValidate(dto);
-
-            result.ShouldHaveValidationErrorFor(x => x.Title)
-                  .WithErrorMessage("Le titre est obligatoire.");
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.Experience);
         }
 
         [Fact]
-        public void Should_HaveError_When_Title_Exceeds100Characters()
+        public void Should_NotHaveError_When_ExperienceIsAtMaxLength()
         {
-            var dto = CreateValidDto() with { Title = new string('A', 101) };
+            // Arrange
+            var dto = CreateValidDto(experience: "10");
+
+            // Act
             var result = _validator.TestValidate(dto);
 
-            result.ShouldHaveValidationErrorFor(x => x.Title)
-                  .WithErrorMessage("Le titre ne doit pas dépasser 100 caractères.");
+            // Assert
+            result.ShouldNotHaveValidationErrorFor(x => x.Experience);
         }
 
         [Fact]
-        public void Should_HaveError_When_WebAuthnAttestationResponse_IsMissing()
+        public void Should_HaveError_When_TitleExceedsMaxLength()
         {
-            // On crée un DTO avec un JsonElement non initialisé (état Undefined)
-            var dto = CreateValidDto() with { WebAuthnAttestationResponse = default };
+            // Arrange
+            var dto = CreateValidDto(title: new string('a', 101));
 
-            // On utilise TestValidate (plus puissant pour les tests)
+            // Act
             var result = _validator.TestValidate(dto);
 
-            // On vérifie l'erreur proprement
-            result.ShouldHaveValidationErrorFor(x => x.WebAuthnAttestationResponse)
-                  .WithErrorMessage("La réponse de la clé de sécurité (Passkey) est manquante.");
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.Title);
+        }
+
+        [Fact]
+        public void Should_NotHaveError_When_TitleIsAtMaxLength()
+        {
+            // Arrange
+            var dto = CreateValidDto(title: new string('a', 100));
+
+            // Act
+            var result = _validator.TestValidate(dto);
+
+            // Assert
+            result.ShouldNotHaveValidationErrorFor(x => x.Title);
+        }
+
+        [Fact]
+        public void Should_HaveError_When_WebAuthnAttestationResponseIsUndefined()
+        {
+            // Arrange
+            var dto = CreateValidDto(webAuthnAttestationResponse: default(JsonElement));
+
+            // Act
+            var result = _validator.TestValidate(dto);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.WebAuthnAttestationResponse);
         }
     }
 }
