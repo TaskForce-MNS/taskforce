@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Api.Back.Services;
 using Api.Back.DTOs.Responses;
 using Api.Back.Common;
+using FluentValidation;
 
 namespace Api.Back.Controllers.Projects
 {
@@ -31,6 +32,7 @@ namespace Api.Back.Controllers.Projects
         public async Task<IActionResult> PostProject([FromBody] PostProjectRequest request)
         {
             var userId = GetCurrentIdentityId();
+            var validation = await _validator.ValidateAsync(request);
             if (!validation.IsValid)
                 return BadRequest(validation.Errors);
             var response = await _projectService.PostProjectAsync(request, userId);

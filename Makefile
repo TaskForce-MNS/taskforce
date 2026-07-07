@@ -10,7 +10,7 @@ endif
 REGISTRY ?= beselimius
 VERSION  ?= v1.0.0
 
-.PHONY: start stop build clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint resume build-prod push-prod deploy
+.PHONY: start stop build build-test clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint resume scan-secrets scan-files scan-secrets-debug build-prod push-prod deploy 
 
 # ==========================================
 # 🏃‍♂️ QUOTIDIEN
@@ -26,6 +26,10 @@ stop:
 build:
 	@echo "🏗️ Reconstruction..."
 	docker compose -f docker-compose.dev.yml up -d --build
+
+build-test:
+	@echo "🏗️ Reconstruction..."
+	docker compose -f docker-compose.test.yml up -d --build
 
 clean:
 	@echo "🧹 Nettoyage complet..."
@@ -80,7 +84,7 @@ db-backup:
 # ==========================================
 test:
 	@echo "🧪 Lancement des tests..."
-	docker exec taskforce_api dotnet test apps/Api.Back.UnitTests/Api.Back.UnitTests.csproj
+	docker compose -f docker-compose.test.yml run --rm api-unit-tests
 
 lint:
 	@echo "🔍 Vérification du code frontend..."
@@ -88,6 +92,19 @@ lint:
 
 resume:
 	@python3 apps/scripts/resume_context.py
+
+	# 🔍 Secret scan avec TruffleHog
+
+scan-secrets:
+	trufflehog git file://$(PWD) --no-update
+
+# 🔍 Scan rapide filesystem (sans Git history)
+scan-files:
+	TRUFFLEHOG_NO_UPDATE=true trufflehog filesystem .
+
+# 🧼 Version verbose (debug utile)
+scan-secrets-debug:
+	trufflehog git file://$(PWD) --no-update --debug
 # ==========================================
 # 🚀 PRODUCTION
 # ==========================================
