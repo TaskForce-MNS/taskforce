@@ -4,5 +4,3 @@ services:
     build:
       context: ./apps
       dockerfile: Api.Back.UnitTests/Dockerfile.test
-    volumes:
-      - ./apps:/workspace

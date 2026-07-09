@@ -27,6 +27,8 @@
     <PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
+
+    <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     </ItemGroup>
 
 </Project>

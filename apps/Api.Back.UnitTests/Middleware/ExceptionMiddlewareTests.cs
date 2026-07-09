@@ -15,7 +15,7 @@ namespace Api.Back.UnitTests.Middleware
 {
     public class ExceptionMiddlewareTests
     {
-        private static HttpContext CreateHttpContext(string environmentName)
+        private static DefaultHttpContext CreateHttpContext(string environmentName)
         {
             var context = new DefaultHttpContext();
             context.Response.Body = new MemoryStream();
