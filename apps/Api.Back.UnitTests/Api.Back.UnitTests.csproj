@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Api.Back.UnitTests</RootNamespace>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <NoWarn>$(NoWarn);CA1707;CA2007</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
