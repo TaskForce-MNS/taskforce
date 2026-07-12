@@ -1,22 +1,23 @@
-# --- ETAPE 1 : L'usine (Compilation) ---
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS builder
+
 WORKDIR /app
 
-# On installe les dépendances
 COPY Api.Back.csproj .
 RUN dotnet restore
 
-# On copie le reste du code et on compile en mode "Release"
 COPY . .
 RUN dotnet publish -c Release -o /out
 
-# --- ETAPE 2 : La Production (Image ultra-légère) ---
+
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
+
 WORKDIR /app
 
-# On récupère UNIQUEMENT les fichiers compilés de l'étape 1
-COPY --from=builder /out .
+USER app
+
+COPY --from=builder --chown=app:app /out .
 
 EXPOSE 8080
-# On lance la version compilée (plus de 'dotnet watch' ici !)
+
+
 ENTRYPOINT ["dotnet", "Api.Back.dll"]

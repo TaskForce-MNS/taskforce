@@ -1,27 +1,26 @@
 # ==========================================
-# ÉTAPE 1 : L'USINE D'ASSEMBLAGE (Builder)
+# ÉTAPE 1 : BUILD (Sécurisé pour le CI/CD)
 # ==========================================
-FROM node:22-alpine3.20 AS builder
+FROM node:22-alpine3.21 AS builder
 WORKDIR /app
 
-RUN corepack enable pnpm
-COPY package.json pnpm-lock.yaml* ./
+# On patch le système de build au cas où le scanner de CI vérifie les builders
+RUN apk update && apk upgrade --no-cache && corepack enable pnpm
+
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . .
-
-# Astro va générer tout le site statique dans le dossier /app/dist
 RUN pnpm run build
 
 # ==========================================
-# ÉTAPE 2 : LE SERVEUR WEB (Nginx)
+# ÉTAPE 2 : SERVEUR (Chainguard Nginx — 0 CVE)
 # ==========================================
-FROM nginx:alpine
+FROM cgr.dev/chainguard/nginx:latest
 
-# On récupère le site statique compilé pour le mettre dans Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Chainguard utilise souvent l'UID 65532 (ou le nom nginx). On sécurise la copie :
+COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
-# Optionnel : Si tu veux remplacer le port 80 par défaut de Nginx
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
