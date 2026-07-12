@@ -25,6 +25,7 @@ services:
     build:
       context: ./apps/Api.Back
       dockerfile: Dockerfile.dev
+    user: dotnetuser
     ports:
       - "7250:8080"
     environment:
@@ -46,7 +47,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 30s
       
   # ─── Web App (React Vite) ───────────────────────────────────────
   web-app:
@@ -118,7 +119,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5

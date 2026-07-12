@@ -2,7 +2,26 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0
 
 WORKDIR /workspace
 
-COPY . .
+COPY Api.Back/Api.Back.csproj Api.Back/
+COPY Api.Back.UnitTests/Api.Back.UnitTests.csproj Api.Back.UnitTests/
+
+RUN dotnet restore Api.Back.UnitTests/Api.Back.UnitTests.csproj
+
+COPY Api.Back/ Api.Back/
+COPY Api.Back.UnitTests/ Api.Back.UnitTests/
+
+RUN groupadd -r dotnetgroup && useradd -r -g dotnetgroup dotnetuser \
+    && mkdir -p /workspace/.dotnet /workspace/.nuget/packages \
+    && chown -R dotnetuser:dotnetgroup /workspace
+
+USER dotnetuser
+
+ENV DOTNET_CLI_HOME=/workspace
+ENV NUGET_PACKAGES=/workspace/.nuget/packages
+
+ENV DOTNET_NOLOGO=true
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=true
+ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 
 WORKDIR /workspace/Api.Back.UnitTests
 
