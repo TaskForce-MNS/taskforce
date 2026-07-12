@@ -23,7 +23,7 @@ jobs:
 
       # ⚡ Cache NuGet pour accélérer le build
       - name: Cache NuGet
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
