@@ -1,18 +1,20 @@
-FROM node:22-alpine3.20
+FROM cgr.dev/chainguard/node:latest-dev
+
 WORKDIR /app
 
-# Activation de pnpm
+# 👇 1. On passe root temporairement pour installer pnpm dans le système
+USER root
 RUN corepack enable pnpm
 
-# Optimisation du cache d'installation
-COPY package.json pnpm-lock.yaml* ./
+# 👇 2. On revient IMMÉDIATEMENT sur l'utilisateur sécurisé de Chainguard (souvent 'node' ou l'UID 65532)
+USER node 
+
+# 3. La suite de ton code est parfaite :
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN pnpm install
 
-# On copie le code
-COPY . .
+COPY --chown=node:node . .
 
-# Le port standard d'Astro
 EXPOSE 4321
 
-# On lance le serveur de dev avec l'écoute sur toutes les interfaces réseau
 CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]

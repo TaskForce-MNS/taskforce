@@ -1,2 +1,30 @@
+# ─── Secrets et configuration locale ────────────────────────────
+.env
+*.env.*
+appsettings.Development.json
+*.user
+*.suo
+
+# ─── Dossiers Git et CI/CD ──────────────────────────────────────
+.git
+.gitignore
+.github/
+
+# ─── Artefacts de compilation (Vital pour éviter les bugs !) ────
 **/bin/
 **/obj/
+out/
+build/
+
+# ─── IDE et cache ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.dump
+
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+.git/
