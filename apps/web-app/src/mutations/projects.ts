@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     projectsApi,
-    type Project,
     type CreateProjectPayload,
     type PutProjectPayload,
     type PatchProjectPayload,
@@ -16,7 +15,6 @@ export const useCreateProject = () => {
         mutationFn: (payload: CreateProjectPayload) => projectsApi.create(payload),
 
         onSuccess: (newProject) => {
-            // ✅ Invalide le cache — la liste de projets se rafraîchit automatiquement
             queryClient.invalidateQueries({ queryKey: ['projects'] });
 
             addToast({
@@ -35,7 +33,7 @@ export const useCreateProject = () => {
         },
     });
 };
-// ✅ PUT — remplacement complet
+
 export const usePutProject = (id: string) => {
     const queryClient = useQueryClient();
     const addToast = useToastStore((state) => state.addToast);
@@ -53,7 +51,6 @@ export const usePutProject = (id: string) => {
     });
 };
 
-// ✅ PATCH — mise à jour partielle
 export const usePatchProject = (id: string) => {
     const queryClient = useQueryClient();
     const addToast = useToastStore((state) => state.addToast);

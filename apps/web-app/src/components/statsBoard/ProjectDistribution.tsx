@@ -1,4 +1,4 @@
-import type { Project } from '@/api/projects';
+import type { Project } from '@/api/project';
 
 export interface ProjectDistributionProps {
     projects?: Project[];
@@ -11,20 +11,16 @@ export function ProjectDistribution({ projects, isLoading }: ProjectDistribution
     const radius = 15.9155; // circonférence = 100, simplifie le calcul des %
     const circumference = 2 * Math.PI * radius;
 
-    let cursor = 0;
-    const segments = list.map((project) => {
-        const fraction = total > 0 ? 1 / total : 0;
-        const dash = fraction * circumference;
-        const segment = {
-            id: project.id,
-            name: project.name,
-            color: project.colorHex ?? '#587B7F',
-            dashArray: `${dash} ${circumference - dash}`,
-            dashOffset: -cursor,
-        };
-        cursor += dash;
-        return segment;
-    });
+    const fraction = total > 0 ? 1 / total : 0;
+    const dash = fraction * circumference;
+
+    const segments = list.map((project, index) => ({
+        id: project.id,
+        name: project.name,
+        color: project.colorHex ?? '#587B7F',
+        dashArray: `${dash} ${circumference - dash}`,
+        dashOffset: -(index * dash),
+    }));
 
     return (
         <div className="rounded-small border border-white-accent-dark/10 bg-black-accent-default p-5">

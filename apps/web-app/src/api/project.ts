@@ -33,7 +33,6 @@ export interface PatchProjectPayload {
     colorHex?: string;
     imageUrl?: string;
 }
-const PROJECTS_ENDPOINT = '/projects';
 
 export const projectsApi = {
     list: () =>

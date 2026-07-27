@@ -1,14 +1,14 @@
 import { Logo } from '@/components/atoms/Logo';
 import { WorkspaceButton } from '@/components/atoms/WorkspaceButton';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
+import { useMatchRoute, useNavigate } from '@tanstack/react-router';
 import { projectsQueryOptions } from '@/api/queries/projectsQueries';
 
 interface WorkspaceSidebarProps {
     onCreateProjectClick: () => void;
 }
 
-export const WorkspaceSidebar = ({ onCreateProjectClick  }: WorkspaceSidebarProps) => {
+export const WorkspaceSidebar = ({ onCreateProjectClick }: WorkspaceSidebarProps) => {
     const { data: projects } = useSuspenseQuery(projectsQueryOptions);
     const matchRoute = useMatchRoute();
     const navigate = useNavigate();
