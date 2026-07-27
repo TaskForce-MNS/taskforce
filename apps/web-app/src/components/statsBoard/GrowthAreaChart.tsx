@@ -1,5 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { Project } from '@/api/projects';
+import type { Project } from '@/api/project';
 
 const RANGE_DAYS = 30;
 

@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import type { Project } from '@/api/projects';
+import type { Project } from '@/api/project';
 
 const TOTAL_TICKS = 40;
 

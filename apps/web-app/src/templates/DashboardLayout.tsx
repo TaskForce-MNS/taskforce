@@ -14,8 +14,8 @@ export const DashboardLayout = () => {
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
 
-    const displayName = user?.firstName || 'Utilisateur';
-    const displayLastName = user?.lastName;
+    const displayName = user?.firstname || 'Utilisateur';
+    const displayLastName = user?.lastname;
     const displayTitle = user?.title;
     const userInitial = `${displayName.charAt(0).toUpperCase()}${displayLastName?.charAt(0).toUpperCase()}`;
 

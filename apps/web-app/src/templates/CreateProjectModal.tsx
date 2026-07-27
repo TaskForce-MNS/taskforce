@@ -93,7 +93,7 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
                     </div>
 
                     <div className="mt-2 flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+                        <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
                             Annuler
                         </Button>
                         <Button type="submit" variant="primary" isLoading={isPending}>
