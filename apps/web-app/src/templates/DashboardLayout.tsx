@@ -1,86 +1,85 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Logo } from '@/components/atoms/Logo';
 import { WorkspaceSidebar } from './WorkspaceSidebar';
+import { CreateProjectModal } from './CreateProjectModal';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const DashboardLayout = () => {
     const navigate = useNavigate();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
 
+    const queryClient = useQueryClient();
     const logout = useAuthStore((state) => state.logout);
+    const user = useAuthStore((state) => state.user);
 
+    const displayName = user?.firstName || 'Utilisateur';
+    const displayLastName = user?.lastName;
+    const displayTitle = user?.title;
+    const userInitial = `${displayName.charAt(0).toUpperCase()}${displayLastName?.charAt(0).toUpperCase()}`;
+
+    console.log('DashboardLayout rendered with user:', user);
     const handleLogout = async () => {
-        await logout(); // ← le store appelle l'API et met isAuthenticated à false
+        await logout();
+        queryClient.clear();
         navigate({ to: '/auth' });
     };
 
     return (
         <div className="flex h-screen w-full bg-black-accent-light text-white-accent-default overflow-hidden font-text">
             <WorkspaceSidebar
-                onWorkspaceClick={() => setIsMenuOpen(!isMenuOpen)}
+                onCreateProjectClick={() => setIsCreateProjectOpen(true)}
             />
 
-            {/* BARRE LATÉRALE INTERNE */}
-            {isMenuOpen && (
-                <aside className="hidden w-60 shrink-0 flex-col bg-black-accent-default md:flex z-20 transition-all border-r border-black-accent-light">
-
-                    {/* En-tête de la barre latérale */}
-                    <div className="flex h-12 items-center px-4 border-b border-black-accent-light shadow-sm">
-                        <h2 className="font-title font-bold text-white-accent-light">TaskForce</h2>
+            {/* ZONE PRINCIPALE — inchangée */}
+            <div className="flex min-w-0 flex-1 flex-col">
+                <header className="flex h-14 shrink-0 items-center border-b border-black-accent-light/50 px-4 sm:px-6 z-10 bg-black-accent-dark backdrop-blur-md">
+                    <div className="flex items-center gap-3">
+                        <Logo variant="text-only" size="sm" />
                     </div>
 
-                    {/* Zone des menus (Scrollable) */}
-                    <nav className="flex-1 overflow-y-auto p-3 custom-scrollbar">
-                        {/* Tes liens de navigation iront ici */}
-                    </nav>
-
-                    {/* Zone Profil Utilisateur et Déconnexion (Tout en bas) */}
-                    <div className="mt-auto bg-black-accent-dark flex items-center justify-between p-3 border-t border-black-accent-light">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            {/* Faux Avatar */}
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
-                                U
+                    <div className="ml-auto flex items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-3 rounded-xl border border-white-accent-dark/15 bg-black-accent-light/50 p-1 sm:pr-4 shadow-inner transition-all hover:border-primary-default/50">
+                            <div className="relative shrink-0">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-primary-default font-title text-xs font-bold text-white shadow-sm">
+                                    {userInitial}
+                                </div>
+                                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black-accent-light bg-emerald-500" title="En ligne" />
                             </div>
-                            <div className="flex flex-col truncate">
-                                <span className="text-sm font-bold truncate">Utilisateur</span>
-                                <span className="text-xs text-white-accent-dark truncate">En ligne</span>
+                            <div className="hidden sm:flex flex-col text-left">
+                                <span className="font-title text-xs font-bold leading-tight text-white-accent-light truncate max-w-[120px]">
+                                    {displayName} {displayLastName}
+                                </span>
+                                <span className="text-[10px] leading-tight text-white-accent-dark">
+                                    {displayTitle}
+                                </span>
                             </div>
                         </div>
 
-                        {/* Bouton Logout */}
                         <button
                             onClick={handleLogout}
-                            className="p-2 rounded-md text-white-accent-dark hover:bg-black-accent-light hover:text-red-400 transition-colors"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white-accent-dark/10 bg-black-accent-light/30 text-white-accent-dark transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
                             title="Se déconnecter"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="h-4 w-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
                             </svg>
                         </button>
                     </div>
-                </aside>
-            )}
-
-            {/* ZONE PRINCIPALE */}
-            <div className="flex min-w-0 flex-1 flex-col">
-                {/* EN-TÊTE HAUT DU SALON (Header) */}
-                <header className="flex h-12 shrink-0 items-center justify-between border-b border-black-accent-default px-4 z-10 shadow-sm bg-black-accent-light">
-                    <div className="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white-accent-dark">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
-                        </svg>
-                        <h2 className="font-title text-base font-bold text-white-accent-light">
-                            vue-d-ensemble
-                        </h2>
-                    </div>
                 </header>
 
-                {/* LE CONTENU DE LA PAGE EN COURS */}
                 <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-                    <Outlet />
+                    <Suspense fallback={<div className="p-4 text-white-accent-dark">Chargement...</div>}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
+
+            <CreateProjectModal
+                isOpen={isCreateProjectOpen}
+                onClose={() => setIsCreateProjectOpen(false)}
+            />
         </div>
     );
 };

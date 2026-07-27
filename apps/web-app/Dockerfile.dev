@@ -1,8 +1,9 @@
 FROM node:24-alpine
 WORKDIR /app
 
-# Activation de pnpm
 RUN corepack enable pnpm
+
+ENV PNPM_STORE_DIR=/app/node_modules/.pnpm-store
 
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install

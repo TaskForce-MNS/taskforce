@@ -2,10 +2,10 @@ namespace Api.Back.DTOs.Responses
 {
     public record UserResponseDto(
         Guid Id,
-        string Email,
-        string FullName,
+        string FirstName,
+        string LastName,
         string Title,
-        decimal Workload,
+        decimal CurrentWorkload,
         string Experience,
         DateTime CreatedAt
     );

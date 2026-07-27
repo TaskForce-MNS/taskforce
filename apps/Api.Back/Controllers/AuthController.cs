@@ -1,4 +1,5 @@
 using Api.Back.DTOs.Requests;
+using Api.Back.DTOs.Responses;
 using Api.Back.Services;
 using Api.Back.Common;
 using Api.Back.Tools;
@@ -43,7 +44,7 @@ namespace Api.Back.Controllers
         [HttpPost($"{BackUrls.Register}/options")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SwaggerOperation(Summary = "Get Passkey registration options", Description = "Returns the cryptographic challenge required for Passkey creation.")]
-        public IActionResult GetRegisterOptions()
+        public IActionResult GetRegisterOptions([FromQuery] string? displayName)
         {
             var origin = Request.Headers.Origin.ToString();
             if (string.IsNullOrEmpty(origin)) origin = Request.Headers.Referer.ToString();
@@ -54,7 +55,7 @@ namespace Api.Back.Controllers
                 rpId = "localhost";
             }
 
-            var options = _authService.RequestNewCredential(rpId);
+            var options = _authService.RequestNewCredential(rpId, displayName);
 
             var cacheKey = WebEncoders.Base64UrlEncode(options.Challenge);
             _cache.Set(cacheKey, options, TimeSpan.FromMinutes(5));
@@ -211,10 +212,20 @@ namespace Api.Back.Controllers
         }
 
         [HttpGet(BackUrls.Me)]
-        public IActionResult Me()
+        public async Task<ActionResult<UserResponseDto>> Me(CancellationToken cancellationToken)
         {
-            return Ok(new { IdentityId = GetCurrentIdentityId() });
+            var identityId = GetCurrentIdentityId();
+
+            var userProfile = await _authService.GetUserProfileAsync(identityId, cancellationToken);
+
+            if (userProfile is null)
+            {
+                return NotFound("Utilisateur introuvable en base de données.");
+            }
+
+            return Ok(userProfile);
         }
+        
         private string GetOrCreateDeviceId()
         {
             if (Request.Cookies.TryGetValue(SharedConstants.DeviceIdCookieName, out var deviceId) && !string.IsNullOrEmpty(deviceId))

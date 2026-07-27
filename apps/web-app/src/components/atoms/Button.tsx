@@ -55,6 +55,12 @@ const variants: Record<ButtonVariant, string> = {
         'focus-visible:ring-error',
         'active:scale-[0.97]',
     ].join(' '),
+    success: [
+        'bg-success text-white-accent-light border',
+        'hover:opacity-80',
+        'focus-visible:ring-success',
+        'active:scale-[0.97]',
+    ],
     link: [
         'bg-transparent text-white-accent-dark',
         'underline underline-offset-4',

@@ -25,7 +25,9 @@ services:
     build:
       context: ./apps/Api.Back
       dockerfile: Dockerfile.dev
-    user: dotnetuser
+      args:
+        USER_UID: ${DOCKER_UID:-1000}   
+        USER_GID: ${DOCKER_GID:-1000}
     ports:
       - "7250:8080"
     environment:
@@ -37,6 +39,8 @@ services:
       - Jwt__Audience=${JWT_AUDIENCE}
     volumes:
       - ./apps/Api.Back:/app
+      - dotnet_obj:/app/obj
+      - dotnet_bin:/app/bin
     depends_on:
       db:
         condition: service_healthy
@@ -60,7 +64,7 @@ services:
       - "5173:5173"
     volumes:
       - ./apps/web-app:/app
-      - /app/node_modules
+      - webapp_node_modules:/app/node_modules
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:5173/ || exit 1"]
       interval: 5s
@@ -79,7 +83,7 @@ services:
       - "4321:4321"
     volumes:
       - ./apps/landing-page:/app
-      - /app/node_modules
+      - landing_node_modules:/app/node_modules
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:4321/ || exit 1"]
       interval: 5s
@@ -127,3 +131,7 @@ services:
 volumes:
   data:
   redis_data:
+  dotnet_obj:
+  dotnet_bin:
+  landing_node_modules:
+  webapp_node_modules:

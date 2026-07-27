@@ -1,12 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0
 
-RUN groupadd -r dotnetgroup \
-    && useradd -r -m -d /home/dotnetuser -g dotnetgroup dotnetuser
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# ✅ -o autorise les UID/GID dupliqués — fonctionne toujours, sans branchement fragile
+RUN groupadd -o -g ${USER_GID} dotnetgroup \
+    && useradd -o -u ${USER_UID} -g dotnetgroup -m -d /home/dotnetuser -s /bin/bash dotnetuser
 
 WORKDIR /app
-RUN chown -R dotnetuser:dotnetgroup /app
+RUN mkdir -p bin obj && chown -R dotnetuser:dotnetgroup /app
 
 USER dotnetuser
+ENV HOME=/home/dotnetuser
 
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/home/dotnetuser/.dotnet/tools"

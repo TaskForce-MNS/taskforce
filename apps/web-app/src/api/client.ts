@@ -1,4 +1,4 @@
-import { API_BASE_URL, auth, login, refreshToken } from '@/config/api';
+import { API_BASE_URL, auth, login, refreshToken } from '@/api/config';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 let isRefreshing = false;
