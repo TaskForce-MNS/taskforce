@@ -1,4 +1,4 @@
-import { API_BASE_URL, auth, login, refreshToken } from '@/config/api';
+import { API_BASE_URL, auth, login, refreshToken } from '@/api/config';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 let isRefreshing = false;
@@ -16,9 +16,12 @@ const processQueue = (error: unknown = null) => {
   failedQueue = [];
 }
 
+
+type ApiClientOptions = Omit<RequestInit, 'body'> & { body?: unknown };
+
 export const apiClient = async <T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiClientOptions = {}
 ): Promise<T> => {
   const headers = new Headers(options.headers);
 
@@ -30,14 +33,16 @@ export const apiClient = async <T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  let body = options.body;
+  let finalBody: BodyInit | null | undefined;
   if (
-    body &&
-    typeof body === 'object' &&
-    !(body instanceof FormData) &&
-    !(body instanceof Blob)
+    options.body &&
+    typeof options.body === 'object' &&
+    !(options.body instanceof FormData) &&
+    !(options.body instanceof Blob)
   ) {
-    body = JSON.stringify(body);
+    finalBody = JSON.stringify(options.body);
+  } else {
+    finalBody = options.body as BodyInit | null | undefined;
   }
 
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
@@ -46,7 +51,7 @@ export const apiClient = async <T>(
   let response = await fetch(url, {
     ...options,
     headers,
-    body,
+    body: finalBody,
     credentials: 'include',
   });
 
@@ -81,7 +86,7 @@ export const apiClient = async <T>(
         response = await fetch(url, {
           ...options,
           headers,
-          body,
+          body: finalBody,
           credentials: 'include',
         });
       } else {

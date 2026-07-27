@@ -1,4 +1,5 @@
 using Api.Back.DTOs.Requests;
+using Api.Back.DTOs.Responses;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Fido2NetLib;
@@ -12,7 +13,8 @@ namespace Api.Back.Services
 {
     public interface IAuthService
     {
-        CredentialCreateOptions RequestNewCredential(string rpId);
+        Task<UserResponseDto?> GetUserProfileAsync(Guid identityId, CancellationToken cancellationToken);
+        CredentialCreateOptions RequestNewCredential(string rpId, string? displayName = null);
         Task<DbIdentity> RegisterIdentityAsync(
             RegisterIdentityDto dto,
             CredentialCreateOptions originalOptions,
@@ -47,14 +49,21 @@ namespace Api.Back.Services
             _refreshTokenService = refreshTokenService;
             _configuration = configuration;
         }
-
-        public CredentialCreateOptions RequestNewCredential(string rpId)
+        public async Task<UserResponseDto?> GetUserProfileAsync(Guid identityId, CancellationToken cancellationToken)
         {
+
+            return await _identityRepository.GetUserProfileByIdAsync(identityId, cancellationToken);
+        }
+
+        public CredentialCreateOptions RequestNewCredential(string rpId, string? displayName = null)
+        {
+            var name = string.IsNullOrWhiteSpace(displayName) ? "Utilisateur TaskForce" : displayName;
+
             var user = new Fido2User
             {
-                Name = "Anonyme",
+                Name = name,
                 Id = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString("N")),
-                DisplayName = "Identité"
+                DisplayName = name
             };
 
             var options = _fido2.RequestNewCredential(new RequestNewCredentialParams

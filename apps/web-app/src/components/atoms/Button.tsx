@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'link' | 'passkey';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'link' | 'passkey';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type ButtonRadius = 'sm' | 'md' | 'lg' | 'full';
 
@@ -53,6 +53,12 @@ const variants: Record<ButtonVariant, string> = {
         'bg-error text-white-accent-light border',
         'hover:opacity-80',
         'focus-visible:ring-error',
+        'active:scale-[0.97]',
+    ].join(' '),
+    success: [
+        'bg-success text-white-accent-light border',
+        'hover:opacity-80',
+        'focus-visible:ring-success',
         'active:scale-[0.97]',
     ].join(' '),
     link: [

@@ -7,10 +7,18 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+export DOCKER_UID := $(shell id -u)
+export DOCKER_GID := $(shell id -g)
+
 REGISTRY ?= beselimius
 VERSION  ?= v1.0.0
 
-.PHONY: start stop build build-test clean logs shell-api shell-db shell-redis db-migrate db-rollback db-backup test lint resume scan-secrets scan-files scan-secrets-debug build-prod push-prod deploy 
+.PHONY: start stop build build-test clean \
+	pnpm pnpm-landing install-web install-landing \
+	logs shell-api shell-db shell-redis \
+	db-check db-add-migration db-migrate db-rollback db-backup \
+	test lint resume scan-secrets scan-files scan-secrets-debug \
+	build-prod push-prod deploy
 
 # ==========================================
 # 🏃‍♂️ QUOTIDIEN
@@ -34,12 +42,34 @@ build-test:
 clean:
 	@echo "🧹 Nettoyage complet..."
 	docker compose -f docker-compose.dev.yml down -v
+# ==========================================
+# 📦 PNPM
+# ==========================================
 
+pnpm:
+	@test -n "$(CMD)" || (echo "❌ Usage: make pnpm CMD=\"add recharts\"" && exit 1)
+	docker exec -it taskforce_webapp pnpm $(CMD)
+
+pnpm-landing:
+	@test -n "$(CMD)" || (echo "❌ Usage: make pnpm-landing CMD=\"add astro-icon\"" && exit 1)
+	docker exec -it taskforce_landing pnpm $(CMD)
+
+install-web:
+	cd apps/web-app && pnpm install
+
+install-landing:
+	cd apps/landing-page && pnpm install
 # ==========================================
 # 🔍 DEBUG & INSPECTION 
 # ==========================================
 logs:
 	docker compose -f docker-compose.dev.yml logs -f $(filter-out $@,$(MAKECMDGOALS))
+
+shell-web:
+	docker exec -it taskforce_webapp sh
+
+shell-landing:
+	docker exec -it taskforce_landing sh
 
 shell-api:
 	docker exec -it taskforce_api bash
@@ -61,9 +91,9 @@ db-check:
 		|| echo "⚠️  Des changements ont été détectés. Lancez : make db-add-migration NAME=NomDeLaMigration"
 
 db-add-migration:
-	@test -n "$(NAME)" || (echo "❌ Usage: make db-add-migration NAME=NomDeLaMigration" && exit 1)
-	@echo "📝 Création de la migration $(NAME)..."
-	docker exec -it taskforce_api dotnet ef migrations add $(NAME)
+	@test -n "$(CMD)" || (echo "❌ Usage: make db-add-migration NAME=NomDeLaMigration" && exit 1)
+	@echo "📝 Création de la migration $(CMD)..."
+	docker exec -it taskforce_api dotnet ef migrations add $(CMD)
 	
 db-migrate:
 	@echo "🗃️ Application des migrations EF Core..."

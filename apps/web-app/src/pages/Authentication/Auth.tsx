@@ -1,28 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/atoms/Input';
 import { Button } from '@/components/atoms/Button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from '@tanstack/react-router';
 import { Alert } from '@/components/atoms/Alert';
 import { AuthLayout } from '@/templates/AuthLayout';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ firstname: '', lastname: '', title: '', experience: '' });
   const { loginWithPasskey,
-    registerWithPasskey, isLoading, error, isAuthenticated } = useAuthStore();
+    registerWithPasskey, isLoading, error } = useAuthStore();
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated) {
+  const queryClient = useQueryClient();
+
+  const handleLogin = async () => {
+    const success = await loginWithPasskey();
+    if (success) {
+      queryClient.clear();
       navigate({ to: '/dashboard' });
     }
-  }, [isAuthenticated, navigate]);
+  };
 
   const handleRegisterSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     await registerWithPasskey(formData);
+
+    if (useAuthStore.getState().isAuthenticated) {
+      navigate({ to: '/dashboard' });
+    }
   };
 
   const PasskeyIcon = (
@@ -126,7 +135,7 @@ export const Auth = () => {
           variant="passkey"
           size="md"
           fullWidth
-          onClick={loginWithPasskey}
+          onClick={handleLogin}
           isLoading={isLoading}
           leftIcon={PasskeyIcon}
         >

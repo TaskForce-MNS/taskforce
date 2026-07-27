@@ -15,10 +15,10 @@ namespace Api.Back.Models
         public required byte[] EncryptedProfile { get; set; }
 
         [Column("firstname_identity")]
-        public required string FirstName {get;set;}
+        public required string FirstName { get; set; }
 
         [Column("Lastname_identity")]
-        public required string LastName  { get; set; }
+        public required string LastName { get; set; }
         #endregion
 
         #region Professional Details
@@ -28,7 +28,7 @@ namespace Api.Back.Models
 
         [Column("title_identity")]
         [MaxLength(100)]
-        public string? Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Column("current_workload_percentage_identity", TypeName = "decimal(5,2)")]
         public decimal CurrentWorkload { get; set; }

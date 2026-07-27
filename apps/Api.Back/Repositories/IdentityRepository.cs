@@ -1,4 +1,5 @@
 using Api.Back.Data;
+using Api.Back.DTOs.Responses;
 using Api.Back.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,14 +8,11 @@ namespace Api.Back.Repositories;
 public interface IIdentityRepository
 {
     Task<DbIdentity?> GetByPublicKeyAsync(string publicKey);
-
     Task<bool> PublicKeyExistsAsync(string publicKey);
-
     Task AddAsync(DbIdentity identity);
-
     Task<DbIdentity?> GetByCredentialIdAsync(byte[] descriptorId);
-
     Task UpdateSignatureCounterAsync(byte[] credentialId, uint newCounter);
+    Task<UserResponseDto?> GetUserProfileByIdAsync(Guid identityId, CancellationToken cancellationToken);
 }
 
 public class IdentityRepository : IIdentityRepository
@@ -64,5 +62,21 @@ public class IdentityRepository : IIdentityRepository
             credential.SignatureCounter = newCounter;
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<UserResponseDto?> GetUserProfileByIdAsync(Guid identityId, CancellationToken cancellationToken)
+    {
+        return await _context.Identities
+            .AsNoTracking()
+            .Where(i => i.Id == identityId && !i.IsDeleted)
+            .Select(i => new UserResponseDto(
+                i.Id,
+                i.FirstName,
+                i.LastName,
+                i.Title,
+                i.CurrentWorkload,
+                i.Experience,
+                i.CreatedAt
+            ))
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
