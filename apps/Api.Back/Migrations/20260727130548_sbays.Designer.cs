@@ -13,7 +13,7 @@ namespace Api.Back.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260727130548_sbays")]
-    partial class sbays
+    partial class IdentityUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

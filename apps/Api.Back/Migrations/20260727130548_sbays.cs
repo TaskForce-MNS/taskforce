@@ -5,7 +5,7 @@
 namespace Api.Back.Migrations
 {
     /// <inheritdoc />
-    public partial class sbays : Migration
+    public partial class IdentityUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
