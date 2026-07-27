@@ -5,7 +5,8 @@ import { ProjectDetail } from '@/pages/ProjectDetail/ProjectDetail';
 export const Route = createFileRoute('/_protected/projects/$projectId')({
   loader: ({ context: { queryClient }, params: { projectId } }) =>
     queryClient.ensureQueryData(projectQueryOptions(projectId)),
-  component: () => {
+
+  component: function ProjectRouteComponent() {
     const { projectId } = Route.useParams();
     return <ProjectDetail projectId={projectId} />;
   },

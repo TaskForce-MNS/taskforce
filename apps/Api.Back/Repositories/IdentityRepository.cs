@@ -64,19 +64,19 @@ public class IdentityRepository : IIdentityRepository
         }
     }
     public async Task<UserResponseDto?> GetUserProfileByIdAsync(Guid identityId, CancellationToken cancellationToken)
-{
-    return await _context.Identities
-        .AsNoTracking()
-        .Where(i => i.Id == identityId && !i.IsDeleted) 
-        .Select(i => new UserResponseDto(
-            i.Id,
-            i.FirstName ,
-            i.LastName,
-            i.Title,
-            i.CurrentWorkload,
-            i.Experience,
-            i.CreatedAt
-        ))
-        .FirstOrDefaultAsync(cancellationToken);
-}
+    {
+        return await _context.Identities
+            .AsNoTracking()
+            .Where(i => i.Id == identityId && !i.IsDeleted)
+            .Select(i => new UserResponseDto(
+                i.Id,
+                i.FirstName,
+                i.LastName,
+                i.Title,
+                i.CurrentWorkload,
+                i.Experience,
+                i.CreatedAt
+            ))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

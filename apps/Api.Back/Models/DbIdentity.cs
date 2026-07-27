@@ -28,7 +28,7 @@ namespace Api.Back.Models
 
         [Column("title_identity")]
         [MaxLength(100)]
-        public string? Title { get; set; }
+        public string Title { get; set; }
 
         [Column("current_workload_percentage_identity", TypeName = "decimal(5,2)")]
         public decimal CurrentWorkload { get; set; }
