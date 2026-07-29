@@ -12,10 +12,10 @@ import { apiClient } from '@/api/client';
 export interface User {
   id: string;
   email: string;
-  firstname: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   title: string;
-  workload: number;
+  currentWorkload: number;
   experience: string;
   createdAt: string;
   avatarUrl?: string;
@@ -76,8 +76,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         method: 'POST',
         body: JSON.stringify({
           EncryptedProfileBlob: "dGVtcA==",
-          FirstName: profileData.firstname,
-          LastName: profileData.lastname,
+          Firstname: profileData.firstname,
+          Lastname: profileData.lastname,
           Experience: profileData.experience,
           Title: profileData.title,
           WebAuthnAttestationResponse: attestationResponse

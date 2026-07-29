@@ -13,7 +13,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
     const updateMutation = usePatchProject(projectId);
     const putMutation = usePutProject(projectId);
 
-    // ── TanStack Form ──
     const form = useForm({
         defaultValues: {
             name: project.name,
@@ -21,7 +20,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
             colorHex: project.colorHex ?? '#587B7F',
         },
         onSubmit: async ({ value }) => {
-            // Par défaut, la soumission globale du form déclenche un PATCH
             const payload = buildPatchPayload(value, project);
             if (Object.keys(payload).length > 0) {
                 updateMutation.mutate(payload);
@@ -29,7 +27,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
         },
     });
 
-    // 🔁 Synchronisation si TanStack Query recharge le projet en arrière-plan
     useEffect(() => {
         form.reset({
             name: project.name,
@@ -38,11 +35,9 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
         });
     }, [project, form]);
 
-    // ── PATCH : n'envoie que les champs modifiés ──
     const handlePatchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // On récupère toutes les valeurs actuelles du formulaire
         const currentValues = {
             name: form.getFieldValue('name'),
             description: form.getFieldValue('description'),
@@ -55,7 +50,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
         updateMutation.mutate(payload);
     };
 
-    // ── PUT : envoie TOUJOURS l'objet complet ──
     const handlePutSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -114,7 +108,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                 <form.Field
                     name="name"
                     validators={{
-                        // 💡 Syntax propre en fonction simple pour éviter les erreurs TypeScript
                         onChange: ({ value }) => {
                             if (!value || !value.trim()) return 'Le nom est requis';
                             if (value.length < 2) return 'Le nom doit faire au moins 2 caractères';
@@ -122,7 +115,8 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                             return undefined;
                         },
                     }}
-                    children={(field) => (
+                >
+                    {(field) => (
                         <Input
                             label="Nom du projet"
                             name={field.name}
@@ -132,12 +126,11 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                             error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
                         />
                     )}
-                />
+                </form.Field>
 
                 {/* Description */}
-                <form.Field
-                    name="description"
-                    children={(field) => (
+                <form.Field name="description">
+                    {(field) => (
                         <Textarea
                             label="Description"
                             rows={3}
@@ -147,12 +140,11 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                             onChange={(e) => field.handleChange(e.target.value)}
                         />
                     )}
-                />
+                </form.Field>
 
                 {/* Couleur */}
-                <form.Field
-                    name="colorHex"
-                    children={(field) => (
+                <form.Field name="colorHex">
+                    {(field) => (
                         <div className="flex flex-col gap-2">
                             <span className="text-sm font-medium text-white-accent-default">Couleur</span>
                             <input
@@ -164,7 +156,7 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                             />
                         </div>
                     )}
-                />
+                </form.Field>
 
                 {/* Boutons de test PATCH / PUT */}
                 <div className="flex gap-3 border-t border-white-accent-dark/10 pt-4">
@@ -194,7 +186,8 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                 {/* Bouton global de soumission relié à l'état du formulaire */}
                 <form.Subscribe
                     selector={(state) => [state.canSubmit, state.isSubmitting, state.isDirty]}
-                    children={([canSubmit, isSubmitting, isDirty]) => (
+                >
+                    {([canSubmit, isSubmitting, isDirty]) => (
                         <div className="flex items-center justify-between border-t border-white-accent-dark/10 pt-4">
                             <div>
                                 {isDirty ? (
@@ -208,7 +201,7 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                             </Button>
                         </div>
                     )}
-                />
+                </form.Subscribe>
             </form>
         </div>
     );

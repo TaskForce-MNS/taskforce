@@ -62,6 +62,7 @@ const ToastItem = ({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
 
         {/* Bouton fermer */}
         <button
+            type="button"
             onClick={() => onRemove(toast.id)}
             className="flex-shrink-0 ml-4 rounded-small opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-white-accent-dark"
             aria-label="Fermer la notification"

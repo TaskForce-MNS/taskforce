@@ -5,6 +5,7 @@ import { Logo } from '@/components/atoms/Logo';
 import { WorkspaceSidebar } from './WorkspaceSidebar';
 import { CreateProjectModal } from './CreateProjectModal';
 import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/atoms/Button';
 
 export const DashboardLayout = () => {
     const navigate = useNavigate();
@@ -14,8 +15,9 @@ export const DashboardLayout = () => {
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
 
-    const displayName = user?.firstname || 'Utilisateur';
-    const displayLastName = user?.lastname;
+    const displayName = user?.firstName || 'Utilisateur';
+    console.log(user);
+    const displayLastName = user?.lastName;
     const displayTitle = user?.title;
     const userInitial = `${displayName.charAt(0).toUpperCase()}${displayLastName?.charAt(0).toUpperCase()}`;
 
@@ -57,7 +59,9 @@ export const DashboardLayout = () => {
                             </div>
                         </div>
 
-                        <button
+                        <Button
+                            variant='outline'
+                            radius='lg'
                             onClick={handleLogout}
                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white-accent-dark/10 bg-black-accent-light/30 text-white-accent-dark transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
                             title="Se déconnecter"
@@ -65,7 +69,7 @@ export const DashboardLayout = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="h-4 w-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
                             </svg>
-                        </button>
+                        </Button>
                     </div>
                 </header>
 
