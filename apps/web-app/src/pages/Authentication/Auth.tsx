@@ -101,10 +101,11 @@ export const Auth = () => {
 
           {/* Select (Tu pourras plus tard créer un composant <Select /> personnalisé sur le même modèle que <Input />) */}
           <div className="flex flex-col gap-1.5 mb-s w-full">
-            <label className="text-sm font-medium text-white-accent-default select-none">
+            <label htmlFor="experience-select" className="text-sm font-medium text-white-accent-default select-none">
               Niveau d'expérience
             </label>
             <select
+              id="experience-select"
               required
               value={formData.experience}
               onChange={(e) => setFormData({ ...formData, experience: e.target.value })}

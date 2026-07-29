@@ -30,7 +30,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         const generatedId = useId();
         const inputId = id || generatedId;
 
-
         const sizes = {
             sm: 'h-8 text-sm',
             md: 'h-10 text-sm',
@@ -51,9 +50,30 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className,
         ].filter(Boolean).join(' ');
 
+        let ariaDescribedBy: string | undefined = undefined;
+        if (error) {
+            ariaDescribedBy = `${inputId}-error`;
+        } else if (helperText) {
+            ariaDescribedBy = `${inputId}-helper`;
+        }
+
+        let helperOrErrorText = null;
+        if (error) {
+            helperOrErrorText = (
+                <span id={`${inputId}-error`} role="alert" className="text-sm text-error">
+                    {error}
+                </span>
+            );
+        } else if (helperText) {
+            helperOrErrorText = (
+                <span id={`${inputId}-helper`} className="text-sm text-white-accent-default/80">
+                    {helperText}
+                </span>
+            );
+        }
+
         return (
             <div className={`flex flex-col gap-1.5 ${fullWidth ? 'w-full' : ''}`}>
-
                 {label && (
                     <label
                         htmlFor={inputId}
@@ -62,8 +82,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         {label}
                     </label>
                 )}
-                <div className="relative flex items-center group">
 
+                <div className="relative flex items-center group">
                     {leftIcon && (
                         <span className="absolute left-3 text-white-accent-default pointer-events-none transition-colors group-focus-within:text-primary-default">
                             {leftIcon}
@@ -76,9 +96,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         disabled={disabled}
                         aria-invalid={!!error}
                         aria-required={props.required}
-                        aria-describedby={
-                            error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
-                        }
+                        aria-describedby={ariaDescribedBy}
                         className={baseInputStyles}
                         {...props}
                     />
@@ -90,16 +108,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
                 </div>
 
-                {error ? (
-                    <span id={`${inputId}-error`} role="alert" className="text-sm text-error">
-                        {error}
-                    </span>
-                ) : helperText ? (
-                    <span id={`${inputId}-helper`} className="text-sm text-white-accent-default/80">
-                        {helperText}
-                    </span>
-                ) : null}
-
+                {helperOrErrorText}
             </div>
         );
     }

@@ -39,15 +39,24 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black-accent-dark/80 p-4 backdrop-blur-sm"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="create-project-title"
+            role="presentation"
             onClick={onClose}
+            onKeyDown={(e) => {
+                if (e.key === 'Escape' || e.key === 'Enter') {
+                    onClose();
+                }
+            }}
+            tabIndex={-1}
         >
             <div
                 className="w-full max-w-md rounded-medium border border-white-accent-dark/20
                            bg-black-accent-default p-6 shadow-xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="create-project-title"
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                tabIndex={-1}
             >
                 <h2 id="create-project-title" className="mb-4 font-title text-xl font-bold text-white-accent-light">
                     Nouveau projet
