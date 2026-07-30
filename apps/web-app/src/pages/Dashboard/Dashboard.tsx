@@ -16,10 +16,9 @@ import {
 export const Dashboard = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    // ── Une seule source de données, distribuée en props ──
     const user = useAuthStore((state) => state.user);
     const isUserLoading = useAuthStore((state) => state.isLoading);
-    const workload = user?.workload ?? 0;
+    const workload = user?.currentWorkload ?? 0;
 
     const { data: projects, isLoading: isProjectsLoading } = useQuery(projectsQueryOptions);
     const activeProjectsCount = projects?.length ?? 0;
@@ -83,7 +82,7 @@ export const Dashboard = () => {
     );
 };
 
-function ProjectContent({ onCreateClick }: { onCreateClick: () => void }) {
+function ProjectContent({ onCreateClick }: Readonly<{ onCreateClick: () => void }>) {
     const { data: projects } = useSuspenseQuery(projectsQueryOptions);
 
     if (projects.length === 0) {

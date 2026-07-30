@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type SubmitEvent } from 'react';
 import { Input } from '@/components/atoms/Input';
 import { Textarea } from '@/components/atoms/Textarea';
 import { Button } from '@/components/atoms/Button';
@@ -15,14 +15,21 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [colorHex, setColorHex] = useState(PRESET_COLORS[0]);
-
     const { mutate, isPending } = useCreateProject();
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         mutate(
             { name, description: description || undefined, colorHex },
             {
@@ -37,31 +44,24 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
     };
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black-accent-dark/80 p-4 backdrop-blur-sm"
-            role="presentation"
-            onClick={onClose}
-            onKeyDown={(e) => {
-                if (e.key === 'Escape' || e.key === 'Enter') {
-                    onClose();
-                }
-            }}
-            tabIndex={-1}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <button
+                type="button"
+                aria-label="Fermer la fenêtre"
+                onClick={onClose}
+                className="absolute inset-0 z-0 cursor-default bg-black-accent-dark/80 backdrop-blur-sm"
+            />
+
             <div
-                className="w-full max-w-md rounded-medium border border-white-accent-dark/20
+                className="relative z-10 w-full max-w-md rounded-medium border border-white-accent-dark/20
                            bg-black-accent-default p-6 shadow-xl"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="create-project-title"
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => e.stopPropagation()}
-                tabIndex={-1}
             >
                 <h2 id="create-project-title" className="mb-4 font-title text-xl font-bold text-white-accent-light">
                     Nouveau projet
                 </h2>
-
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <Input
                         label="Nom du projet"
@@ -72,7 +72,6 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
                         onChange={(e) => setName(e.target.value)}
                         placeholder="ex: Refonte du site web"
                     />
-
                     <Textarea
                         label="Description"
                         rows={3}
@@ -81,7 +80,6 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Optionnel"
                     />
-
                     <div className="flex flex-col gap-2">
                         <span className="text-sm font-medium text-white-accent-default">Couleur</span>
                         <div className="flex gap-2" role="radiogroup" aria-label="Couleur du projet">
@@ -100,7 +98,6 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
                             ))}
                         </div>
                     </div>
-
                     <div className="mt-2 flex justify-end gap-3">
                         <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
                             Annuler
