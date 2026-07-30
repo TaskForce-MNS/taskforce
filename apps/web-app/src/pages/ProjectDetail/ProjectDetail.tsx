@@ -180,7 +180,7 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
 
                 <p className="text-xs text-white-accent-dark">
                     <strong>PATCH</strong> n'envoie que les champs modifiés ·
-                    <strong> PUT</strong> envoie toujours l'objet complet.
+                    <strong>PUT</strong> envoie toujours l'objet complet.
                 </p>
 
                 {/* Bouton global de soumission relié à l'état du formulaire */}
