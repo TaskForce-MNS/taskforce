@@ -33,8 +33,6 @@ export const DashboardLayout = () => {
             <WorkspaceSidebar
                 onCreateProjectClick={() => setIsCreateProjectOpen(true)}
             />
-
-            {/* ZONE PRINCIPALE — inchangée */}
             <div className="flex min-w-0 flex-1 flex-col">
                 <header className="flex h-14 shrink-0 items-center border-b border-black-accent-light/50 px-4 sm:px-6 z-10 bg-black-accent-dark backdrop-blur-md">
                     <div className="flex items-center gap-3">
