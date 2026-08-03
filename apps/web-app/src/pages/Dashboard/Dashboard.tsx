@@ -33,7 +33,7 @@ export const Dashboard = () => {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p className="mt-1 font-text text-sm text-white-accent-dark">
-                        Bienvenue sur ton tableau de bord, <strong className="text-white-accent-light">{user?.firstname}</strong> ! Ici tu peux suivre l'activité de tes projets et créer de nouveaux espaces pour organiser ton travail.
+                        Bienvenue sur ton tableau de bord, <strong className="text-white-accent-light">{user?.firstName}</strong> ! Ici tu peux suivre l'activité de tes projets et créer de nouveaux espaces pour organiser ton travail.
                     </p>
                 </div>
             </div >
