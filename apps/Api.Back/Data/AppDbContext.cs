@@ -13,7 +13,7 @@ namespace Api.Back.Data
         public DbSet<DbUserCredential> Credentials { get; set; }
         public DbSet<DbPreference> Preferences { get; set; }
         public DbSet<DbProject> Projects { get; set; }
-
+        public DbSet<DbInvitation> Invitations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -37,6 +37,25 @@ namespace Api.Back.Data
                     .WithMany()
                     .HasForeignKey(p => p.CreatedById)
                     .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DbInvitation>(entity =>
+{
+    entity.ToTable("invitations");
+
+    entity.HasOne(e => e.Project)
+      .WithMany(p => p.Invitations)
+      .HasForeignKey(e => e.ProjectId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    entity.HasOne(e => e.CreatedBy)
+      .WithMany()
+      .HasForeignKey(e => e.CreatedById)
+      .OnDelete(DeleteBehavior.Restrict);
+
+    entity.HasIndex(e => e.Token).IsUnique();
+
+    entity.HasIndex(e => e.ExpiresAt);
+});
         }
     }
 
