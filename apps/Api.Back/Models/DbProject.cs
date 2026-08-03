@@ -36,5 +36,7 @@ namespace Api.Back.Models
         public Guid CreatedById { get; set; }
 
         public DbIdentity CreatedBy { get; set; } = null!;
+
+        public ICollection<DbInvitation> Invitations { get; set; } = [];
     }
 }

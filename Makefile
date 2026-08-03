@@ -91,6 +91,7 @@ db-check:
 		|| echo "⚠️  Des changements ont été détectés. Lancez : make db-add-migration NAME=NomDeLaMigration"
 
 db-add-migration:
+	@echo "DEBUG: NAME reçu = [$(CMD)]"
 	@test -n "$(CMD)" || (echo "❌ Usage: make db-add-migration NAME=NomDeLaMigration" && exit 1)
 	@echo "📝 Création de la migration $(CMD)..."
 	docker exec -it taskforce_api dotnet ef migrations add $(CMD)
