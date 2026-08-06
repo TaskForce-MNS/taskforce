@@ -18,7 +18,8 @@ VERSION  ?= v1.0.0
 	logs shell-api shell-db shell-redis \
 	db-check db-add-migration db-migrate db-rollback db-backup \
 	test lint resume scan-secrets scan-files scan-secrets-debug \
-	build-prod push-prod deploy
+	build-prod push-prod ci-deploy \
+	staging-pull staging-up staging-down
 
 # ==========================================
 # 🏃‍♂️ QUOTIDIEN
@@ -141,10 +142,10 @@ scan-secrets-debug:
 # ==========================================
 build-prod:
 	@echo "🏗️ Build production ($(VERSION))..."
-	docker build -f apps/Api.Back/Dockerfile      -t $(REGISTRY)/taskforce_api:$(VERSION)     ./apps/Api.Back
-	docker build -f apps/web-app/Dockerfile        -t $(REGISTRY)/taskforce_webapp:$(VERSION)  ./apps/web-app
-	docker build -f apps/landing-page/Dockerfile   -t $(REGISTRY)/taskforce_landing:$(VERSION) ./apps/landing-page
-	# Tag latest aussi
+	docker build -f apps/Api.Back/Dockerfile.prod      -t $(REGISTRY)/taskforce_api:$(VERSION)     ./apps/Api.Back
+	docker build -f apps/web-app/Dockerfile.prod       -t $(REGISTRY)/taskforce_webapp:$(VERSION)  ./apps/web-app
+	docker build -f apps/landing-page/Dockerfile.prod  -t $(REGISTRY)/taskforce_landing:$(VERSION) ./apps/landing-page
+	# Tag latest
 	docker tag $(REGISTRY)/taskforce_api:$(VERSION)     $(REGISTRY)/taskforce_api:latest
 	docker tag $(REGISTRY)/taskforce_webapp:$(VERSION)  $(REGISTRY)/taskforce_webapp:latest
 	docker tag $(REGISTRY)/taskforce_landing:$(VERSION) $(REGISTRY)/taskforce_landing:latest
@@ -158,8 +159,24 @@ push-prod:
 	docker push $(REGISTRY)/taskforce_webapp:latest
 	docker push $(REGISTRY)/taskforce_landing:latest
 
-deploy: build-prod push-prod
-	@echo "✅ Version $(VERSION) déployée !"
+ci-deploy: build-prod push-prod
+	@echo "✅ Images $(VERSION) construites et poussées sur le registre !"
 
+# ==========================================
+# 🚀 STAGING (Commandes à exécuter SUR LA VM)
+# ==========================================
+staging-pull:
+	@echo "📥 Téléchargement des dernières images depuis le registre..."
+	# Assure-toi que les variables REGISTRY et VERSION sont bien définies sur la VM
+	docker compose -f docker-compose.staging.yml pull
+
+staging-up: staging-pull
+	@echo "🚀 Démarrage de l'environnement de Staging..."
+	docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+	@echo "✅ Staging en ligne et à jour !"
+
+staging-down:
+	@echo "🛑 Arrêt du Staging..."
+	docker compose -f docker-compose.staging.yml down
 %:
 	@:
