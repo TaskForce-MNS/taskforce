@@ -167,8 +167,7 @@ ci-deploy: build-prod push-prod
 # ==========================================
 staging-pull:
 	@echo "📥 Téléchargement des dernières images depuis le registre..."
-	# Assure-toi que les variables REGISTRY et VERSION sont bien définies sur la VM
-	docker compose -f docker-compose.staging.yml pull
+	docker compose -f docker-compose.staging.yml --env-file .env.staging pull
 
 staging-up: staging-pull
 	@echo "🚀 Démarrage de l'environnement de Staging..."
