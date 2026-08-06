@@ -20,4 +20,4 @@ FROM cgr.dev/chainguard/nginx:latest
 COPY --from=builder --chown=nginx:nginx /app/apps/landing-page/dist /usr/share/nginx/html
 
 EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["-g", "daemon off;"]
