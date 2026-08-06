@@ -2,22 +2,24 @@ using Api.Back.DTOs.Requests.Projects;
 using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Services;
-using  Api.Back.Middleware.Exceptions;
+using Api.Back.Middleware.Exceptions;
 using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace Api.Back.UnitTests.Services.Projects
+namespace Api.Back.UnitTests.Services.Project
 {
     public class ProjectServiceTests
     {
         private readonly Mock<IProjectRepository> _repositoryMock;
         private readonly ProjectService _sut; // System Under Test
+        private readonly Mock<IProjectMemberRepository> _memberRepositoryMock;
 
         public ProjectServiceTests()
         {
             _repositoryMock = new Mock<IProjectRepository>();
-            _sut = new ProjectService(_repositoryMock.Object);
+            _memberRepositoryMock = new Mock<IProjectMemberRepository>();
+            _sut = new ProjectService(_repositoryMock.Object, _memberRepositoryMock.Object);
         }
 
         private static DbProject CreateDbProject(
@@ -28,17 +30,30 @@ namespace Api.Back.UnitTests.Services.Projects
             string? colorHex = "#FFF",
             string? imageUrl = "https://example.com/old.png")
         {
-            return new DbProject
+
+            var projectId = id ?? Guid.NewGuid();
+            var ownerId = createdById ?? Guid.NewGuid();
+
+            var project = new DbProject
             {
-                Id = id ?? Guid.NewGuid(),
+                Id = projectId,
                 Name = name,
                 Description = description,
                 ColorHex = colorHex,
                 ImageUrl = imageUrl,
-                CreatedById = createdById ?? Guid.NewGuid()
+                CreatedById = ownerId
             };
-        }
 
+
+            project.Members.Add(new DbProjectMember
+            {
+                ProjectId = projectId,
+                IdentityId = ownerId,
+                Role = ProjectMemberRole.Owner
+            });
+
+            return project;
+        }
         // ---------------- PostProjectAsync ----------------
 
         [Fact]

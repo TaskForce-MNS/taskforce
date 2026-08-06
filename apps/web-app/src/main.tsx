@@ -17,18 +17,18 @@ if (!rootElement) throw new Error('Élément root introuvable');
 const root = createRoot(rootElement);
 
 // Verify session before rendering the app
-await useAuthStore.getState().checkSession();
-
-root.render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ToastContainer />
-      <RouterProvider
-        router={router}
-        context={{
-          queryClient
-        }}
-      />
-    </QueryClientProvider>
-  </StrictMode>
-);
+useAuthStore.getState().checkSession().finally(() => {
+  root.render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ToastContainer />
+        <RouterProvider
+          router={router}
+          context={{
+            queryClient
+          }}
+        />
+      </QueryClientProvider>
+    </StrictMode>
+  );
+});
