@@ -167,15 +167,15 @@ ci-deploy: build-prod push-prod
 # ==========================================
 staging-pull:
 	@echo "📥 Téléchargement des dernières images depuis le registre..."
-	docker compose -f docker-compose.staging.yml --env-file .env.staging pull
+	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging pull
 
 staging-up: staging-pull
 	@echo "🚀 Démarrage de l'environnement de Staging..."
-	docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
 	@echo "✅ Staging en ligne et à jour !"
 
 staging-down:
 	@echo "🛑 Arrêt du Staging..."
-	docker compose -f docker-compose.staging.yml down
+	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging down
 %:
 	@:
