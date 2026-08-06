@@ -17,7 +17,10 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    allowedHosts: ['app.taskforce.local']
+    allowedHosts: [
+      'app.taskforce.local',
+      'app.staging.taskforce.stagiairesmns.fr',
+    ]
   },
   build: {
     target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "es2020",
