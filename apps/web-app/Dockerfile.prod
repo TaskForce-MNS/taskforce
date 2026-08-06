@@ -1,20 +1,27 @@
 # ==========================================
-# ÉTAPE 1 : L'USINE D'ASSEMBLAGE (Builder)
+# ÉTAPE 1 : BUILD
 # ==========================================
 FROM node:24-alpine AS builder
 WORKDIR /app
+
 RUN corepack enable pnpm
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
+
 COPY . .
+
+RUN pnpm install
+
+WORKDIR /app/apps/web-app
+
 RUN pnpm run build
 
 # ==========================================
-# ÉTAPE 2 : LE SERVEUR WEB (Nginx)
+# ÉTAPE 2 : Nginx
 # ==========================================
 FROM nginx:alpine
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/web-app/dist /usr/share/nginx/html
 
 RUN echo 'server { \
     listen 80; \

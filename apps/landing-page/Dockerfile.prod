@@ -1,24 +1,23 @@
 # ==========================================
-# ÉTAPE 1 : BUILD (Sécurisé pour le CI/CD)
+# ÉTAPE 1 : BUILD
 # ==========================================
 FROM node:22-alpine3.21 AS builder
 WORKDIR /app
 
 RUN apk update && apk upgrade --no-cache && corepack enable pnpm
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
-
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 COPY . .
+RUN pnpm install
+WORKDIR /app/apps/landing-page
 RUN pnpm run build
 
 # ==========================================
-# ÉTAPE 2 : SERVEUR (Chainguard Nginx — 0 CVE)
+# ÉTAPE 2 : SERVEUR
 # ==========================================
 FROM cgr.dev/chainguard/nginx:latest
 
-COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
+COPY --from=builder --chown=nginx:nginx /app/apps/landing-page/dist /usr/share/nginx/html
 
 EXPOSE 8080
-
 CMD ["nginx", "-g", "daemon off;"]
