@@ -39,6 +39,8 @@ services:
       - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
+      - Fido2__Domain=taskforce.stagiairesmns.fr
+      - Fido2__Origin=https://app.staging.taskforce.stagiairesmns.fr
     depends_on:
       db:
         condition: service_healthy

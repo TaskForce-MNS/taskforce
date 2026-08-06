@@ -56,8 +56,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddFido2(options =>
 {
-    options.ServerDomain = "taskforce.local";
-    options.ServerName = "TaskForce Zero-Knowledge";
+    var fidoDomain = builder.Configuration["Fido2:Domain"] ?? "taskforce.local";
+    var fidoOrigin = builder.Configuration["Fido2:Origin"] ?? "https://app.taskforce.local";
+
+    options.ServerDomain = fidoDomain;
+    options.ServerName = "TaskForce app";
     options.Origins = builder.Environment.IsDevelopment()
           ? new HashSet<string>
           {
@@ -66,9 +69,9 @@ builder.Services.AddFido2(options =>
             "tauri://localhost",
           }
           : new HashSet<string>
-          {
-            "https://app.taskforce.local",
-            "https://taskforce.local",
+         {
+            fidoOrigin,
+            $"https://{fidoDomain}"
           };
     options.TimestampDriftTolerance = 300000;
 });
