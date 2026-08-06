@@ -9,7 +9,10 @@ export default defineConfig({
   },
   vite: {
     server: {
-      allowedHosts: ['taskforce.local']
+      allowedHosts: [
+        'taskforce.local',
+        'staging.taskforce.stagiairesmns.fr',
+      ]
     }
   }
 });

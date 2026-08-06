@@ -134,11 +134,17 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
     options.AddPolicy("ProdPolicy", policy =>
-        policy.WithOrigins("https://app.taskforce.local",
-                "https://taskforce.local")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials());
+            policy.WithOrigins(
+                    "https://app.taskforce.local",
+                    "https://taskforce.local",
+                    "http://staging.taskforce.stagiairesmns.fr",
+                    "https://staging.taskforce.stagiairesmns.fr",
+                    "http://app.staging.taskforce.stagiairesmns.fr",
+                    "https://app.staging.taskforce.stagiairesmns.fr"
+                )
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials());
 });
 #endregion
 
