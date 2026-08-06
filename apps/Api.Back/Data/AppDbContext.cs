@@ -14,6 +14,7 @@ namespace Api.Back.Data
         public DbSet<DbPreference> Preferences { get; set; }
         public DbSet<DbProject> Projects { get; set; }
         public DbSet<DbInvitation> Invitations { get; set; }
+        public DbSet<DbProjectMember> ProjectMembers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -56,6 +57,27 @@ namespace Api.Back.Data
 
     entity.HasIndex(e => e.ExpiresAt);
 });
+            modelBuilder.Entity<DbProjectMember>(entity =>
+            {
+                entity.ToTable("project_members");
+
+                entity.HasKey(e => new { e.ProjectId, e.IdentityId });
+
+                entity.HasOne(e => e.Project)
+                      .WithMany(p => p.Members)
+                      .HasForeignKey(e => e.ProjectId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Identity)
+                      .WithMany()
+                      .HasForeignKey(e => e.IdentityId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.Role)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
+            });
+
         }
     }
 

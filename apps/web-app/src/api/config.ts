@@ -25,3 +25,7 @@ export const ListProjects = import.meta.env.VITE_LIST_PROJECTS
 export const GetProject = import.meta.env.VITE_GET_PROJECT
 export const PutProject = import.meta.env.VITE_PUT_PROJECT
 export const PatchProject = import.meta.env.VITE_PATCH_PROJECT
+
+// INVITATION
+export const InvitationsBase   = import.meta.env.VITE_INVITATIONS_BASE;
+export const AcceptInvitation  = import.meta.env.VITE_ACCEPT_INVITATION;

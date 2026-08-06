@@ -51,6 +51,31 @@ namespace Api.Back.Middleware
             {
                 await HandleExceptionAsync(context, pfEx, errorId, HttpStatusCode.Forbidden);
             }
+            catch (InvitationNotFoundException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
+            catch (InvitationExpiredException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status410Gone;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
+            catch (InvitationExhaustedException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
+            catch (AlreadyProjectMemberException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
+            catch (NotProjectAdminException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
 #pragma warning disable CA1031
             catch (Exception ex)
             {
@@ -58,6 +83,7 @@ namespace Api.Back.Middleware
                 await HandleExceptionAsync(context, ex, errorId, HttpStatusCode.InternalServerError);
             }
 #pragma warning restore CA1031
+
         }
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception, string errorId, HttpStatusCode statusCode)
@@ -74,8 +100,8 @@ namespace Api.Back.Middleware
                 {
                     HttpStatusCode.BadRequest => "Erreur de validation.",
                     HttpStatusCode.Unauthorized => "Accès non autorisé.",
-                    HttpStatusCode.Forbidden => "Accès interdit.",        
-                    HttpStatusCode.NotFound => "Ressource introuvable.", 
+                    HttpStatusCode.Forbidden => "Accès interdit.",
+                    HttpStatusCode.NotFound => "Ressource introuvable.",
                     _ => "Une erreur interne du serveur est survenue."
                 },
                 isDev ? $"{exception.Message} (id: {errorId})" : $"Erreur id: {errorId}"

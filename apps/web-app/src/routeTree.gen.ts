@@ -14,6 +14,7 @@ import { Route as ProtectedRouteImport } from './router/routes/_protected'
 import { Route as SandboxRouteImport } from './router/routes/sandbox'
 import { Route as AuthAuthRouteImport } from './router/routes/_auth/auth'
 import { Route as ProtectedDashboardRouteImport } from './router/routes/_protected/dashboard'
+import { Route as ProtectedInviteTokenRouteImport } from './router/routes/_protected/invite/$token'
 import { Route as ProtectedProjectsProjectIdRouteImport } from './router/routes/_protected/projects/$projectId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +41,11 @@ const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedInviteTokenRoute = ProtectedInviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedProjectsProjectIdRoute =
   ProtectedProjectsProjectIdRouteImport.update({
     id: '/projects/$projectId',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/sandbox': typeof SandboxRoute
   '/auth': typeof AuthAuthRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/invite/$token': typeof ProtectedInviteTokenRoute
   '/projects/$projectId': typeof ProtectedProjectsProjectIdRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/sandbox': typeof SandboxRoute
   '/auth': typeof AuthAuthRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/invite/$token': typeof ProtectedInviteTokenRoute
   '/projects/$projectId': typeof ProtectedProjectsProjectIdRoute
 }
 export interface FileRoutesById {
@@ -68,13 +76,26 @@ export interface FileRoutesById {
   '/sandbox': typeof SandboxRoute
   '/_auth/auth': typeof AuthAuthRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/invite/$token': typeof ProtectedInviteTokenRoute
   '/_protected/projects/$projectId': typeof ProtectedProjectsProjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sandbox' | '/auth' | '/dashboard' | '/projects/$projectId'
+  fullPaths:
+    | '/'
+    | '/sandbox'
+    | '/auth'
+    | '/dashboard'
+    | '/invite/$token'
+    | '/projects/$projectId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sandbox' | '/auth' | '/dashboard' | '/projects/$projectId'
+  to:
+    | '/'
+    | '/sandbox'
+    | '/auth'
+    | '/dashboard'
+    | '/invite/$token'
+    | '/projects/$projectId'
   id:
     | '__root__'
     | '/'
@@ -82,6 +103,7 @@ export interface FileRouteTypes {
     | '/sandbox'
     | '/_auth/auth'
     | '/_protected/dashboard'
+    | '/_protected/invite/$token'
     | '/_protected/projects/$projectId'
   fileRoutesById: FileRoutesById
 }
@@ -129,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDashboardRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/invite/$token': {
+      id: '/_protected/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof ProtectedInviteTokenRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/projects/$projectId': {
       id: '/_protected/projects/$projectId'
       path: '/projects/$projectId'
@@ -141,11 +170,13 @@ declare module '@tanstack/react-router' {
 
 interface ProtectedRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedInviteTokenRoute: typeof ProtectedInviteTokenRoute
   ProtectedProjectsProjectIdRoute: typeof ProtectedProjectsProjectIdRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedInviteTokenRoute: ProtectedInviteTokenRoute,
   ProtectedProjectsProjectIdRoute: ProtectedProjectsProjectIdRoute,
 }
 

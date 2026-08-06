@@ -29,12 +29,19 @@ namespace Api.Back.Repositories
 
         public async Task<DbProject?> GetByIdAsync(Guid id)
         {
-            return await _context.Projects.FindAsync(id);
+            // 👇 AJOUT : On inclut les membres pour pouvoir vérifier les permissions dans le Service
+            return await _context.Projects
+                .Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<DbProject>> GetByUserAsync(Guid userId)
         {
-            return await _context.Projects.Where(p => p.CreatedById == userId).ToListAsync();
+            // 👇 CORRECTION : On récupère les projets où l'utilisateur est membre
+            return await _context.Projects
+                .Include(p => p.Members)
+                .Where(p => p.Members.Any(m => m.IdentityId == userId))
+                .ToListAsync();
         }
         public async Task UpdateAsync(DbProject project)
         {

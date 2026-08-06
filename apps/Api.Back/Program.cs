@@ -34,6 +34,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
+builder.Services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<IInvitationService, InvitationService>();
+
 builder.Services.AddMemoryCache();
 
 // Redis for Refresh Tokens
@@ -166,7 +170,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapHealthChecks("/api/back/v1/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/api/v1/back/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = _ => true,
     ResponseWriter = async (context, report) =>
@@ -214,7 +218,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Endpoint temporaire pour tester le flux Docker
-app.MapGet("/api/debug/test-db", async (AppDbContext db) =>
+app.MapGet("/api/v1/back/debug/test-db", async (AppDbContext db) =>
 {
     try
     {
