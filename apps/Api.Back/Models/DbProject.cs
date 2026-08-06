@@ -37,6 +37,7 @@ namespace Api.Back.Models
 
         public DbIdentity CreatedBy { get; set; } = null!;
 
-        public ICollection<DbInvitation> Invitations { get; set; } = [];
+        public ICollection<DbInvitation> Invitations { get; } = [];
+        public ICollection<DbProjectMember> Members { get; } = [];
     }
 }

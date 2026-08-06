@@ -8,11 +8,13 @@
   },
   "sonarlint.rules": {
     "typescript:S1117": "on", // Exemple : interdit de déclarer deux fois la même variable
-    "csharpsquid:S1172": "on"  // Exemple : alerte sur les paramètres inutilisés en C#
+    "csharpsquid:S1172": "on" // Exemple : alerte sur les paramètres inutilisés en C#
   },
   "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
   "files.exclude": {
     "**/bin": true,
     "**/obj": true,
-  }
+  },
+  "makefile.configureOnOpen": false,
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

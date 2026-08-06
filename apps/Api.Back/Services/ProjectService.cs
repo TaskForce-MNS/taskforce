@@ -18,23 +18,34 @@ namespace Api.Back.Services
     public class ProjectService : IProjectService
     {
         private readonly IProjectRepository _repository;
+        private readonly IProjectMemberRepository _memberRepository;
 
-        public ProjectService(IProjectRepository repository)
+        public ProjectService(IProjectRepository repository, IProjectMemberRepository memberRepository)
         {
             _repository = repository;
+            _memberRepository = memberRepository;
         }
 
         public async Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId)
         {
             ArgumentNullException.ThrowIfNull(request);
+            var projectId = Guid.NewGuid();
             var newProject = new DbProject
             {
+                Id = projectId,
                 Name = request.Name,
                 Description = request.Description,
                 ColorHex = request.ColorHex,
                 ImageUrl = request.ImageUrl,
                 CreatedById = userId
             };
+
+            newProject.Members.Add(new DbProjectMember
+            {
+                ProjectId = newProject.Id,
+                IdentityId = userId,
+                Role = ProjectMemberRole.Owner
+            });
 
             await _repository.AddAsync(newProject);
             return newProject.ToResponse();
@@ -43,7 +54,7 @@ namespace Api.Back.Services
         {
             var project = await _repository.GetByIdAsync(id);
 
-            if (project == null || project.CreatedById != userId)
+            if (project == null || !project.Members.Any(m => m.IdentityId == userId))
             {
                 return null;
             }
@@ -93,9 +104,9 @@ namespace Api.Back.Services
             if (project == null)
                 throw new ProjectNotFoundException();
 
-            if (project.CreatedById != userId)
+            bool isOwner = project.Members.Any(m => m.IdentityId == userId && m.Role == ProjectMemberRole.Owner);
+            if (!isOwner)
                 throw new ProjectForbiddenException();
-
             return project;
         }
     }

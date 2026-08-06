@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { projectQueryOptions } from '@/api/queries/projectsQueries';
@@ -6,6 +6,7 @@ import { usePutProject, usePatchProject } from '@/mutations/projects';
 import { Input } from '@/components/atoms/Input';
 import { Textarea } from '@/components/atoms/Textarea';
 import { Button } from '@/components/atoms/Button';
+import { InvitationsPanel } from '@/components/molecules/InvitationsPanel';
 
 export const ProjectDetail = ({ projectId }: { projectId: string }) => {
     const { data: project } = useSuspenseQuery(projectQueryOptions(projectId));
@@ -203,6 +204,9 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                     )}
                 </form.Subscribe>
             </form>
+            <Suspense fallback={<div className="h-40 animate-pulse rounded-medium bg-black-accent-default" />}>
+                <InvitationsPanel projectId={project.id} />
+            </Suspense>
         </div>
     );
 };
