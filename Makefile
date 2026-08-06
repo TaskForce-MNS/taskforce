@@ -143,8 +143,8 @@ scan-secrets-debug:
 build-prod:
 	@echo "🏗️ Build production ($(VERSION))..."
 	docker build -f apps/Api.Back/Dockerfile.prod      -t $(REGISTRY)/taskforce_api:$(VERSION)     ./apps/Api.Back
-	docker build -f apps/web-app/Dockerfile.prod       -t $(REGISTRY)/taskforce_webapp:$(VERSION)  ./apps/web-app
-	docker build -f apps/landing-page/Dockerfile.prod  -t $(REGISTRY)/taskforce_landing:$(VERSION) ./apps/landing-page
+	docker build -f apps/web-app/Dockerfile.prod       -t $(REGISTRY)/taskforce_webapp:$(VERSION)  .
+	docker build -f apps/landing-page/Dockerfile.prod  -t $(REGISTRY)/taskforce_landing:$(VERSION) .
 	# Tag latest
 	docker tag $(REGISTRY)/taskforce_api:$(VERSION)     $(REGISTRY)/taskforce_api:latest
 	docker tag $(REGISTRY)/taskforce_webapp:$(VERSION)  $(REGISTRY)/taskforce_webapp:latest
