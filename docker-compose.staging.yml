@@ -29,9 +29,7 @@ services:
       retries: 5
 
   api:
-    build:
-      context: ./apps/Api.Back
-      dockerfile: dockerfile.prod
+    image: ${REGISTRY}/taskforce_api:${VERSION}
     container_name: taskforce_staging_api
     restart: unless-stopped
     environment:
@@ -54,16 +52,12 @@ services:
       start_period: 20s
 
   web-app:
-    build:
-      context: ./apps/web-app
-      dockerfile: dockerfile.prod
+    image: ${REGISTRY}/taskforce_webapp:${VERSION}
     container_name: taskforce_staging_webapp
     restart: unless-stopped
 
   landing-page:
-    build:
-      context: ./apps/landing-page
-      dockerfile: dockerfile.prod
+    image: ${REGISTRY}/taskforce_landing:${VERSION}
     container_name: taskforce_staging_landing
     restart: unless-stopped
 
