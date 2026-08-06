@@ -30,17 +30,30 @@ namespace Api.Back.UnitTests.Services.Project
             string? colorHex = "#FFF",
             string? imageUrl = "https://example.com/old.png")
         {
-            return new DbProject
+
+            var projectId = id ?? Guid.NewGuid();
+            var ownerId = createdById ?? Guid.NewGuid();
+
+            var project = new DbProject
             {
-                Id = id ?? Guid.NewGuid(),
+                Id = projectId,
                 Name = name,
                 Description = description,
                 ColorHex = colorHex,
                 ImageUrl = imageUrl,
-                CreatedById = createdById ?? Guid.NewGuid()
+                CreatedById = ownerId
             };
-        }
 
+
+            project.Members.Add(new DbProjectMember
+            {
+                ProjectId = projectId,
+                IdentityId = ownerId,
+                Role = ProjectMemberRole.Owner
+            });
+
+            return project;
+        }
         // ---------------- PostProjectAsync ----------------
 
         [Fact]
