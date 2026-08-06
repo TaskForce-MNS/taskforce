@@ -77,7 +77,6 @@ async function extractErrorMessage(response: Response): Promise<string> {
 
 async function refreshSession(
   url: string,
-  endpoint: string,
   options: ApiClientOptions,
   headers: Headers,
   finalBody: BodyInit | null | undefined
@@ -129,7 +128,7 @@ export const apiClient = async <T>(
   let response = await fetch(url, { ...options, headers, body: finalBody, credentials: 'include' });
 
   if (response.status === 401 && !isAuthRoute(url)) {
-    response = await refreshSession(url, endpoint, options, headers, finalBody);
+    response = await refreshSession(url, options, headers, finalBody);
   }
 
   if (!response.ok) {

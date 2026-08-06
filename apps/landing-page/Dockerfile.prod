@@ -4,7 +4,6 @@
 FROM node:22-alpine3.21 AS builder
 WORKDIR /app
 
-# On patch le système de build au cas où le scanner de CI vérifie les builders
 RUN apk update && apk upgrade --no-cache && corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml ./
@@ -18,7 +17,6 @@ RUN pnpm run build
 # ==========================================
 FROM cgr.dev/chainguard/nginx:latest
 
-# Chainguard utilise souvent l'UID 65532 (ou le nom nginx). On sécurise la copie :
 COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
