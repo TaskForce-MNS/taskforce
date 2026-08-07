@@ -48,7 +48,7 @@ namespace Api.Back.Controllers
         {
             var origin = Request.Headers.Origin.ToString();
             if (string.IsNullOrEmpty(origin)) origin = Request.Headers.Referer.ToString();
-            string rpId = "taskforce.local";
+            string rpId = _configuration["Fido2:Domain"] ?? "taskforce.local";
 
             if (origin.Contains("localhost", StringComparison.OrdinalIgnoreCase) || origin.Contains("tauri", StringComparison.OrdinalIgnoreCase))
             {
@@ -125,7 +125,7 @@ namespace Api.Back.Controllers
             var origin = Request.Headers.Origin.ToString();
             if (string.IsNullOrEmpty(origin)) origin = Request.Headers.Referer.ToString();
 
-            string rpId = "taskforce.local";
+            string rpId = _configuration["Fido2:Domain"] ?? "taskforce.local";
 
             if (origin.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
                 origin.Contains("tauri", StringComparison.OrdinalIgnoreCase))
@@ -225,7 +225,7 @@ namespace Api.Back.Controllers
 
             return Ok(userProfile);
         }
-        
+
         private string GetOrCreateDeviceId()
         {
             if (Request.Cookies.TryGetValue(SharedConstants.DeviceIdCookieName, out var deviceId) && !string.IsNullOrEmpty(deviceId))
@@ -236,7 +236,8 @@ namespace Api.Back.Controllers
 
         private void SetAuthCookies(string jwt, string refreshToken, string deviceId)
         {
-            var domain = ".taskforce.local";
+            var configDomain = _configuration["Fido2:Domain"] ?? "taskforce.local";
+            var domain = configDomain == "localhost" ? "localhost" : $".{configDomain}";
             var maxAgeRefresh = TimeSpan.FromDays(_configuration.GetValue("Redis:RefreshTokenTtlDays", 30));
 
             Response.Cookies.Append(SharedConstants.SessionCookieName, jwt, new CookieOptions
@@ -274,12 +275,14 @@ namespace Api.Back.Controllers
 
         private void ClearAuthCookies()
         {
+            var configDomain = _configuration["Fido2:Domain"] ?? "taskforce.local";
+            var domain = configDomain == "localhost" ? "localhost" : $".{configDomain}";
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Domain = ".taskforce.local",
+                Domain = domain,
                 Path = "/",
                 MaxAge = TimeSpan.Zero
             };
