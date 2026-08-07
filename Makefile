@@ -170,6 +170,8 @@ staging-pull:
 	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging pull
 
 staging-up: staging-pull
+	@echo "🛑 Nettoyage de l'ancien environnement..."
+	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging down
 	@echo "🚀 Démarrage de l'environnement de Staging..."
 	REGISTRY=$(REGISTRY) VERSION=$(VERSION) docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
 	@echo "✅ Staging en ligne et à jour !"
