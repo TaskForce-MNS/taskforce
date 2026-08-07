@@ -59,6 +59,10 @@ builder.Services.AddFido2(options =>
     var fidoDomain = builder.Configuration["Fido2:Domain"] ?? "taskforce.local";
     var fidoOrigin = builder.Configuration["Fido2:Origin"] ?? "https://app.taskforce.local";
 
+    Console.WriteLine("=========================================");
+    Console.WriteLine($"[DEBUG] FIDO DOMAIN CHARGÉ : {fidoDomain}");
+    Console.WriteLine("=========================================");
+
     options.ServerDomain = fidoDomain;
     options.ServerName = "TaskForce app";
     options.Origins = builder.Environment.IsDevelopment()
