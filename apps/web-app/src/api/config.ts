@@ -29,3 +29,7 @@ export const PatchProject = import.meta.env.VITE_PATCH_PROJECT
 // INVITATION
 export const InvitationsBase   = import.meta.env.VITE_INVITATIONS_BASE;
 export const AcceptInvitation  = import.meta.env.VITE_ACCEPT_INVITATION;
+
+// LIST MEMBERS
+
+export const ListMembers = import.meta.env.VITE_LIST_PROJECTS

@@ -124,13 +124,15 @@ namespace Api.Back.UnitTests.Services.Project
             var project = CreateDbProject(createdById: userId);
 
             _repositoryMock.Setup(r => r.GetByIdAsync(project.Id)).ReturnsAsync(project);
+            _memberRepositoryMock.Setup(m => m.GetAsync(project.Id, userId))
+        .ReturnsAsync(new DbProjectMember { Role = ProjectMemberRole.Owner });
 
             // Act
             var result = await _sut.GetProjectByIdAsync(project.Id, userId);
 
             // Assert
             result.Should().NotBeNull();
-            result!.Name.Should().Be(project.Name);
+            result.CurrentUserRole.Should().Be(ProjectMemberRole.Owner.ToString());
         }
 
         // ---------------- ListUserProjectsAsync ----------------
@@ -182,7 +184,8 @@ namespace Api.Back.UnitTests.Services.Project
 
             _repositoryMock.Setup(r => r.GetByIdAsync(project.Id)).ReturnsAsync(project);
             _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<DbProject>())).Returns(Task.CompletedTask);
-
+            _memberRepositoryMock.Setup(m => m.GetAsync(project.Id, userId))
+                    .ReturnsAsync(new DbProjectMember { Role = ProjectMemberRole.Owner });
             // Act
             var result = await _sut.PutProjectAsync(project.Id, request, userId);
 
@@ -250,19 +253,20 @@ namespace Api.Back.UnitTests.Services.Project
                 colorHex: "#000",
                 imageUrl: "https://img.com/old.png");
 
-            var request = new PatchProjectRequest(Name: "Nouveau nom"); // seul Name est fourni
+            var request = new PatchProjectRequest(Name: "Nouveau nom");
 
             _repositoryMock.Setup(r => r.GetByIdAsync(project.Id)).ReturnsAsync(project);
             _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<DbProject>())).Returns(Task.CompletedTask);
-
+            _memberRepositoryMock.Setup(m => m.GetAsync(project.Id, userId))
+                    .ReturnsAsync(new DbProjectMember { Role = ProjectMemberRole.Owner });
             // Act
             var result = await _sut.PatchProjectAsync(project.Id, request, userId);
 
             // Assert
             result.Name.Should().Be("Nouveau nom");
-            result.Description.Should().Be("Ancienne description"); // inchangé
-            result.ColorHex.Should().Be("#000"); // inchangé
-            result.ImageUrl.Should().Be("https://img.com/old.png"); // inchangé
+            result.Description.Should().Be("Ancienne description"); 
+            result.ColorHex.Should().Be("#000"); 
+            result.ImageUrl.Should().Be("https://img.com/old.png"); 
         }
 
         [Fact]
@@ -275,7 +279,8 @@ namespace Api.Back.UnitTests.Services.Project
 
             _repositoryMock.Setup(r => r.GetByIdAsync(project.Id)).ReturnsAsync(project);
             _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<DbProject>())).Returns(Task.CompletedTask);
-
+            _memberRepositoryMock.Setup(m => m.GetAsync(project.Id, userId))
+                    .ReturnsAsync(new DbProjectMember { Role = ProjectMemberRole.Owner });
             // Act
             var result = await _sut.PatchProjectAsync(project.Id, request, userId);
 

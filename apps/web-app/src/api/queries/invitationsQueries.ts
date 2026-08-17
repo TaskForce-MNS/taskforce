@@ -5,4 +5,5 @@ export const projectInvitationsQueryOptions = (projectId: string) =>
     queryOptions({
         queryKey: ['projects', projectId, 'invitations'],
         queryFn: () => invitationsApi.listForProject(projectId),
+        enabled: !!projectId
     });

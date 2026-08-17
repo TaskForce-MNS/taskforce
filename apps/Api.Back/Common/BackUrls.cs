@@ -24,6 +24,8 @@ namespace Api.Back.Common
         public const string ProjectInvitations = BasePath + "/projects/{projectId}/invitations";
         public const string Invitation = BasePath + "/invitations/{invitationId}";
         public const string AcceptInvitation = BasePath + "/invitations/accept";
+        public const string JoinOrganization = BasePath + "/invitations/join";
+        public const string ListMembers = BasePath + "/projects/{projectId}/listMembers";
         #endregion
     }
 }

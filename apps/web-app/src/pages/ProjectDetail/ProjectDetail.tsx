@@ -1,4 +1,3 @@
-import { Suspense, useEffect } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { projectQueryOptions } from '@/api/queries/projectsQueries';
@@ -7,13 +6,14 @@ import { Input } from '@/components/atoms/Input';
 import { Textarea } from '@/components/atoms/Textarea';
 import { Button } from '@/components/atoms/Button';
 import { InvitationsPanel } from '@/components/molecules/InvitationsPanel';
+import { MembersPanel } from '@/components/molecules/MembersPanel';
 
 export const ProjectDetail = ({ projectId }: { projectId: string }) => {
     const { data: project } = useSuspenseQuery(projectQueryOptions(projectId));
 
     const updateMutation = usePatchProject(projectId);
     const putMutation = usePutProject(projectId);
-
+    const canManage = project.currentUserRole === 'Owner' || project.currentUserRole === 'Admin';
     const form = useForm({
         defaultValues: {
             name: project.name,
@@ -27,14 +27,6 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
             }
         },
     });
-
-    useEffect(() => {
-        form.reset({
-            name: project.name,
-            description: project.description ?? '',
-            colorHex: project.colorHex ?? '#587B7F',
-        });
-    }, [project, form]);
 
     const handlePatchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -95,6 +87,11 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                     </p>
                 </div>
             </div>
+            {canManage && (
+                <InvitationsPanel projectId={projectId} />
+            )}
+
+            <MembersPanel projectId={projectId} />
 
             {/* Formulaire */}
             <form
@@ -204,9 +201,7 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                     )}
                 </form.Subscribe>
             </form>
-            <Suspense fallback={<div className="h-40 animate-pulse rounded-medium bg-black-accent-default" />}>
-                <InvitationsPanel projectId={project.id} />
-            </Suspense>
+
         </div>
     );
 };

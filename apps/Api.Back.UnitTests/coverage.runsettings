@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <CodeCoverage>
+    <Sources>
+      <Exclude>
+        <!-- EF Core migrations -->
+        <Source>.*[/\\]Migrations[/\\].*\.cs$</Source>
+
+        <!-- Program.cs -->
+        <Source>.*[/\\]Program\.cs$</Source>
+      </Exclude>
+    </Sources>
+  </CodeCoverage>
+</Configuration>

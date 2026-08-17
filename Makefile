@@ -13,11 +13,11 @@ export DOCKER_GID := $(shell id -g)
 REGISTRY ?= beselimius
 VERSION  ?= v1.0.0
 
-.PHONY: start stop build build-test clean \
+.PHONY: start stop build clean \
 	pnpm pnpm-landing install-web install-landing \
 	logs shell-api shell-db shell-redis \
 	db-check db-add-migration db-migrate db-rollback db-backup \
-	test lint resume scan-secrets scan-files scan-secrets-debug \
+	test test-build coverage-report lint scan-secrets scan-files scan-secrets-debug \
 	build-prod push-prod ci-deploy \
 	staging-pull staging-up staging-down
 
@@ -35,10 +35,6 @@ stop:
 build:
 	@echo "🏗️ Reconstruction..."
 	docker compose -f docker-compose.dev.yml up -d --build
-
-build-test:
-	@echo "🏗️ Reconstruction..."
-	docker compose -f docker-compose.test.yml up -d --build
 
 clean:
 	@echo "🧹 Nettoyage complet..."
@@ -114,19 +110,27 @@ db-backup:
 # ==========================================
 # 🧪 QUALITÉ 
 # ==========================================
-test:
-	@echo "🧪 Lancement des tests..."
+test: test-build
+	@echo "📁 Préparation du dossier de résultats..."
+	mkdir -p TestResults
+	chmod 777 TestResults
+	
+	@echo "🧪 Lancement des tests et de la couverture..."
 	docker compose -f docker-compose.test.yml run --rm api-unit-tests
+
+test-build:
+	@echo "🧪 Lancement des tests..."
+	docker compose -f docker-compose.test.yml build api-unit-tests
+
+coverage-report:
+	@echo "📊 Rapport de couverture disponible sur http://localhost:8000"
+	cd TestResults/HtmlReport && python3 -m http.server 8000
 
 lint:
 	@echo "🔍 Vérification du code frontend..."
 	docker exec taskforce_webapp pnpm lint
 
-resume:
-	@python3 apps/scripts/resume_context.py
-
-	# 🔍 Secret scan avec TruffleHog
-
+# 🔍 Secret scan avec TruffleHog
 scan-secrets:
 	trufflehog git file://$(PWD) --no-update
 

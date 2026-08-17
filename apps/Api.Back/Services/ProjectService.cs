@@ -14,6 +14,7 @@ namespace Api.Back.Services
         Task<IEnumerable<ProjectResponse>> ListUserProjectsAsync(Guid userId);
         Task<ProjectResponse> PutProjectAsync(Guid id, PutProjectRequest request, Guid userId);
         Task<ProjectResponse> PatchProjectAsync(Guid id, PatchProjectRequest request, Guid userId);
+        Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId);
     }
     public class ProjectService : IProjectService
     {
@@ -48,30 +49,36 @@ namespace Api.Back.Services
             });
 
             await _repository.AddAsync(newProject);
-            return newProject.ToResponse();
+            return newProject.ToResponse(ProjectMemberRole.Owner);
         }
         public async Task<ProjectResponse?> GetProjectByIdAsync(Guid id, Guid userId)
         {
             var project = await _repository.GetByIdAsync(id);
+            if (project == null) return null;
 
-            if (project == null || !project.Members.Any(m => m.IdentityId == userId))
-            {
-                return null;
-            }
+            var membership = await _memberRepository.GetAsync(id, userId);
+            if (membership == null) return null;
 
-            return project.ToResponse();
+            return project.ToResponse(membership.Role);
         }
         public async Task<IEnumerable<ProjectResponse>> ListUserProjectsAsync(Guid userId)
         {
             var projects = await _repository.GetByUserAsync(userId);
 
-            return projects.Select(p => p.ToResponse());
+            return projects.Select(p =>
+            {
+                var member = p.Members.FirstOrDefault(m => m.IdentityId == userId);
+
+                var userRole = member != null ? member.Role : ProjectMemberRole.Member;
+
+                return p.ToResponse(userRole);
+            });
         }
 
         public async Task<ProjectResponse> PutProjectAsync(Guid id, PutProjectRequest request, Guid userId)
         {
             ArgumentNullException.ThrowIfNull(request);
-            var project = await GetAndAuthorizeAsync(id, userId);
+            var project = await GetAndAuthorizeAdminAsync(id, userId);
 
             project.Name = request.Name;
             project.Description = request.Description;
@@ -80,13 +87,14 @@ namespace Api.Back.Services
             project.UpdatedAt = DateTime.UtcNow;
 
             await _repository.UpdateAsync(project);
-            return project.ToResponse();
+            var membership = await _memberRepository.GetAsync(id, userId);
+            return project.ToResponse(membership!.Role);
         }
 
         public async Task<ProjectResponse> PatchProjectAsync(Guid id, PatchProjectRequest request, Guid userId)
         {
             ArgumentNullException.ThrowIfNull(request);
-            var project = await GetAndAuthorizeAsync(id, userId);
+            var project = await GetAndAuthorizeAdminAsync(id, userId);
 
             project.Name = request.Name ?? project.Name;
             project.Description = request.Description ?? project.Description;
@@ -95,18 +103,31 @@ namespace Api.Back.Services
             project.UpdatedAt = DateTime.UtcNow;
 
             await _repository.UpdateAsync(project);
-            return project.ToResponse();
+            var membership = await _memberRepository.GetAsync(id, userId);
+            return project.ToResponse(membership!.Role);
         }
-        private async Task<DbProject> GetAndAuthorizeAsync(Guid id, Guid userId)
+
+        public async Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId)
         {
-            var project = await _repository.GetByIdAsync(id);
+            var members = await _memberRepository.GetByProjectIdAsync(projectId);
 
-            if (project == null)
-                throw new ProjectNotFoundException();
+            return members.Select(m => new ProjectMemberResponse(
+                m.IdentityId,
+                m.Role.ToString(),
+                m.JoinedAt,
+                m.Identity.FirstName,
+                m.Identity.LastName
+            ));
+        }
+        private async Task<DbProject> GetAndAuthorizeAdminAsync(Guid id, Guid userId)
+        {
+            var project = await _repository.GetByIdAsync(id)
+                ?? throw new ProjectNotFoundException();
 
-            bool isOwner = project.Members.Any(m => m.IdentityId == userId && m.Role == ProjectMemberRole.Owner);
-            if (!isOwner)
+            var membership = await _memberRepository.GetAsync(id, userId);
+            if (membership == null || membership.Role == ProjectMemberRole.Member)
                 throw new ProjectForbiddenException();
+
             return project;
         }
     }

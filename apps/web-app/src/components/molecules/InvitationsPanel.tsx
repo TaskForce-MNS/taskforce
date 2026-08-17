@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { projectInvitationsQueryOptions } from '@/api/queries/invitationsQueries';
 import { useCreateInvitation, useRevokeInvitation } from '@/mutations/invitations';
 import { Button } from '@/components/atoms/Button';
@@ -11,7 +11,7 @@ interface InvitationsPanelProps {
 
 export const InvitationsPanel = ({ projectId }: InvitationsPanelProps) => {
     const [now] = useState(() => Date.now());
-    const { data: invitations } = useSuspenseQuery(projectInvitationsQueryOptions(projectId));
+    const { data: invitations, isPending } = useQuery(projectInvitationsQueryOptions(projectId));
     const createMutation = useCreateInvitation(projectId);
     const revokeMutation = useRevokeInvitation(projectId);
     const addToast = useToastStore((state) => state.addToast);
@@ -41,19 +41,21 @@ export const InvitationsPanel = ({ projectId }: InvitationsPanelProps) => {
                 </Button>
             </div>
 
-            {invitations.length === 0 ? (
+            {isPending ? (
+                <p className="mt-4 min-h-10 text-sm text-white-accent-dark">
+                    Chargement des invitations...
+                </p>
+            ) : invitations?.length === 0 ? (
                 <p className="mt-4 text-sm italic text-white-accent-dark">
                     Aucune invitation active.
                 </p>
             ) : (
                 <ul className="mt-4 flex flex-col gap-2">
-                    {invitations.map((invitation) => {
+                    {invitations?.map((invitation) => {
                         const expiresIn = Math.max(
                             0,
                             Math.ceil((new Date(invitation.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24))
                         );
-
-                        // 👇 On vérifie si CETTE invitation est celle en cours de suppression
                         const isRevokingThis = revokeMutation.isPending && revokeMutation.variables === invitation.id;
 
                         return (
@@ -77,7 +79,7 @@ export const InvitationsPanel = ({ projectId }: InvitationsPanelProps) => {
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        isLoading={isRevokingThis} // 👈 Appliqué ici
+                                        isLoading={isRevokingThis}
                                         onClick={() => revokeMutation.mutate(invitation.id)}
                                     >
                                         Révoquer
