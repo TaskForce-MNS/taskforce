@@ -12,10 +12,10 @@
     "@emnapi/core": "^1.11.3",
     "@emnapi/runtime": "^1.11.3",
     "@shadcn/ui": "^0.0.4",
-    "astro": "^7.1.0",
+    "astro": "^7.2.2",
     "autoprefixer": "^10.5.0",
     "chart.js": "^4.5.1",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.26",
     "react-chartjs-2": "^5.3.1",
     "tailwindcss": "^4.3.3"
   },
