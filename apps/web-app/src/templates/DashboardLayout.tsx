@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useCallback } from 'react';
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Logo } from '@/components/atoms/Logo';
@@ -16,23 +16,25 @@ export const DashboardLayout = () => {
     const user = useAuthStore((state) => state.user);
 
     const displayName = user?.firstName || 'Utilisateur';
-    console.log(user);
     const displayLastName = user?.lastName;
     const displayTitle = user?.title;
     const userInitial = `${displayName.charAt(0).toUpperCase()}${displayLastName?.charAt(0).toUpperCase()}`;
 
-    console.log('DashboardLayout rendered with user:', user);
     const handleLogout = async () => {
         await logout();
         queryClient.clear();
         navigate({ to: '/auth' });
     };
 
+    const handleCreateProjectClick = useCallback(() => {
+        setIsCreateProjectOpen(true);
+    }, []);
+
     return (
-        <div className="flex h-screen w-full bg-black-accent-light text-white-accent-default overflow-hidden font-text">
-            <WorkspaceSidebar
-                onCreateProjectClick={() => setIsCreateProjectOpen(true)}
-            />
+        <div className="flex min-h-screen w-full overflow-x-hidden bg-black-accent-light text-white-accent-default font-text">
+            <Suspense fallback={<aside className="hidden w-[72px] shrink-0 bg-black-accent-dark md:flex z-30" />}>
+                <WorkspaceSidebar onCreateProjectClick={handleCreateProjectClick} />
+            </Suspense>
             <div className="flex min-w-0 flex-1 flex-col">
                 <header className="flex h-14 shrink-0 items-center border-b border-black-accent-light/50 px-4 sm:px-6 z-10 bg-black-accent-dark backdrop-blur-md">
                     <div className="flex items-center gap-3">
@@ -71,7 +73,7 @@ export const DashboardLayout = () => {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+                <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8">
                     <Suspense fallback={<div className="p-4 text-white-accent-dark">Chargement...</div>}>
                         <Outlet />
                     </Suspense>

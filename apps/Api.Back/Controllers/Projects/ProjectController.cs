@@ -90,5 +90,12 @@ namespace Api.Back.Controllers.Projects
 
             return Ok(response);
         }
+
+        [HttpGet(BackUrls.ListMembers)]
+        public async Task<ActionResult<IEnumerable<ProjectMemberResponse>>> GetMembers(Guid projectId)
+        {
+            var members = await _projectService.GetProjectMembersAsync(projectId);
+            return Ok(members);
+        }
     }
 }

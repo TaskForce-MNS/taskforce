@@ -7,8 +7,11 @@ COPY Api.Back.UnitTests/Api.Back.UnitTests.csproj Api.Back.UnitTests/
 
 RUN dotnet restore Api.Back.UnitTests/Api.Back.UnitTests.csproj
 
+
 COPY Api.Back/ Api.Back/
 COPY Api.Back.UnitTests/ Api.Back.UnitTests/
+
+RUN chmod +x Api.Back.UnitTests/run-coverage.sh
 
 RUN groupadd -r dotnetgroup && useradd -r -g dotnetgroup dotnetuser \
     && mkdir -p /workspace/.dotnet /workspace/.nuget/packages \
@@ -25,4 +28,4 @@ ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 
 WORKDIR /workspace/Api.Back.UnitTests
 
-ENTRYPOINT ["dotnet", "test", "Api.Back.UnitTests.csproj"]
+ENTRYPOINT ["/bin/bash", "run-coverage.sh"]

@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
+using Api.Back.Data;
 using Api.Back.DTOs.Requests.invitation;
 using Api.Back.DTOs.Responses.invitation;
 using Api.Back.Extensions;
 using Api.Back.Middleware.Exceptions;
 using Api.Back.Models;
 using Api.Back.Repositories;
-
 namespace Api.Back.Services
 {
     public interface IInvitationService
@@ -21,7 +21,7 @@ namespace Api.Back.Services
         private readonly IInvitationRepository _invitationRepository;
         private readonly IProjectMemberRepository _memberRepository;
 
-        public InvitationService(IInvitationRepository invitationRepository, IProjectMemberRepository memberRepository)
+        public InvitationService(IInvitationRepository invitationRepository, IProjectMemberRepository memberRepository, AppDbContext context)
         {
             _invitationRepository = invitationRepository;
             _memberRepository = memberRepository;
@@ -89,7 +89,6 @@ namespace Api.Back.Services
             }
             return invitation.ProjectId;
         }
-
         private async Task EnsureIsAdminAsync(Guid projectId, Guid userId)
         {
             var membership = await _memberRepository.GetAsync(projectId, userId);
