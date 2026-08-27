@@ -1,207 +1,81 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useForm } from '@tanstack/react-form';
 import { projectQueryOptions } from '@/api/queries/projectsQueries';
-import { usePutProject, usePatchProject } from '@/mutations/projects';
-import { Input } from '@/components/atoms/Input';
-import { Textarea } from '@/components/atoms/Textarea';
 import { Button } from '@/components/atoms/Button';
-import { InvitationsPanel } from '@/components/molecules/InvitationsPanel';
 import { MembersPanel } from '@/components/molecules/MembersPanel';
+import { useCallback, useState, useRef } from 'react';
+import { EditProjectModal } from '@/pages/ProjectDetail/EditProjectModal';
+import { CalendarTimeline, type CalendarTimelineHandle } from '@/components/molecules/CalendarTimeline';
 
 export const ProjectDetail = ({ projectId }: { projectId: string }) => {
     const { data: project } = useSuspenseQuery(projectQueryOptions(projectId));
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const updateMutation = usePatchProject(projectId);
-    const putMutation = usePutProject(projectId);
-    const canManage = project.currentUserRole === 'Owner' || project.currentUserRole === 'Admin';
-    const form = useForm({
-        defaultValues: {
-            name: project.name,
-            description: project.description ?? '',
-            colorHex: project.colorHex ?? '#587B7F',
-        },
-        onSubmit: async ({ value }) => {
-            const payload = buildPatchPayload(value, project);
-            if (Object.keys(payload).length > 0) {
-                updateMutation.mutate(payload);
-            }
-        },
-    });
+    const calendarRef = useRef<CalendarTimelineHandle>(null);
 
-    const handlePatchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const canManage = project.currentUserRole === 'Owner';
+    console.log(project.currentUserRole);
+    const [headerDateTitle, setHeaderDateTitle] = useState<string>('Chargement...');
 
-        const currentValues = {
-            name: form.getFieldValue('name'),
-            description: form.getFieldValue('description'),
-            colorHex: form.getFieldValue('colorHex'),
-        };
-
-        const payload = buildPatchPayload(currentValues, project);
-
-        if (Object.keys(payload).length === 0) return;
-        updateMutation.mutate(payload);
-    };
-
-    const handlePutSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        putMutation.mutate({
-            name: form.getFieldValue('name'),
-            description: form.getFieldValue('description') || null,
-            colorHex: form.getFieldValue('colorHex') || null,
-            imageUrl: project.imageUrl,
-        });
-    };
-
-    // Helper de calcul de delta pour le PATCH
-    function buildPatchPayload(
-        values: { name: string; description: string; colorHex: string },
-        original: typeof project
-    ) {
-        const payload: Record<string, string> = {};
-        if (values.name !== original.name) payload.name = values.name;
-        if (values.description !== (original.description ?? '')) payload.description = values.description;
-        if (values.colorHex !== (original.colorHex ?? '')) payload.colorHex = values.colorHex;
-        return payload;
+    const handleDateChange = useCallback((newDateTitle: string) => {
+        setHeaderDateTitle(newDateTitle);
+    }, []);
+    const handleGoToToday = () => {
+        calendarRef.current?.scrollToToday();
+        console.log(calendarRef.current);
     }
-
     return (
-        <div className="mx-auto w-full max-w-2xl min-w-[320px] shrink-0 space-y-6">
 
-            {/* En-tête */}
-            <div className="flex items-center gap-4">
-                <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-medium font-title text-xl font-bold text-white-accent-light"
-                    style={{ backgroundColor: project.colorHex ?? '#587B7F' }}
-                >
-                    {project.name.charAt(0).toUpperCase()}
+        <div className="flex h-full w-full flex-col space-y-4 sm:space-y-6">
+
+            <div className="flex shrink-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <div className="flex min-w-0 items-center gap-4">
+                    {/* <div
+                        className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-medium font-title text-lg sm:text-xl font-bold text-white-accent-light shadow-sm"
+                        style={{ backgroundColor: project.colorHex ?? '#587B7F' }}
+                    >
+                        {project.name.charAt(0).toUpperCase()}
+                    </div> */}
+                    <div className="min-w-0">
+                        <h1
+                            onClick={handleGoToToday}
+                            title="Revenir à aujourd'hui"
+                            className="truncate font-title text-xl sm:text-2xl font-bold text-white-accent-light transition-colors duration-300 cursor-pointer hover:text-primary-light"
+                        >
+                            {headerDateTitle}
+                        </h1>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="font-title text-2xl font-bold text-white-accent-light">
-                        {project.name}
-                    </h1>
-                    <p className="text-xs text-white-accent-dark">
-                        Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR')} ·
-                        Mis à jour le {new Date(project.updatedAt).toLocaleDateString('fr-FR')}
-                    </p>
+
+                <div className="flex shrink-0 items-center gap-3">
+                    <MembersPanel projectId={projectId} />
+
+                    {canManage && (
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white-accent-dark/15 bg-black-accent-light/30 p-0 text-white-accent-dark transition-colors hover:border-white-accent-dark/30 hover:bg-white-accent-dark/10 hover:text-white-accent-light shadow-sm"
+                            title="Paramètres du projet"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="h-4 w-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </Button>
+                    )}
                 </div>
             </div>
-            {canManage && (
-                <InvitationsPanel projectId={projectId} />
+
+            <CalendarTimeline projectId={projectId} ref={calendarRef} key={projectId} onDateChange={handleDateChange} />
+
+            {isEditModalOpen && (
+                <EditProjectModal
+                    project={project}
+                    onClose={() => setIsEditModalOpen(false)}
+
+                    updatedDate={new Date(project.updatedAt).toLocaleDateString('fr-FR')}
+                />
             )}
-
-            <MembersPanel projectId={projectId} />
-
-            {/* Formulaire */}
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit();
-                }}
-                className="flex flex-col gap-4 rounded-medium border border-white-accent-dark/10 bg-black-accent-default p-5"
-            >
-                {/* Nom */}
-                <form.Field
-                    name="name"
-                    validators={{
-                        onChange: ({ value }) => {
-                            if (!value || !value.trim()) return 'Le nom est requis';
-                            if (value.length < 2) return 'Le nom doit faire au moins 2 caractères';
-                            if (value.length > 50) return 'Le nom ne peut pas dépasser 50 caractères';
-                            return undefined;
-                        },
-                    }}
-                >
-                    {(field) => (
-                        <Input
-                            label="Nom du projet"
-                            name={field.name}
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            onBlur={field.handleBlur}
-                            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
-                        />
-                    )}
-                </form.Field>
-
-                {/* Description */}
-                <form.Field name="description">
-                    {(field) => (
-                        <Textarea
-                            label="Description"
-                            rows={3}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                    )}
-                </form.Field>
-
-                {/* Couleur */}
-                <form.Field name="colorHex">
-                    {(field) => (
-                        <div className="flex flex-col gap-2">
-                            <span className="text-sm font-medium text-white-accent-default">Couleur</span>
-                            <input
-                                type="color"
-                                name={field.name}
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                className="h-10 w-20 cursor-pointer rounded-small border border-white-accent-dark/20 bg-transparent"
-                            />
-                        </div>
-                    )}
-                </form.Field>
-
-                {/* Boutons de test PATCH / PUT */}
-                <div className="flex gap-3 border-t border-white-accent-dark/10 pt-4">
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        isLoading={updateMutation.isPending}
-                        onClick={handlePatchSubmit}
-                    >
-                        Enregistrer (PATCH)
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="primary"
-                        isLoading={putMutation.isPending}
-                        onClick={handlePutSubmit}
-                    >
-                        Remplacer tout (PUT)
-                    </Button>
-                </div>
-
-                <p className="text-xs text-white-accent-dark">
-                    <strong>PATCH</strong> n'envoie que les champs modifiés ·
-                    <strong>PUT</strong> envoie toujours l'objet complet.
-                </p>
-
-                {/* Bouton global de soumission relié à l'état du formulaire */}
-                <form.Subscribe
-                    selector={(state) => [state.canSubmit, state.isSubmitting, state.isDirty]}
-                >
-                    {([canSubmit, isSubmitting, isDirty]) => (
-                        <div className="flex items-center justify-between border-t border-white-accent-dark/10 pt-4">
-                            <div>
-                                {isDirty ? (
-                                    <span className="text-xs font-semibold text-amber-400">● Modifications en cours</span>
-                                ) : (
-                                    <span className="text-xs text-white-accent-dark">Aucune modification</span>
-                                )}
-                            </div>
-                            <Button type="submit" isLoading={isSubmitting} disabled={!canSubmit || !isDirty}>
-                                Sauvegarder (Via Form Submit)
-                            </Button>
-                        </div>
-                    )}
-                </form.Subscribe>
-            </form>
-
         </div>
     );
 };

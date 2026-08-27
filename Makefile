@@ -110,22 +110,23 @@ db-backup:
 # ==========================================
 # 🧪 QUALITÉ 
 # ==========================================
-test: test-build
+test: test-build run-tests coverage-report
+
+test-build:
+	@echo "🛠️ Build de l'image de test..."
+	docker compose -f docker-compose.test.yml build api-unit-tests
+
+run-tests:
 	@echo "📁 Préparation du dossier de résultats..."
 	mkdir -p TestResults
 	chmod 777 TestResults
-	
 	@echo "🧪 Lancement des tests et de la couverture..."
 	docker compose -f docker-compose.test.yml run --rm api-unit-tests
-
-test-build:
-	@echo "🧪 Lancement des tests..."
-	docker compose -f docker-compose.test.yml build api-unit-tests
 
 coverage-report:
 	@echo "📊 Rapport de couverture disponible sur http://localhost:8000"
 	cd TestResults/HtmlReport && python3 -m http.server 8000
-
+	
 lint:
 	@echo "🔍 Vérification du code frontend..."
 	docker exec taskforce_webapp pnpm lint

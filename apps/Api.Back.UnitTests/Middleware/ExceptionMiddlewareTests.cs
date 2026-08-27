@@ -10,6 +10,7 @@ using Moq;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Api.Back.Middleware.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Back.UnitTests.Middleware
 {
@@ -37,7 +38,12 @@ namespace Api.Back.UnitTests.Middleware
             var body = await reader.ReadToEndAsync();
             return JsonDocument.Parse(body);
         }
-
+        private static ILogger<ExceptionMiddleware> CreateEnabledLogger()
+        {
+            var loggerMock = new Mock<ILogger<ExceptionMiddleware>>();
+            loggerMock.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+            return loggerMock.Object;
+        }
         [Fact]
         public async Task InvokeAsync_Should_CallNext_When_NoExceptionIsThrown()
         {
@@ -50,7 +56,7 @@ namespace Api.Back.UnitTests.Middleware
                 return Task.CompletedTask;
             };
 
-            var middleware = new ExceptionMiddleware(next, NullLogger<ExceptionMiddleware>.Instance);
+            var middleware = new ExceptionMiddleware(next, CreateEnabledLogger());
 
             // Act
             await middleware.InvokeAsync(context);
@@ -67,7 +73,7 @@ namespace Api.Back.UnitTests.Middleware
         {
             // Arrange
             var context = CreateHttpContext("Production");
-            RequestDelegate next = _ => throw exceptionToThrow;
+            Task next(HttpContext _) => throw exceptionToThrow;
             var middleware = new ExceptionMiddleware(next, NullLogger<ExceptionMiddleware>.Instance);
 
             // Act
@@ -93,6 +99,12 @@ namespace Api.Back.UnitTests.Middleware
             yield return new object[] { new ProjectForbiddenException(), HttpStatusCode.Forbidden, "Accès interdit." };
             yield return new object[] { new ProjectNotFoundException(), HttpStatusCode.NotFound, "Ressource introuvable." };
             yield return new object[] { new InvalidOperationException("boom"), HttpStatusCode.InternalServerError, "Une erreur interne du serveur est survenue." };
+
+            yield return new object[] { new InvitationNotFoundException("Invitation introuvable."), HttpStatusCode.NotFound, "Invitation introuvable." };
+            yield return new object[] { new InvitationExpiredException("Le lien a expiré."), HttpStatusCode.Gone, "Le lien a expiré." };
+            yield return new object[] { new InvitationExhaustedException("Limite d'utilisation atteinte."), HttpStatusCode.Conflict, "Limite d'utilisation atteinte." };
+            yield return new object[] { new AlreadyProjectMemberException("L'utilisateur est déjà membre."), HttpStatusCode.Conflict, "L'utilisateur est déjà membre." };
+            yield return new object[] { new NotProjectAdminException("Seul un admin peut faire cela."), HttpStatusCode.Forbidden, "Seul un admin peut faire cela." };
         }
 
         [Fact]
@@ -144,6 +156,25 @@ namespace Api.Back.UnitTests.Middleware
 
             // Assert
             await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [Fact]
+        public async Task InvokeAsync_Should_HandleNullEnvironmentGracefully()
+        {
+            // Arrange
+            var context = new DefaultHttpContext();
+            context.Response.Body = new MemoryStream();
+            // On crée des services VIDES (sans IWebHostEnvironment)
+            context.RequestServices = new ServiceCollection().BuildServiceProvider();
+
+            RequestDelegate next = static _ => throw new InvalidOperationException("Erreur fatale");
+            var middleware = new ExceptionMiddleware(next, CreateEnabledLogger());
+
+            // Act
+            await middleware.InvokeAsync(context);
+
+            // Assert
+            context.Response.StatusCode.Should().Be(500);
         }
     }
 }

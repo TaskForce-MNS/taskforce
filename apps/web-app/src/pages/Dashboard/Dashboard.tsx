@@ -72,7 +72,7 @@ function DashboardContent({
                 isUserLoading={isUserLoading}
                 activeProjectsCount={activeProjectsCount}
                 latestProject={latestProject}
-                isProjectsLoading={false} // déjà résolu par Suspense ici
+                isProjectsLoading={false}
             />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

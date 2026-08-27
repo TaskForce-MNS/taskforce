@@ -2,7 +2,6 @@ using Api.Back.DTOs.Requests;
 using Api.Back.DTOs.Responses;
 using Api.Back.Services;
 using Api.Back.Common;
-using Api.Back.Tools;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
