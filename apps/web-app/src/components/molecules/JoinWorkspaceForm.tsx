@@ -5,6 +5,7 @@ import { invitationsApi, type AcceptInvitationResponse } from '@/api/invitations
 import { useToastStore } from '@/stores/useToastStore';
 import { Button } from '@/components/atoms/Button';
 import { Input } from '../atoms/Input';
+import { Clipboard } from '@/components/icons/index';
 
 const extractToken = (text: string) => {
     try {
@@ -128,7 +129,7 @@ export const JoinWorkspaceForm = () => {
                         disabled={acceptMutation.isPending}
                         title="Coller et valider automatiquement"
                     >
-                        📋 Coller
+                      <Clipboard className="size-6" />
                     </Button>
                 </div>
             </form>
