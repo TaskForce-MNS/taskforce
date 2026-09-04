@@ -27,5 +27,12 @@ namespace Api.Back.Common
         public const string JoinOrganization = BasePath + "/invitations/join";
         public const string ListMembers = BasePath + "/projects/{projectId}/listMembers";
         #endregion
+
+        #region Tasks
+        public const string PostTask = BasePath + "/task";
+        public const string GetTask = BasePath + "/tasks/{taskId}";
+        public const string ListTasks = BasePath + "/projects/{projectId}/tasks";
+        public const string UpdateTask = BasePath + "/tasks/{taskId}";
+        #endregion
     }
 }

@@ -39,5 +39,6 @@ namespace Api.Back.Models
 
         public ICollection<DbInvitation> Invitations { get; } = [];
         public ICollection<DbProjectMember> Members { get; } = [];
+        public ICollection<DbTask> Tasks { get; } = new List<DbTask>();
     }
 }

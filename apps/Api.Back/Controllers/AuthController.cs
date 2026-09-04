@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Api.Back.Services.dev;
 
 namespace Api.Back.Controllers
 {
@@ -24,19 +25,22 @@ namespace Api.Back.Controllers
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _configuration;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IDevAutoJoinService _devAutoJoinService;
 
         public AuthController(
             IAuthService authService,
             IValidator<RegisterIdentityDto> validator,
             IMemoryCache cache,
             IConfiguration configuration,
-            IRefreshTokenService refreshTokenService)
+            IRefreshTokenService refreshTokenService,
+            IDevAutoJoinService devAutoJoinService)
         {
             _authService = authService;
             _validator = validator;
             _cache = cache;
             _configuration = configuration;
             _refreshTokenService = refreshTokenService;
+            _devAutoJoinService = devAutoJoinService;
         }
 
         [AllowAnonymous]
@@ -102,6 +106,8 @@ namespace Api.Back.Controllers
                 var identityCreated = await _authService.RegisterIdentityAsync(dto, originalOptions, attestationResponse);
                 _cache.Remove(cacheKey);
 
+                await _devAutoJoinService.JoinDemoProjectsIfDevAsync(identityCreated.Id);
+                
                 var deviceId = GetOrCreateDeviceId();
                 var (jwt, refreshToken) = await _authService.GenerateAuthResponseAsync(identityCreated.Id, deviceId);
 
