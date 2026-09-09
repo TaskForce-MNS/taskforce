@@ -27,7 +27,7 @@ jobs:
       - name: 📦 Build & Push API
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/Api.Back
+          context: .
           file: ./apps/Api.Back/Dockerfile.prod
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/taskforce_api:staging
@@ -36,7 +36,7 @@ jobs:
       - name: 📦 Build & Push Web App
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/web-app
+          context: .
           file: ./apps/web-app/Dockerfile.prod
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/taskforce_webapp:staging
@@ -45,7 +45,7 @@ jobs:
       - name: 📦 Build & Push Landing Page
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/landing-page
+          context: .
           file: ./apps/landing-page/Dockerfile.prod
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/taskforce_landing:staging
