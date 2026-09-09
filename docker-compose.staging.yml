@@ -32,6 +32,8 @@ services:
     image: ${REGISTRY}/taskforce_api:${VERSION}
     container_name: taskforce_staging_api
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
       - ASPNETCORE_ENVIRONMENT=Staging
@@ -57,11 +59,15 @@ services:
     image: ${REGISTRY}/taskforce_webapp:${VERSION}
     container_name: taskforce_staging_webapp
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   landing-page:
     image: ${REGISTRY}/taskforce_landing:${VERSION}
     container_name: taskforce_staging_landing
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   proxy:
     image: nginx:alpine
@@ -76,6 +82,17 @@ services:
       - web-app
       - landing-page
 
+  watchtower:
+    image: containrrr/watchtower
+    container_name: taskforce_watchtower
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: "60"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
 volumes:
   staging_data:
   staging_redis_data:
