@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Api.Back.Data;
-using Api.Back.Models;
 using Api.Back.DTOs.Requests.Projects;
-using System.Security.Claims;
 using Api.Back.Services;
 using Api.Back.DTOs.Responses;
 using Api.Back.Common;
@@ -89,6 +86,13 @@ namespace Api.Back.Controllers.Projects
             var response = await _projectService.PatchProjectAsync(id, request, userId);
 
             return Ok(response);
+        }
+
+        [HttpGet(BackUrls.ListMembers)]
+        public async Task<ActionResult<IEnumerable<ProjectMemberResponse>>> GetMembers(Guid projectId)
+        {
+            var members = await _projectService.GetProjectMembersAsync(projectId);
+            return Ok(members);
         }
     }
 }

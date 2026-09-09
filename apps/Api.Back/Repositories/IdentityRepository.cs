@@ -24,13 +24,19 @@ public class IdentityRepository : IIdentityRepository
         ArgumentNullException.ThrowIfNull(context);
         _context = context;
     }
-
     public async Task<DbIdentity?> GetByPublicKeyAsync(string publicKey)
     {
-        return await _context.Identities
-            .Include(i => i.Credentials)
-            .Include(i => i.Preference)
-            .FirstOrDefaultAsync(i => i.Credentials.Any(c => c.PublicKey.SequenceEqual(Convert.FromBase64String(publicKey))));
+        var publicKeyBytes = Convert.FromBase64String(publicKey);
+
+        var credential = await _context.Credentials
+            .Include(c => c.Identity)
+            .ThenInclude(i => i!.Credentials)
+            .Include(c => c.Identity)
+            .ThenInclude(i => i!.Preference)
+            .FirstOrDefaultAsync(c =>
+                c.PublicKey.SequenceEqual(publicKeyBytes));
+
+        return credential?.Identity;
     }
 
     public async Task<bool> PublicKeyExistsAsync(string publicKey)

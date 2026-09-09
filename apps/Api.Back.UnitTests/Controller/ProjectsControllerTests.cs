@@ -64,7 +64,8 @@ namespace Api.Back.UnitTests.Controllers.Projects
                 "https://img.com/x.png",
                 createdById ?? Guid.NewGuid(),
                 DateTime.UtcNow,
-                DateTime.UtcNow
+                DateTime.UtcNow,
+                "Owner"
             );
 
         // ---------------- PostProject ----------------

@@ -43,7 +43,7 @@ export const usePutProject = (id: string) => {
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
             queryClient.invalidateQueries({ queryKey: ['projects', id] });
-            addToast({ variant: 'success', title: 'Projet mis à jour (PUT)', message: `"${updated.name}" a été remplacé entièrement.` });
+            addToast({ variant: 'success', title: 'Projet mis à jour', message: `"${updated.name}" a été modifié.` });
         },
         onError: (error) => {
             addToast({ variant: 'error', title: 'Erreur PUT', message: error instanceof Error ? error.message : 'Échec de la mise à jour.' });
@@ -61,7 +61,7 @@ export const usePatchProject = (id: string) => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
             queryClient.invalidateQueries({ queryKey: ['projects', id] });
 
-            addToast({ variant: 'success', title: 'Projet mis à jour (PATCH)', message: `"${updated.name}" a été modifié partiellement.` });
+            addToast({ variant: 'success', title: 'Projet mis à jour', message: `"${updated.name}" a été modifié` });
         },
         onError: (error) => {
             addToast({ variant: 'error', title: 'Erreur PATCH', message: error instanceof Error ? error.message : 'Échec de la mise à jour.' });

@@ -18,7 +18,7 @@ export const WorkspaceSidebar = ({ onCreateProjectClick }: WorkspaceSidebarProps
     const activeProjectId = activeProjectMatch ? activeProjectMatch.projectId : null;
 
     return (
-        <aside className="hidden w-[72px] shrink-0 flex-col items-center bg-black-accent-dark py-3 md:flex z-30">
+        <aside className="hidden w-[72px] shrink-0 flex-col items-center bg-black-accent-dark py-3 md:flex z-30 m-1 rounded-lg shadow-sm">
             <WorkspaceButton
                 variant="home"
                 showIndicator={true}

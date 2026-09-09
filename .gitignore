@@ -184,3 +184,5 @@ node_modules/
 
 # Certificats SSL Locaux
 infra/certs/*.pem
+
+TestResults/**

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invitationsApi, type CreateInvitationPayload } from '@/api/invitations';
+import { invitationsApi, type CreateInvitationPayload, type Invitation } from '@/api/invitations';
 import { useToastStore } from '@/stores/useToastStore';
 
 export const useCreateInvitation = (projectId: string) => {
@@ -8,9 +8,17 @@ export const useCreateInvitation = (projectId: string) => {
 
     return useMutation({
         mutationFn: (payload: CreateInvitationPayload) => invitationsApi.create(projectId, payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'invitations'] });
-            addToast({ variant: 'success', title: 'Lien généré', message: "Le lien d'invitation a été créé." });
+        onSuccess: (newInvitation) => {
+            queryClient.setQueryData<Invitation[]>(
+                ['projects', projectId, 'invitations'],
+                (old = []) => [newInvitation, ...old]
+            );
+
+            addToast({
+                variant: 'success',
+                title: 'Lien généré',
+                message: 'Le lien d’invitation a été créé.',
+            });
         },
         onError: (error) => {
             addToast({ variant: 'error', title: 'Erreur', message: error instanceof Error ? error.message : 'Impossible de générer le lien.' });

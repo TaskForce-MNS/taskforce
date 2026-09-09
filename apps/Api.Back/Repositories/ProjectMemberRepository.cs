@@ -8,6 +8,8 @@ namespace Api.Back.Repositories
     {
         Task AddAsync(DbProjectMember member);
         Task<DbProjectMember?> GetAsync(Guid projectId, Guid identityId);
+        Task<IEnumerable<DbProjectMember>> GetByProjectIdAsync(Guid projectId);
+        Task<bool> IsMemberAsync(Guid projectId, Guid identityId);
     }
 
     public class ProjectMemberRepository : IProjectMemberRepository
@@ -28,6 +30,19 @@ namespace Api.Back.Repositories
         public async Task<DbProjectMember?> GetAsync(Guid projectId, Guid identityId)
         {
             return await _context.ProjectMembers.FindAsync(projectId, identityId);
+        }
+
+        public async Task<IEnumerable<DbProjectMember>> GetByProjectIdAsync(Guid projectId)
+        {
+            return await _context.ProjectMembers
+                .Where(m => m.ProjectId == projectId)
+                .Include(m => m.Identity)
+                .ToListAsync();
+        }
+        public async Task<bool> IsMemberAsync(Guid projectId, Guid identityId)
+        {
+            return await _context.ProjectMembers
+                .AnyAsync(m => m.ProjectId == projectId && m.IdentityId == identityId);
         }
     }
 }

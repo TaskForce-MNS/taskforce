@@ -10,6 +10,7 @@ using System.Text;
 using Api.Back.Common;
 using System.Data.Common;
 using StackExchange.Redis;
+using Api.Back.Services.dev;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,11 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+
+builder.Services.AddScoped<IDevAutoJoinService, DevAutoJoinService>();
 
 builder.Services.AddMemoryCache();
 
@@ -212,7 +218,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();
+        await context.Database.MigrateAsync();
+        await DbSeeder.SeedAsync(context);
     }
     catch (Exception ex)
     {
@@ -244,5 +251,5 @@ app.MapGet("/api/v1/back/debug/test-db", async (AppDbContext db) =>
     }
 });
 
-app.Run();
+await app.RunAsync();
 #endregion

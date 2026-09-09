@@ -8,7 +8,8 @@ namespace Api.Back.DTOs.Responses
         string? ImageUrl,
         Guid CreatedById,
         DateTime CreatedAt,
-        DateTime UpdatedAt
+        DateTime UpdatedAt,
+        string CurrentUserRole
     );
 
 }

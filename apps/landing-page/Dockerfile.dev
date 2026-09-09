@@ -22,6 +22,8 @@ RUN pnpm install
 
 COPY --chown=node:node . .
 
+ENV ASTRO_TELEMETRY_DISABLED=1
+
 EXPOSE 4321
 
-CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0", "--ignore-lock"]
