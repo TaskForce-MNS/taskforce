@@ -40,7 +40,7 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                         <h1
                             onClick={handleGoToToday}
                             title="Revenir à aujourd'hui"
-                            className="truncate font-title text-xl sm:text-2xl font-bold text-white-accent-light transition-colors duration-300 cursor-pointer hover:text-primary-light"
+                            className="truncate font-subtitle sm:text-xl font-bold text-white-accent-light transition-colors duration-300 cursor-pointer hover:text-primary-light"
                         >
                             {headerDateTitle}
                         </h1>

@@ -11,7 +11,7 @@ export DOCKER_UID := $(shell id -u)
 export DOCKER_GID := $(shell id -g)
 
 REGISTRY ?= beselimius
-VERSION  ?= v1.0.0
+VERSION  ?= staging
 
 .PHONY: start stop build clean \
 	pnpm pnpm-landing install-web install-landing \
