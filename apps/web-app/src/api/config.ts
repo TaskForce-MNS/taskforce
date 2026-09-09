@@ -31,5 +31,8 @@ export const InvitationsBase   = import.meta.env.VITE_INVITATIONS_BASE;
 export const AcceptInvitation  = import.meta.env.VITE_ACCEPT_INVITATION;
 
 // LIST MEMBERS
-
 export const ListMembers = import.meta.env.VITE_LIST_PROJECTS
+
+// TASK
+export const CreateTask = import.meta.env.VITE_CREATE_TASK;
+export const TasksBase = import.meta.env.VITE_TASKS_BASE;

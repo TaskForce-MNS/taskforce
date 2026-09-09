@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { TaskList } from '@/components/molecules/task/TaskList';
 
 interface CalendarTimelineProps {
     projectId: string;
@@ -91,12 +92,12 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
 
             handleScroll();
         }, [projectId, handleScroll]);
-
+        const DEMO_PROJECT_ID = "22222222-2222-2222-2222-222222222222"; 
         return (
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex-1 min-h-0 w-full overflow-y-auto rounded-xl border border-white-accent-dark/15 bg-black-accent-light/10 p-4 sm:p-6 shadow-inner scrollbar-hide relative [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
+                className="flex-1 min-h-0 w-full overflow-y-auto rounded-xl border border-white-accent-dark/15 bg-black-accent-light/10 p-4 sm:p-1 shadow-inner scrollbar-hide relative [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
             >
                 <div className="flex flex-col gap-12">
                     {days.map((day, index) => {
@@ -120,11 +121,8 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
                                     <div className={`h-[2px] flex-1 rounded-full ${isToday ? 'bg-primary-default/50' : 'bg-white-accent-dark/20'}`}></div>
                                 </div>
 
-                                <div className="mt-4 flex flex-col gap-3 pl-2 sm:pl-4 border-l-2 border-white-accent-dark/10 ml-[22px]">
-                                    <div className="h-20 w-3/4 rounded-lg bg-black-accent-light/30 border border-white-accent-dark/10 flex items-center px-4">
-                                        <p className="text-white-accent-dark text-xs italic">Tâche fictive...</p>
-                                    </div>
-                                    <div className="h-16 w-1/2 rounded-lg bg-black-accent-light/30 border border-white-accent-dark/10"></div>
+                                <div className="mt-4 flex flex-col gap-3 border-l-1 border-white-accent-dark/10 ml-[10px]">
+                                    <TaskList projectId={DEMO_PROJECT_ID} />
                                 </div>
                             </div>
                         );
