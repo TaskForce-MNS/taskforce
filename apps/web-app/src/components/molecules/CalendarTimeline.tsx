@@ -92,7 +92,6 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
 
             handleScroll();
         }, [projectId, handleScroll]);
-        const DEMO_PROJECT_ID = "22222222-2222-2222-2222-222222222222"; 
         return (
             <div
                 ref={containerRef}
@@ -122,7 +121,7 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
                                 </div>
 
                                 <div className="mt-4 flex flex-col gap-3 border-l-1 border-white-accent-dark/10 ml-[10px]">
-                                    <TaskList projectId={DEMO_PROJECT_ID} />
+                                    <TaskList projectId={projectId} />
                                 </div>
                             </div>
                         );

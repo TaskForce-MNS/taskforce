@@ -24,7 +24,7 @@ namespace Api.Back.Services.dev
 
         public async Task JoinDemoProjectsIfDevAsync(Guid userId)
         {
-            if (!_environment.IsDevelopment())
+            if (_environment.IsProduction())
             {
                 return;
             }
