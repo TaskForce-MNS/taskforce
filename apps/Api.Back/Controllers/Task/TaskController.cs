@@ -61,12 +61,20 @@ namespace Api.Back.Controllers.Task
         [HttpGet(BackUrls.ListTasks)]
         [ProducesResponseType(typeof(IEnumerable<TaskResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ListTasksByProject(Guid projectId)
         {
-            var userId = GetCurrentIdentityId();
-            var tasks = await _taskService.GetByProjectAsync(projectId, userId);
-            return Ok(tasks);
+            try
+            {
+                var userId = GetCurrentIdentityId();
+                var tasks = await _taskService.GetByProjectAsync(projectId, userId);
+                return Ok(tasks);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+            }
         }
 
         [HttpPatch(BackUrls.UpdateTask)]

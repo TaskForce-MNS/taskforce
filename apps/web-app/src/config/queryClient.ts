@@ -4,8 +4,13 @@ import { useAuthStore } from '@/stores/useAuthStore';
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      if (error instanceof Error && error.message.includes('401')) {
-        useAuthStore.getState().logout();
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          useAuthStore.getState().logout();
+        }
+        else if (error.message.includes('403')) {
+          window.location.href = '/dashboard';
+        }
       }
     },
   }),
