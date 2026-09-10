@@ -65,25 +65,23 @@ builder.Services.AddFido2(options =>
     var fidoDomain = builder.Configuration["Fido2:Domain"] ?? "taskforce.local";
     var fidoOrigin = builder.Configuration["Fido2:Origin"] ?? "https://app.taskforce.local";
 
-    Console.WriteLine("=========================================");
-    Console.WriteLine($"[DEBUG] FIDO DOMAIN CHARGÉ : {fidoDomain}");
-    Console.WriteLine("=========================================");
-
     options.ServerDomain = fidoDomain;
     options.ServerName = "TaskForce app";
-    options.Origins = builder.Environment.IsDevelopment()
-          ? new HashSet<string>
-          {
-            "https://app.taskforce.local",
-            "http://localhost:5173",
-            "tauri://localhost",
-          }
-          : new HashSet<string>
-         {
-            fidoOrigin,
-            $"https://{fidoDomain}"
-          };
     options.TimestampDriftTolerance = 300000;
+    var allowedOrigins = new HashSet<string>
+    {
+        fidoOrigin,
+        $"https://{fidoDomain}"
+    };
+
+    if (builder.Environment.IsDevelopment())
+    {
+        allowedOrigins.Add("https://app.taskforce.local");
+        allowedOrigins.Add("http://localhost:5173");
+        allowedOrigins.Add("tauri://localhost");
+    }
+
+    options.Origins = allowedOrigins;
 });
 
 #endregion
