@@ -59,20 +59,22 @@ function isAuthRoute(url: string): boolean {
 
 async function extractErrorMessage(response: Response): Promise<string> {
   const errorData = await response.json().catch(() => null);
+  let errorMessage = 'Une erreur inattendue est survenue.';
 
   if (response.status === 404) {
-    return 'La ressource demandée est introuvable (404).';
+    errorMessage = 'La ressource demandée est introuvable (404).';
+  } else if (errorData && Array.isArray(errorData) && errorData.length > 0 && errorData[0].errorMessage) {
+    errorMessage = errorData[0].errorMessage;
+  } else if (errorData?.title) {
+    errorMessage = errorData.title;
+  } else if (errorData?.message) {
+    errorMessage = errorData.message;
   }
-  if (errorData && Array.isArray(errorData) && errorData.length > 0 && errorData[0].errorMessage) {
-    return errorData[0].errorMessage;
-  }
-  if (errorData?.title) {
-    return errorData.title;
-  }
-  if (errorData?.message) {
-    return errorData.message;
-  }
-  return 'Une erreur inattendue est survenue.';
+  const error: any = new Error(errorMessage);
+  error.status = response.status;
+  error.data = errorData;
+
+  return error;
 }
 
 async function refreshSession(
@@ -112,10 +114,6 @@ async function refreshSession(
   }
 }
 
-// ────────────────────────────────────────────────────────────
-// Fonction principale — complexité réduite via délégation
-// ────────────────────────────────────────────────────────────
-
 export const apiClient = async <T>(
   endpoint: string,
   options: ApiClientOptions = {}
@@ -131,8 +129,11 @@ export const apiClient = async <T>(
     response = await refreshSession(url, options, headers, finalBody);
   }
 
+  // if (!response.ok) {
+  //   throw new Error(await extractErrorMessage(response));
+  // }
   if (!response.ok) {
-    throw new Error(await extractErrorMessage(response));
+    throw await extractErrorMessage(response);
   }
 
   if (response.status === 204) return undefined as T;

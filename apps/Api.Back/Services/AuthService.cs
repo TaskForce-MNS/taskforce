@@ -1,4 +1,4 @@
-using Api.Back.DTOs.Requests;
+using Api.Back.DTOs.Requests.auth;
 using Api.Back.DTOs.Responses;
 using Api.Back.Models;
 using Api.Back.Repositories;
@@ -209,9 +209,3 @@ namespace Api.Back.Services
         }
     }
 }
-// 🚀 4. Le Cache Distribué (Remplacement du MemoryCache)
-// Dans ton AuthController, nous avons utilisé IMemoryCache pour stocker les "Challenges" cryptographiques de FIDO2 pendant 5 minutes.
-// C'est parfait pour le développement. Mais en production, si ton architecture s'agrandit, il vaut mieux utiliser Redis (IDistributedCache en .NET). Ainsi, si un utilisateur demande un Challenge FIDO2 au Serveur A, mais que sa réponse est traitée par le Serveur B, le Serveur B trouvera quand même le défi cryptographique dans Redis ! Tu peux aussi l'utiliser pour mettre en cache des requêtes PostgreSQL très lourdes qui ne changent pas souvent (comme des listes de références ou des catalogues).
-// 🛡️ 3. Le Rate Limiting (Protection de l'API)
-// Pour éviter qu'un robot ou un script malveillant ne spamme ton application (DDoS) ou ne tente d'épuiser tes ressources, tu peux utiliser le middleware de Rate Limiting natif d'ASP.NET Core et le brancher sur Redis.
-// Tu pourras définir des règles strictes partagées sur tout ton réseau : "Une même adresse IP ne peut pas appeler /login/options plus de 5 fois par minute". Redis, avec sa vitesse en mémoire, fera ce compte de manière invisible sans jamais ralentir tes vrais utilisateurs.

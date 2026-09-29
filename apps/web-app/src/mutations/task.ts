@@ -13,7 +13,7 @@ export const useCreateTask = (projectId: string) => {
                 ['projects', projectId, 'tasks'],
                 (old = []) => [...old, newTask]
             );
-
+            queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'tasks'] });
             addToast({
                 variant: 'success',
                 title: 'Tâche créée',
@@ -42,6 +42,7 @@ export const useUpdateTask = (projectId: string) => {
                 ['projects', projectId, 'tasks'],
                 (old = []) => old.map((task) => (task.id === updatedTask.id ? updatedTask : task))
             );
+            queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'tasks'] });
         },
         onError: (error) => {
             addToast({

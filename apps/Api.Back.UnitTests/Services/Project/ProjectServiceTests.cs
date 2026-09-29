@@ -14,12 +14,13 @@ namespace Api.Back.UnitTests.Services.Project
         private readonly Mock<IProjectRepository> _repositoryMock;
         private readonly ProjectService _sut; // System Under Test
         private readonly Mock<IProjectMemberRepository> _memberRepositoryMock;
+        private readonly Mock<IStripeCheckoutService> _stripeCheckoutServiceMock = new();
 
         public ProjectServiceTests()
         {
             _repositoryMock = new Mock<IProjectRepository>();
             _memberRepositoryMock = new Mock<IProjectMemberRepository>();
-            _sut = new ProjectService(_repositoryMock.Object, _memberRepositoryMock.Object);
+            _sut = new ProjectService(_repositoryMock.Object, _memberRepositoryMock.Object, _stripeCheckoutServiceMock.Object);
         }
 
         private static DbProject CreateDbProject(
@@ -71,8 +72,9 @@ namespace Api.Back.UnitTests.Services.Project
             var result = await _sut.PostProjectAsync(request, userId);
 
             // Assert
-            result.Should().NotBeNull();
-            result.Name.Should().Be(request.Name);
+            result.Project.Should().NotBeNull();
+            result.Project!.Name.Should().Be(request.Name);
+            result.CheckoutUrl.Should().BeNull();
 
             _repositoryMock.Verify(r => r.AddAsync(It.Is<DbProject>(p =>
                 p.Name == request.Name &&
@@ -264,9 +266,9 @@ namespace Api.Back.UnitTests.Services.Project
 
             // Assert
             result.Name.Should().Be("Nouveau nom");
-            result.Description.Should().Be("Ancienne description"); 
-            result.ColorHex.Should().Be("#000"); 
-            result.ImageUrl.Should().Be("https://img.com/old.png"); 
+            result.Description.Should().Be("Ancienne description");
+            result.ColorHex.Should().Be("#000");
+            result.ImageUrl.Should().Be("https://img.com/old.png");
         }
 
         [Fact]
@@ -320,6 +322,32 @@ namespace Api.Back.UnitTests.Services.Project
 
             // Assert
             await act.Should().ThrowAsync<ProjectForbiddenException>();
+        }
+
+        [Fact]
+        public async Task PostProjectAsync_Should_ReturnCheckoutUrl_When_ProjectLimitReached()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var request = new PostProjectRequest("Nouveau Projet", "Une description", "#FFF", "https://img.com/x.png");
+            const string fakeCheckoutUrl = "https://checkout.stripe.com/fake-session-id";
+
+            _repositoryMock
+                .Setup(r => r.CountOwnedProjectsAsync(userId))
+                .ReturnsAsync(3);
+
+            _stripeCheckoutServiceMock // 🌟 nouveau mock à ajouter dans le setup de la classe de test
+                .Setup(s => s.CreateCheckoutSessionAsync(request.Name, request.Description, request.ColorHex, userId))
+                .ReturnsAsync(fakeCheckoutUrl);
+
+            // Act
+            var result = await _sut.PostProjectAsync(request, userId);
+
+            // Assert
+            result.Project.Should().BeNull();
+            result.CheckoutUrl.Should().Be(fakeCheckoutUrl);
+
+            _repositoryMock.Verify(r => r.AddAsync(It.IsAny<DbProject>()), Times.Never);
         }
     }
 }

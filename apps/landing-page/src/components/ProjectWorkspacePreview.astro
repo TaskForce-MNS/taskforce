@@ -1,0 +1,426 @@
+---
+import TaskforceLogo from "./TaskforceLogo.astro";
+---
+
+<div class="workspace" aria-label="Aperçu du tableau de bord Taskforce">
+    <aside class="workspace-rail" aria-hidden="true">
+        <div class="rail-logo">
+            <TaskforceLogo compact gradientId="preview-mark" />
+        </div>
+        <div class="rail-home">⌂</div>
+        <div class="rail-divider"></div>
+        <div class="rail-project selected">R</div>
+        <div class="rail-project">S</div>
+        <div class="rail-project">A</div>
+        <div class="rail-add">+</div>
+        <div class="rail-user">ML</div>
+    </aside>
+    <div class="workspace-main">
+        <div class="workspace-topbar">
+            <span>Refonte produit</span><span class="topbar-more">•••</span>
+        </div>
+        <div class="workspace-content">
+            <div class="project-heading">
+                <div>
+                    <span class="project-eyebrow"><i></i> PROJET</span><h2>
+                        Refonte produit
+                    </h2><p>
+                        Une expérience plus simple pour nos utilisateurs.
+                    </p>
+                </div>
+                <div class="avatar-stack">
+                    <i>ML</i><i>JD</i><i>AK</i><b>+2</b>
+                </div>
+            </div>
+            <div class="task-toolbar">
+                <span class="toolbar-active">Tâches <b>8</b></span><span
+                    >Membres</span
+                ><span class="toolbar-action">Cette semaine⌄</span>
+            </div>
+            <div class="day-heading">
+                <span>Cette semaine</span><span>3 tâches</span>
+            </div>
+            <div class="task-card">
+                <span class="task-check"></span><span class="task-content"
+                    ><b>Finaliser les parcours clés</b><small
+                        >JD <i></i> 24 sept.</small
+                    ></span
+                ><span class="difficulty difficulty-medium">Moyenne</span>
+            </div>
+            <div class="task-card">
+                <span class="task-check"></span><span class="task-content"
+                    ><b>Préparer la revue d’équipe</b><small
+                        >ML <i></i> 26 sept.</small
+                    ></span
+                ><span class="difficulty difficulty-simple">Simple</span>
+            </div>
+            <div class="task-card">
+                <span class="task-check checked">✓</span><span
+                    class="task-content completed"
+                    ><b>Recueillir les retours</b><small
+                        >AK <i></i> Terminée</small
+                    ></span
+                ><span class="difficulty difficulty-done">Fait</span>
+            </div>
+            <div class="add-task">＋ <span>Ajouter une tâche</span></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .workspace {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 530px);
+        min-height: 350px;
+        display: grid;
+        grid-template-columns: 54px minmax(0, 1fr);
+        overflow: hidden;
+        border: 1px solid rgba(230, 230, 230, 0.13);
+        border-radius: 8px;
+        background: #313131;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+        transform: perspective(1100px) rotateY(-4deg) rotateX(1deg);
+        animation: preview-in 0.8s 0.1s both;
+    }
+    .workspace-rail {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 11px;
+        padding: 13px 0 10px;
+        border-right: 1px solid rgba(230, 230, 230, 0.09);
+        background: #1c1c1c;
+    }
+    .rail-logo {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 5px;
+    }
+    .rail-logo :global(.taskforce-logo) {
+        width: 20px;
+        height: 20px;
+    }
+    .rail-home,
+    .rail-project,
+    .rail-add,
+    .rail-user {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        color: #acacac;
+        font:
+            600 12px "Montserrat",
+            sans-serif;
+    }
+    .rail-home {
+        color: #e6e6e6;
+        background: #313131;
+        font-size: 17px;
+    }
+    .rail-divider {
+        width: 22px;
+        height: 1px;
+        background: rgba(230, 230, 230, 0.15);
+    }
+    .rail-project {
+        border: 1px solid rgba(230, 230, 230, 0.1);
+        background: #242424;
+    }
+    .rail-project.selected {
+        border-color: #587b7f;
+        color: #f0f8ff;
+        background: #587b7f;
+    }
+    .rail-add {
+        color: #bfedef;
+        border: 1px dashed rgba(191, 237, 239, 0.35);
+    }
+    .rail-user {
+        margin-top: auto;
+        color: #f0f8ff;
+        background: #74394e;
+        font-size: 8px;
+    }
+    .workspace-main {
+        min-width: 0;
+    }
+    .workspace-topbar {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 19px;
+        border-bottom: 1px solid rgba(230, 230, 230, 0.09);
+        color: #e6e6e6;
+        font:
+            600 10px "Montserrat",
+            sans-serif;
+    }
+    .topbar-more {
+        color: #acacac;
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+    .workspace-content {
+        padding: 17px 20px 14px;
+    }
+    .project-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .project-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #acacac;
+        font:
+            600 7px "Inter",
+            sans-serif;
+        letter-spacing: 0.8px;
+    }
+    .project-eyebrow i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #587b7f;
+    }
+    .project-heading h2 {
+        margin: 5px 0 3px;
+        color: #f0f8ff;
+        font:
+            700 17px "Montserrat",
+            sans-serif;
+        letter-spacing: 0;
+    }
+    .project-heading p {
+        margin: 0;
+        color: #acacac;
+        font:
+            400 8px "Inter",
+            sans-serif;
+    }
+    .avatar-stack {
+        display: flex;
+        align-items: center;
+    }
+    .avatar-stack i,
+    .avatar-stack b {
+        width: 21px;
+        height: 21px;
+        display: grid;
+        place-items: center;
+        margin-left: -5px;
+        border: 2px solid #313131;
+        border-radius: 50%;
+        color: #f0f8ff;
+        background: #587b7f;
+        font:
+            600 6px "Inter",
+            sans-serif;
+        font-style: normal;
+    }
+    .avatar-stack i:nth-child(2) {
+        background: #74394e;
+    }
+    .avatar-stack i:nth-child(3) {
+        background: #2d4953;
+    }
+    .avatar-stack b {
+        color: #e6e6e6;
+        background: #242424;
+    }
+    .task-toolbar {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-top: 15px;
+        border-bottom: 1px solid rgba(230, 230, 230, 0.12);
+        color: #acacac;
+        font:
+            500 8px "Inter",
+            sans-serif;
+    }
+    .toolbar-active {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        border-bottom: 2px solid #587b7f;
+        color: #f0f8ff;
+    }
+    .toolbar-active b {
+        padding: 2px 5px;
+        border-radius: 4px;
+        color: #bfedef;
+        background: rgba(88, 123, 127, 0.25);
+        font-size: 7px;
+    }
+    .toolbar-action {
+        margin-left: auto;
+        padding: 5px 7px;
+        border: 1px solid rgba(230, 230, 230, 0.14);
+        border-radius: 5px;
+        color: #e6e6e6;
+    }
+    .day-heading {
+        display: flex;
+        justify-content: space-between;
+        margin: 14px 1px 8px;
+        color: #acacac;
+        font:
+            600 8px "Inter",
+            sans-serif;
+    }
+    .day-heading span:last-child {
+        color: #acacac;
+        font-weight: 400;
+    }
+    .task-card {
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 9px;
+        border: 1px solid rgba(230, 230, 230, 0.08);
+        border-radius: 6px;
+        margin-bottom: 6px;
+        background: #242424;
+    }
+    .task-check {
+        width: 12px;
+        height: 12px;
+        flex: 0 0 auto;
+        border: 1.5px solid #acacac;
+        border-radius: 4px;
+    }
+    .task-check.checked {
+        display: grid;
+        place-items: center;
+        border-color: #587b7f;
+        color: #f0f8ff;
+        background: #587b7f;
+        font:
+            700 8px "Inter",
+            sans-serif;
+    }
+    .task-content {
+        min-width: 0;
+        flex: 1;
+    }
+    .task-content b,
+    .task-content small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: "Inter", sans-serif;
+    }
+    .task-content b {
+        color: #f0f8ff;
+        font-size: 8px;
+        font-weight: 500;
+    }
+    .task-content small {
+        margin-top: 4px;
+        color: #acacac;
+        font-size: 6px;
+    }
+    .task-content small i {
+        display: inline-block;
+        width: 3px;
+        height: 3px;
+        margin: 0 4px 1px;
+        border-radius: 50%;
+        background: #587b7f;
+    }
+    .task-content.completed b {
+        color: #acacac;
+        text-decoration: line-through;
+    }
+    .difficulty {
+        padding: 3px 5px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font:
+            500 6px "Inter",
+            sans-serif;
+    }
+    .difficulty-medium {
+        border-color: rgba(255, 204, 0, 0.2);
+        color: #ffcc00;
+        background: rgba(255, 204, 0, 0.08);
+    }
+    .difficulty-simple {
+        border-color: rgba(8, 184, 125, 0.2);
+        color: #08b87d;
+        background: rgba(8, 184, 125, 0.08);
+    }
+    .difficulty-done {
+        border-color: rgba(88, 123, 127, 0.24);
+        color: #bfedef;
+        background: rgba(88, 123, 127, 0.14);
+    }
+    .add-task {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 3px;
+        color: #bfedef;
+        font:
+            600 11px "Inter",
+            sans-serif;
+    }
+    .add-task span {
+        color: #acacac;
+        font-size: 7px;
+        font-weight: 400;
+    }
+    @keyframes preview-in {
+        from {
+            opacity: 0;
+            transform: perspective(1100px) rotateY(-4deg) rotateX(1deg)
+                translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: perspective(1100px) rotateY(-4deg) rotateX(1deg)
+                translateY(0);
+        }
+    }
+    @media (max-width: 650px) {
+        .workspace {
+            width: min(100%, 500px);
+            grid-template-columns: 45px minmax(0, 1fr);
+            transform: perspective(1100px) rotateY(-1deg);
+        }
+        .workspace-content {
+            padding: 13px 12px 10px;
+        }
+        .workspace-topbar {
+            padding: 0 12px;
+        }
+        .workspace-rail {
+            gap: 9px;
+        }
+        .rail-home,
+        .rail-project,
+        .rail-add,
+        .rail-user {
+            width: 27px;
+            height: 27px;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .workspace {
+            animation: none;
+        }
+    }
+</style>

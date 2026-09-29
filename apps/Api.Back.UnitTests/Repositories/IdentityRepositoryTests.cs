@@ -72,48 +72,6 @@ namespace Api.Back.UnitTests.Repositories
             // Assert
             result.Should().BeNull();
         }
-        // [Fact]
-        // public async Task GetByPublicKeyAsync_Should_ReturnIdentity_When_CredentialMatches()
-        // {
-        //     // Arrange
-        //     var publicKeyBytes = new byte[] { 1, 2, 3 };
-        //     var publicKeyBase64 = Convert.ToBase64String(publicKeyBytes);
-
-        //     var identity = CreateIdentity();
-
-        //     var credential = CreateCredential(
-        //         identity.Id,
-        //         publicKey: publicKeyBytes
-        //     );
-
-        //     identity.Credentials.Add(credential);
-
-        //     _context.Identities.Add(identity);
-
-        //     await _context.SaveChangesAsync(
-        //         TestContext.Current.CancellationToken
-        //     );
-
-        //     // Vérification du setup
-        //     var credentialCheck = await _context.Credentials
-        //         .FirstOrDefaultAsync(
-        //             c => c.PublicKey.SequenceEqual(publicKeyBytes),
-        //             TestContext.Current.CancellationToken
-        //         );
-
-        //     credentialCheck.Should().NotBeNull();
-        //     credentialCheck!.IdentityId.Should().Be(identity.Id);
-
-        //     // Act
-        //     var result = await _sut.GetByPublicKeyAsync(publicKeyBase64);
-
-        //     // Assert
-        //     result.Should().NotBeNull();
-        //     result!.Id.Should().Be(identity.Id);
-        //     result.Credentials.Should().NotBeEmpty();
-        // }
-
-        // ---------------- PublicKeyExistsAsync ----------------
 
         [Fact]
         public async Task PublicKeyExistsAsync_Should_ReturnFalse_When_NoMatch()

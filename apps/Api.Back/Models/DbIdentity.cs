@@ -56,6 +56,7 @@ namespace Api.Back.Models
         public virtual DbPreference? Preference { get; set; }
 
         public virtual ICollection<DbUserCredential> Credentials { get; } = new List<DbUserCredential>();
+        public virtual ICollection<DbUserSkill> Skills { get; } = new List<DbUserSkill>();
         #endregion
     }
 }

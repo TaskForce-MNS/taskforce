@@ -4,12 +4,14 @@ using Api.Back.Models;
 using Api.Back.Repositories;
 using Api.Back.Extensions;
 using Api.Back.Middleware.Exceptions;
+using Stripe.Checkout;
 
 namespace Api.Back.Services
 {
     public interface IProjectService
     {
-        Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId);
+        // Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId);
+        Task<(ProjectResponse? Project, string? CheckoutUrl)> PostProjectAsync(PostProjectRequest request, Guid userId);
         Task<ProjectResponse?> GetProjectByIdAsync(Guid id, Guid userId);
         Task<IEnumerable<ProjectResponse>> ListUserProjectsAsync(Guid userId);
         Task<ProjectResponse> PutProjectAsync(Guid id, PutProjectRequest request, Guid userId);
@@ -20,16 +22,52 @@ namespace Api.Back.Services
     {
         private readonly IProjectRepository _repository;
         private readonly IProjectMemberRepository _memberRepository;
-
-        public ProjectService(IProjectRepository repository, IProjectMemberRepository memberRepository)
+        private readonly IStripeCheckoutService _stripeCheckoutService;
+        public ProjectService(IProjectRepository repository, IProjectMemberRepository memberRepository, IStripeCheckoutService stripeCheckoutService)
         {
             _repository = repository;
             _memberRepository = memberRepository;
+            _stripeCheckoutService = stripeCheckoutService;
         }
 
-        public async Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId)
+        // public async Task<ProjectResponse> PostProjectAsync(PostProjectRequest request, Guid userId)
+        // {
+        //     ArgumentNullException.ThrowIfNull(request);
+        //     var projectId = Guid.NewGuid();
+        //     var newProject = new DbProject
+        //     {
+        //         Id = projectId,
+        //         Name = request.Name,
+        //         Description = request.Description,
+        //         ColorHex = request.ColorHex,
+        //         ImageUrl = request.ImageUrl,
+        //         CreatedById = userId
+        //     };
+
+        //     newProject.Members.Add(new DbProjectMember
+        //     {
+        //         ProjectId = newProject.Id,
+        //         IdentityId = userId,
+        //         Role = ProjectMemberRole.Owner
+        //     });
+
+        //     await _repository.AddAsync(newProject);
+        //     return newProject.ToResponse(ProjectMemberRole.Owner);
+        // }
+        public async Task<(ProjectResponse? Project, string? CheckoutUrl)> PostProjectAsync(PostProjectRequest request, Guid userId)
         {
             ArgumentNullException.ThrowIfNull(request);
+
+            var projectCount = await _repository.CountOwnedProjectsAsync(userId);
+
+            if (projectCount >= 3)
+            {
+                var checkoutUrl = await _stripeCheckoutService.CreateCheckoutSessionAsync(
+                    request.Name, request.Description, request.ColorHex, userId);
+
+                return (null, checkoutUrl);
+            }
+
             var projectId = Guid.NewGuid();
             var newProject = new DbProject
             {
@@ -49,7 +87,7 @@ namespace Api.Back.Services
             });
 
             await _repository.AddAsync(newProject);
-            return newProject.ToResponse(ProjectMemberRole.Owner);
+            return (newProject.ToResponse(ProjectMemberRole.Owner), null);
         }
         public async Task<ProjectResponse?> GetProjectByIdAsync(Guid id, Guid userId)
         {

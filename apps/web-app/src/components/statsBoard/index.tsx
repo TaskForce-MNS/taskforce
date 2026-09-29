@@ -7,8 +7,8 @@ export type { ProjectDistributionProps } from './ProjectDistribution';
 export { ActivitySparkline } from './ActivitySparkline';
 export type { ActivitySparklineProps } from './ActivitySparkline';
 
-export { GrowthAreaChart } from './GrowthAreaChart';
-export type { GrowthAreaChartProps } from './GrowthAreaChart';
+export { TaskDifficultyRadar } from './TaskDifficultyRadar';
+export type { TaskDifficultyRadarProps } from './TaskDifficultyRadar';
 
-export { WeeklyRadarChart } from './WeeklyRadarChart';
-export type { WeeklyRadarChartProps } from './WeeklyRadarChart';
+export { WorkloadAreaChart } from './WorkloadAreaChart';
+export type { WorkloadAreaChartProps } from './WorkloadAreaChart';

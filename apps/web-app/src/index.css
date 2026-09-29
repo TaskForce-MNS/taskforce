@@ -67,6 +67,7 @@ body {
   /* ========================= */
   /* TYPOGRAPHY CLAMP          */
   /* ========================= */
+  --text-xs: clamp(0.7rem, 0.6667rem + 0.2083vw, 0.875rem);
   --text-sm: clamp(0.875rem, 0.8333rem + 0.2083vw, 1rem);
   --text-base: clamp(1rem, 0.9583rem + 0.2083vw, 1.125rem);
   --text-lg: clamp(1.125rem, 1.0417rem + 0.4167vw, 1.375rem);

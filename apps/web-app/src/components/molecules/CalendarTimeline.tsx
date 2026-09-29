@@ -8,6 +8,7 @@ interface CalendarTimelineProps {
 export interface CalendarTimelineHandle {
     scrollToToday: () => void;
 }
+
 const generateDummyDays = () => {
     const days = [];
     for (let i = 20; i >= -5; i--) {
@@ -23,7 +24,12 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
         const [days] = useState(generateDummyDays());
 
         const containerRef = useRef<HTMLDivElement>(null);
-        const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+        const dividersRef = useRef<Map<string, HTMLDivElement>>(new Map());
+
+        const storageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+        const scrollRafRef = useRef<number | null>(null);
+
+        const lastActiveDateRef = useRef<string | null>(null);
 
         useImperativeHandle(ref, () => ({
             scrollToToday: () => {
@@ -49,32 +55,41 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
         const handleScroll = useCallback(() => {
             const container = containerRef.current;
             if (!container) return;
-            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-            scrollTimeoutRef.current = setTimeout(() => {
+
+            // 1. Sauvegarde différée (Debounce) : N'écrit dans le stockage que si on a arrêté de scroller pendant 150ms
+            if (storageTimeoutRef.current) clearTimeout(storageTimeoutRef.current);
+            storageTimeoutRef.current = setTimeout(() => {
                 if (projectId && projectId !== 'undefined') {
                     sessionStorage.setItem(`calendar-scroll-${projectId}`, container.scrollTop.toString());
                 }
             }, 150);
 
-            const dividers = container.querySelectorAll('.date-divider');
-            const containerTop = container.getBoundingClientRect().top;
+            // 2. Animation (requestAnimationFrame) : Calcule l'opacité à 60 images/seconde sans bloquer le navigateur
+            if (scrollRafRef.current) return; // Empêche l'accumulation de calculs
 
-            let activeDateTitle = null;
+            scrollRafRef.current = requestAnimationFrame(() => {
+                const containerTop = container.getBoundingClientRect().top;
+                let activeDateTitle: string | null = null;
 
-            dividers.forEach((divider) => {
-                const htmlElement = divider as HTMLElement;
-                const distanceToTop = htmlElement.getBoundingClientRect().top - containerTop;
+                // 🌟 SÉCURITÉ : On boucle sur nos références React, pas sur le vrai DOM
+                dividersRef.current.forEach((htmlElement, fullDate) => {
+                    const distanceToTop = htmlElement.getBoundingClientRect().top - containerTop;
 
-                if (distanceToTop <= 120) {
-                    activeDateTitle = htmlElement.getAttribute('data-full-date');
+                    if (distanceToTop <= 120) {
+                        activeDateTitle = fullDate;
+                    }
+
+                    // Calcul de l'opacité
+                    htmlElement.style.opacity = distanceToTop < 40 ? '0' : '1';
+                });
+
+                if (activeDateTitle && activeDateTitle !== lastActiveDateRef.current) {
+                    lastActiveDateRef.current = activeDateTitle;
+                    onDateChange(activeDateTitle);
                 }
 
-                htmlElement.style.opacity = distanceToTop < 40 ? '0' : '1';
+                scrollRafRef.current = null;
             });
-
-            if (activeDateTitle) {
-                onDateChange(activeDateTitle);
-            }
         }, [onDateChange, projectId]);
 
         useEffect(() => {
@@ -91,12 +106,20 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
             }
 
             handleScroll();
+            const layoutTimeout = setTimeout(() => {
+                handleScroll();
+            }, 300);
+            return () => {
+                if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
+                clearTimeout(layoutTimeout);
+            };
         }, [projectId, handleScroll]);
+
         return (
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex-1 min-h-0 w-full overflow-y-auto rounded-xl border border-white-accent-dark/15 bg-black-accent-light/10 p-4 sm:p-1 shadow-inner scrollbar-hide relative [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
+                className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden rounded-xl bg-black-accent-light/10 p-4 shadow-inner scrollbar-hide relative [mask-image:linear-gradient(to_bottom,transparent,black_2px,black_calc(100%-20px),transparent)] [mask-image:linear-gradient(to_top,transparent,black_2px,black_calc(100%-10px),transparent)]"
             >
                 <div className="flex flex-col gap-12">
                     {days.map((day, index) => {
@@ -111,8 +134,11 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
                                 data-is-today={isToday}
                             >
                                 <div
+                                    ref={(el) => {
+                                        if (el) dividersRef.current.set(fullDate, el);
+                                        else dividersRef.current.delete(fullDate);
+                                    }}
                                     className="date-divider flex items-center gap-4 py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 transition-opacity duration-200"
-                                    data-full-date={fullDate}
                                 >
                                     <span className={`text-sm font-semibold shrink-0 ${isToday ? 'text-primary-light' : 'text-white-accent-light'}`}>
                                         {isToday ? "Aujourd'hui" : shortDate}
@@ -120,8 +146,8 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
                                     <div className={`h-[2px] flex-1 rounded-full ${isToday ? 'bg-primary-default/50' : 'bg-white-accent-dark/20'}`}></div>
                                 </div>
 
-                                <div className="mt-4 flex flex-col gap-3 border-l-1 border-white-accent-dark/10 ml-[10px]">
-                                    <TaskList projectId={projectId} />
+                                <div className="mt-1 flex flex-col">
+                                    <TaskList projectId={projectId} targetDate={day} />
                                 </div>
                             </div>
                         );
@@ -129,4 +155,5 @@ export const CalendarTimeline = forwardRef<CalendarTimelineHandle, CalendarTimel
                 </div>
             </div>
         );
-    });
+    }
+);

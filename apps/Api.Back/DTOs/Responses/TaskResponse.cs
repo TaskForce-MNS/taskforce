@@ -1,3 +1,5 @@
+using Api.Back.Models;
+
 namespace Api.Back.DTOs.Responses
 {
     public record TaskResponse(
@@ -7,6 +9,13 @@ namespace Api.Back.DTOs.Responses
         bool IsChecked,
         bool IsArchived,
         DateTimeOffset CreatedAt,
-        Guid ProjectId
+        DateTimeOffset? DueDate,
+        Guid? AssigneeId,
+        string? AssigneeName,
+        Guid ProjectId,
+        TaskDifficulty Difficulty,
+        int StoryPoints,
+        DateTime? TargetWeek,
+        IReadOnlyList<string> RequiredDomains
     );
 }

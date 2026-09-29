@@ -21,10 +21,22 @@ namespace Api.Back.Data
                 return;
             }
 
+            // 1. Création des identités
             var alice = CreateDemoIdentity("11111111-1111-1111-1111-111111111111", "Alice", "Dupont", "Product Owner", "5");
             var bob = CreateDemoIdentity("11111111-1111-1111-1111-111111111112", "Bob", "Martin", "Développeur Backend", "3");
             var chloe = CreateDemoIdentity("11111111-1111-1111-1111-111111111113", "Chloé", "Bernard", "Designer UI/UX", "4");
             var david = CreateDemoIdentity("11111111-1111-1111-1111-111111111114", "David", "Leroy", "Développeur Frontend", "2");
+
+            // 🌟 NOUVEAU : Ajout de compétences aux utilisateurs
+            alice.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "Management", Level = ExperienceLevel.Senior });
+
+            bob.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "C#", Level = ExperienceLevel.Senior });
+            bob.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "PostgreSQL", Level = ExperienceLevel.Intermediate });
+
+            chloe.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "Figma", Level = ExperienceLevel.Senior });
+
+            david.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "React", Level = ExperienceLevel.Intermediate });
+            david.Identity.Skills.Add(new DbUserSkill { Id = Guid.NewGuid(), Domain = "TypeScript", Level = ExperienceLevel.Intermediate });
 
             foreach (var (identity, preference) in new[] { alice, bob, chloe, david })
             {
@@ -66,12 +78,25 @@ namespace Api.Back.Data
                 new() { ProjectId = DemoProjectBetaId, IdentityId = chloe.Identity.Id, Role = ProjectMemberRole.Member, JoinedAt = DateTime.UtcNow },
             };
 
+            // 🌟 NOUVEAU : Ajout de la Difficulté et des Domaines Requis aux tâches
             var tasks = new List<DbTask>
             {
-                new() { Id = Guid.NewGuid(), ProjectId = DemoProjectAlphaId, Name = "Mettre en place le frontend React", Description = "Utiliser Zustand pour le state management", IsChecked = true,  ClosedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-                new() { Id = Guid.NewGuid(), ProjectId = DemoProjectAlphaId, Name = "Créer les composants UI",           Description = "Faire le design façon IntelliJ",             IsChecked = false, CreatedAt = DateTime.UtcNow },
-                new() { Id = Guid.NewGuid(), ProjectId = DemoProjectBetaId,  Name = "Configurer le backend",             Description = "API .NET + PostgreSQL",                      IsChecked = true,  ClosedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-                new() { Id = Guid.NewGuid(), ProjectId = DemoProjectBetaId,  Name = "Écrire les tests",                  Description = "xUnit + Moq",                                IsChecked = false, CreatedAt = DateTime.UtcNow },
+                new() {
+                    Id = Guid.NewGuid(), ProjectId = DemoProjectAlphaId, Name = "Mettre en place le frontend React", Description = "Utiliser Zustand pour le state management", IsChecked = true,  ClosedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow,
+                    Difficulty = TaskDifficulty.Medium, StoryPoints = 3, RequiredDomains = new List<string> { "React", "TypeScript" }
+                },
+                new() {
+                    Id = Guid.NewGuid(), ProjectId = DemoProjectAlphaId, Name = "Créer les composants UI",          Description = "Faire le design façon IntelliJ",             IsChecked = false, CreatedAt = DateTime.UtcNow,
+                    Difficulty = TaskDifficulty.Simple, StoryPoints = 1, RequiredDomains = new List<string> { "Figma" }
+                },
+                new() {
+                    Id = Guid.NewGuid(), ProjectId = DemoProjectBetaId,  Name = "Configurer le backend",            Description = "API .NET + PostgreSQL",                      IsChecked = true,  ClosedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow,
+                    Difficulty = TaskDifficulty.Complex, StoryPoints = 8, RequiredDomains = new List<string> { "C#", "PostgreSQL" }
+                },
+                new() {
+                    Id = Guid.NewGuid(), ProjectId = DemoProjectBetaId,  Name = "Écrire les tests",                 Description = "xUnit + Moq",                                IsChecked = false, CreatedAt = DateTime.UtcNow,
+                    Difficulty = TaskDifficulty.Medium, StoryPoints = 3, RequiredDomains = new List<string> { "C#" }
+                },
             };
 
             await context.Projects.AddRangeAsync(projectAlpha, projectBeta);

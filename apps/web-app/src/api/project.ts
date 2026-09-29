@@ -32,8 +32,6 @@ export interface PutProjectPayload {
     colorHex: string | null;
     imageUrl: string | null;
 }
-
-
 export interface PatchProjectPayload {
     name?: string;
     description?: string;
