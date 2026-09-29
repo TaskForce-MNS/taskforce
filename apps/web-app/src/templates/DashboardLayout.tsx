@@ -7,6 +7,8 @@ import { CreateProjectModal } from './CreateProjectModal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/atoms/Button';
 import { projectQueryOptions } from '@/api/queries/projectsQueries';
+import { SkillsManager } from '@/components/profile/SkillsManager';
+import { Modal } from '@/components/atoms/Modal';
 
 export const DashboardLayout = () => {
     const navigate = useNavigate();
@@ -23,6 +25,8 @@ export const DashboardLayout = () => {
         ...projectQueryOptions(projectId || ''),
         enabled: !!projectId,
     });
+
+    const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
     const displayName = user?.firstName || 'Utilisateur';
     const displayLastName = user?.lastName;
@@ -86,7 +90,10 @@ export const DashboardLayout = () => {
                     </div>
 
                     <div className="ml-auto flex items-center gap-2 sm:gap-4">
-                        <div className="flex items-center gap-3 rounded-xl border border-white-accent-dark/15 bg-black-accent-light/50 p-1 shadow-inner transition-all hover:border-primary-default/50 sm:pr-4">
+                        <button
+                            onClick={() => setIsSkillsModalOpen(true)}
+                            className="flex w-full items-center gap-3 rounded-xl border border-white-accent-dark/15 bg-black-accent-light/50 p-1 shadow-inner transition-all hover:border-primary-default/50 sm:pr-4 cursor-pointer text-left"
+                        >
                             <div className="relative shrink-0">
                                 <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-primary-default font-title text-xs font-bold text-white shadow-sm">
                                     {userInitial}
@@ -101,7 +108,7 @@ export const DashboardLayout = () => {
                                     {displayTitle}
                                 </span>
                             </div>
-                        </div>
+                        </button>
 
                         <Button
                             variant='outline'
@@ -117,7 +124,7 @@ export const DashboardLayout = () => {
                     </div>
                 </header>
 
-                <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-2 lg:p-4">
+                <main className="flex-1 overflow-y-auto p-1 pb-18 md:pb-1 lg:p-1 lg:pb-1">
                     <Suspense fallback={<div className="p-4 text-white-accent-dark">Chargement...</div>}>
                         <Outlet />
                     </Suspense>
@@ -128,6 +135,14 @@ export const DashboardLayout = () => {
                 isOpen={isCreateProjectOpen}
                 onClose={() => setIsCreateProjectOpen(false)}
             />
+            {isSkillsModalOpen && (
+                <Modal
+                    isOpen={isSkillsModalOpen}
+                    onClose={() => setIsSkillsModalOpen(false)}
+                >
+                    <SkillsManager />
+                </Modal>
+            )}
         </div >
     );
 };

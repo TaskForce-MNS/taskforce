@@ -34,5 +34,10 @@ namespace Api.Back.Common
         public const string ListTasks = BasePath + "/projects/{projectId}/tasks";
         public const string UpdateTask = BasePath + "/tasks/{taskId}";
         #endregion
+
+        #region Users
+        public const string AddUserSkill = BasePath + "/users/me/skills";
+        public const string RemoveUserSkill = BasePath + "/users/me/skills/{skillId}";
+        #endregion
     }
 }

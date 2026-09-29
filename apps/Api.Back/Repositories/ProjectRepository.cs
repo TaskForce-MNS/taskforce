@@ -11,6 +11,7 @@ namespace Api.Back.Repositories
         Task<IEnumerable<DbProject>> GetByUserAsync(Guid userId);
         Task UpdateAsync(DbProject project);
         // Task<IEnumerable<DbProjectMember>> GetByProjectAsync(Guid projectId);
+        Task<int> CountOwnedProjectsAsync(Guid userId);
     }
 
     public class ProjectRepository : IProjectRepository
@@ -46,6 +47,12 @@ namespace Api.Back.Repositories
         {
             _context.Projects.Update(project);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> CountOwnedProjectsAsync(Guid userId)
+        {
+            return await _context.Projects
+                .CountAsync(p => p.CreatedById == userId);
         }
     }
 

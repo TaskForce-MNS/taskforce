@@ -103,7 +103,7 @@ namespace Api.Back.UnitTests.Controllers.Projects
             _validatorMock.Setup(v => v.ValidateAsync(request, default))
                 .ReturnsAsync(new ValidationResult());
             _serviceMock.Setup(s => s.PostProjectAsync(request, userId))
-                .ReturnsAsync(response);
+                .ReturnsAsync((response, (string?)null));
 
             // Act
             var result = await _sut.PostProject(request);

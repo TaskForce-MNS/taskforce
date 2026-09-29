@@ -1,11 +1,1342 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import TaskforceLogo from "../components/TaskforceLogo.astro";
+import ProjectWorkspacePreview from "../components/ProjectWorkspacePreview.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const features = [
+	{
+		number: "01",
+		title: "Un espace par projet",
+		description:
+			"Retrouvez le contexte, les tâches et les personnes au même endroit. Chaque projet garde son identité et reste simple à suivre.",
+		icon: "grid",
+	},
+	{
+		number: "02",
+		title: "Des tâches qui avancent",
+		description:
+			"Découpez le travail, posez une échéance et attribuez chaque tâche à la bonne personne. L’avancement reste visible pour toute l’équipe.",
+		icon: "check",
+	},
+	{
+		number: "03",
+		title: "Les bonnes personnes, ensemble",
+		description:
+			"Invitez vos collaborateurs, gérez les rôles et partagez les compétences utiles pour mieux répartir le travail.",
+		icon: "people",
+	},
+];
+
+const steps = [
+	{
+		number: "01",
+		title: "Créez un projet",
+		description:
+			"Donnez un nom à votre espace et réunissez le contexte utile.",
+	},
+	{
+		number: "02",
+		title: "Invitez l’équipe",
+		description: "Ajoutez vos collaborateurs et définissez leur rôle.",
+	},
+	{
+		number: "03",
+		title: "Faites avancer le travail",
+		description:
+			"Créez les tâches, répartissez-les et suivez la progression.",
+	},
+];
 ---
 
 <Layout>
-	<Welcome />
+	<div class="site-shell">
+		<header class="site-header">
+			<a class="brand" href="#accueil" aria-label="Taskforce, accueil"
+				><TaskforceLogo gradientId="header-mark" /></a
+			>
+			<nav class="main-nav" aria-label="Navigation principale">
+				<a href="#fonctionnalites">Fonctionnalités</a><a
+					href="#comment-ca-marche">Comment ça marche</a
+				>
+			</nav>
+			<a
+				class="header-cta"
+				href="https://app.staging.taskforce.stagiairesmns.fr/auth"
+				>Ouvrir Taskforce <span aria-hidden="true">↗</span></a
+			>
+		</header>
+
+		<main>
+			<section class="hero" id="accueil">
+				<div class="hero-copy">
+					<p class="eyebrow">
+						<span class="eyebrow-dot"></span> Le travail d’équipe, sans
+						dispersion
+					</p>
+					<h1>
+						Les projets avancent mieux <span
+							>quand tout le monde est aligné.</span
+						>
+					</h1>
+					<p class="hero-description">
+						Taskforce rassemble vos projets, vos tâches et votre
+						équipe dans un espace clair. Moins de choses à chercher,
+						plus de travail qui avance.
+					</p>
+					<div class="hero-actions">
+						<a
+							class="button button-primary"
+							href="https://app.staging.taskforce.stagiairesmns.fr/auth"
+							>Découvrir l’application <span aria-hidden="true"
+								>↗</span
+							></a
+						><a class="text-link" href="#fonctionnalites"
+							>Explorer les fonctionnalités <span
+								aria-hidden="true">↓</span
+							></a
+						>
+					</div>
+					<div class="hero-note">
+						<span class="note-line"></span> Un espace partagé, pensé pour
+						le quotidien des équipes.
+					</div>
+				</div>
+				<div
+					class="hero-visual"
+					aria-label="Aperçu de l’espace projet Taskforce"
+				>
+					<div class="visual-orbit orbit-one"></div><div
+						class="visual-orbit orbit-two"
+					>
+					</div><ProjectWorkspacePreview /><div class="floating-note">
+						<span class="floating-check">✓</span><span
+							><strong>Bien réparti</strong><small
+								>Les tâches sont attribuées</small
+							></span
+						>
+					</div><div class="floating-label">
+						<span></span> Projet d’équipe
+					</div>
+				</div>
+			</section>
+
+			<section class="signal-bar" aria-label="Taskforce en bref">
+				<p>
+					Tout ce qu’il faut pour <strong
+						>faire avancer un projet ensemble.</strong
+					>
+				</p><div class="signal-items">
+					<span><i class="signal-mark mark-project"></i>Projets</span
+					><span><i class="signal-mark mark-tasks"></i>Tâches</span
+					><span><i class="signal-mark mark-team"></i>Équipe</span>
+				</div>
+			</section>
+
+			<section class="features-section section-wrap" id="fonctionnalites">
+				<div class="section-heading">
+					<p class="eyebrow">
+						<span class="eyebrow-dot"></span> Un espace qui rassemble
+					</p><h2>
+						Le bon travail.<br /><span>Au bon endroit.</span>
+					</h2><p class="section-intro">
+						Tout le monde sait où en est le projet, ce qu’il reste à
+						faire et qui s’en occupe.
+					</p>
+				</div>
+				<div class="feature-list">
+					{
+						features.map((feature) => (
+							<article class="feature-row">
+								<span class="feature-number">
+									{feature.number}
+								</span>
+								<div class="feature-icon" aria-hidden="true">
+									{feature.icon === "grid" && (
+										<svg viewBox="0 0 24 24" fill="none">
+											<rect
+												x="3.5"
+												y="3.5"
+												width="7"
+												height="7"
+												rx="1.5"
+											/>
+											<rect
+												x="13.5"
+												y="3.5"
+												width="7"
+												height="7"
+												rx="1.5"
+											/>
+											<rect
+												x="3.5"
+												y="13.5"
+												width="7"
+												height="7"
+												rx="1.5"
+											/>
+											<rect
+												x="13.5"
+												y="13.5"
+												width="7"
+												height="7"
+												rx="1.5"
+											/>
+										</svg>
+									)}
+									{feature.icon === "check" && (
+										<svg viewBox="0 0 24 24" fill="none">
+											<path
+												d="M8 5h11M8 12h11M8 19h11M3.5 5h.01M3.5 12h.01M3.5 19h.01"
+												stroke-linecap="round"
+												stroke-width="2.3"
+											/>
+										</svg>
+									)}
+									{feature.icon === "people" && (
+										<svg viewBox="0 0 24 24" fill="none">
+											<path
+												d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4a3.5 3.5 0 0 1 0 6.8M21 20v-1.5a4 4 0 0 0-3-3.87"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="1.8"
+											/>
+										</svg>
+									)}
+								</div>
+								<>
+									<div class="feature-copy">
+										<>
+											<h3>{feature.title}</h3>
+											<p>{feature.description}</p>
+										</>
+									</div>
+									<span
+										class="feature-arrow"
+										aria-hidden="true"
+									>
+										↗
+									</span>
+								</>
+							</article>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="workflow-section" id="comment-ca-marche">
+				<div class="workflow-inner">
+					<div class="workflow-heading">
+						<p class="eyebrow eyebrow-light">
+							<span class="eyebrow-dot"></span> Simple dès le premier
+							jour
+						</p><h2>De l’idée<br />à l’action.</h2><p>
+							Un cadre léger pour transformer le travail à faire
+							en progrès visibles.
+						</p>
+					</div>
+					<div class="workflow-steps">
+						{
+							steps.map((step) => (
+								<article class="workflow-step">
+									<>
+										<span class="step-number">
+											{step.number}
+										</span>
+										<div>
+											<>
+												<h3>{step.title}</h3>
+												<p>{step.description}</p>
+											</>
+										</div>
+										<span
+											class="step-arrow"
+											aria-hidden="true"
+										>
+											↗
+										</span>
+									</>
+								</article>
+							))
+						}
+					</div>
+					<div class="workflow-stamp" aria-hidden="true">
+						<span>FAIT<br />ENSEMBLE</span><i>✳</i>
+					</div>
+				</div>
+			</section>
+
+			<section class="closing-cta">
+				<div class="closing-mark">
+					<TaskforceLogo compact gradientId="closing-mark" />
+				</div><p class="eyebrow">
+					<span class="eyebrow-dot"></span> Votre équipe peut commencer
+					ici
+				</p><h2>
+					Un projet clair.<br /><span>Une équipe qui avance.</span>
+				</h2><a
+					class="button button-primary"
+					href="https://app.staging.taskforce.stagiairesmns.fr/auth"
+					>Ouvrir Taskforce <span aria-hidden="true">↗</span></a
+				>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<a
+				class="brand footer-brand"
+				href="#accueil"
+				aria-label="Taskforce, retour en haut"
+				><TaskforceLogo gradientId="footer-mark" /></a
+			><p>Le travail d’équipe, au même endroit.</p><a
+				class="footer-top"
+				href="#accueil"
+				>Retour en haut <span aria-hidden="true">↑</span></a
+			><span class="copyright"
+				>© {new Date().getFullYear()} Taskforce</span
+			>
+		</footer>
+	</div>
 </Layout>
+
+<style>
+	:root {
+		--ink: #f0f8ff;
+		--muted: #acacac;
+		--paper: #242424;
+		--green: #587b7f;
+		--lime: #bfedef;
+		--rule: rgba(172, 172, 172, 0.18);
+		--display: "Montserrat", sans-serif;
+	}
+	.site-shell {
+		overflow: hidden;
+	}
+	.site-header {
+		height: 80px;
+		max-width: 1240px;
+		margin: 0 auto;
+		padding: 0 38px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid rgba(23, 35, 33, 0.09);
+	}
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--ink);
+		text-decoration: none;
+		font: 800 20px var(--display);
+		letter-spacing: 0;
+	}
+	.brand-period {
+		color: var(--green);
+	}
+	.brand-mark {
+		width: 25px;
+		height: 25px;
+		display: flex;
+		align-items: end;
+		gap: 3px;
+		padding: 3px;
+		border-radius: 7px;
+		background: var(--green);
+	}
+	.brand-mark span {
+		display: block;
+		width: 5px;
+		border-radius: 3px;
+		background: var(--lime);
+	}
+	.brand-mark span:nth-child(1) {
+		height: 9px;
+		opacity: 0.75;
+	}
+	.brand-mark span:nth-child(2) {
+		height: 15px;
+	}
+	.brand-mark span:nth-child(3) {
+		height: 11px;
+		opacity: 0.85;
+	}
+	.main-nav {
+		display: flex;
+		align-items: center;
+		gap: 36px;
+		margin-left: 65px;
+	}
+	.main-nav a,
+	.header-cta {
+		color: #45534e;
+		text-decoration: none;
+		font-size: 13px;
+		font-weight: 600;
+		transition: color 0.2s ease;
+	}
+	.main-nav a:hover,
+	.footer-top:hover {
+		color: var(--green);
+	}
+	.header-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		padding: 11px 15px;
+		color: white;
+		border-radius: 5px;
+		background: var(--ink);
+	}
+	.header-cta:hover {
+		background: var(--green);
+	}
+	.hero {
+		max-width: 1240px;
+		min-height: 630px;
+		padding: 74px 38px 72px;
+		margin: 0 auto;
+		display: grid;
+		grid-template-columns: 0.95fr 1.05fr;
+		align-items: center;
+		gap: 40px;
+	}
+	.hero-copy {
+		position: relative;
+		z-index: 2;
+		padding-bottom: 5px;
+		animation: rise-in 0.7s both;
+	}
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		margin: 0;
+		color: #65736d;
+		font-size: 11px;
+		line-height: 1.4;
+		font-weight: 700;
+		letter-spacing: 1.2px;
+		text-transform: uppercase;
+	}
+	.eyebrow-dot {
+		width: 7px;
+		height: 7px;
+		flex: 0 0 7px;
+		border-radius: 50%;
+		background: #53a880;
+		box-shadow: 0 0 0 3px rgba(83, 168, 128, 0.13);
+	}
+	h1,
+	h2,
+	h3,
+	p {
+		margin-top: 0;
+	}
+	h1,
+	h2 {
+		font-family: var(--display);
+		letter-spacing: 0;
+	}
+	h1 {
+		max-width: 600px;
+		margin: 27px 0 20px;
+		color: var(--ink);
+		font-size: clamp(43px, 5.2vw, 68px);
+		line-height: 1.09;
+		font-weight: 700;
+	}
+	h1 span,
+	.section-heading h2 span,
+	.closing-cta h2 span {
+		color: var(--green);
+	}
+	.hero-description {
+		max-width: 440px;
+		margin-bottom: 28px;
+		color: #596861;
+		font-size: 16px;
+		line-height: 1.75;
+	}
+	.hero-actions {
+		display: flex;
+		align-items: center;
+		gap: 24px;
+		flex-wrap: wrap;
+	}
+	.button {
+		display: inline-flex;
+		min-height: 48px;
+		align-items: center;
+		justify-content: center;
+		gap: 18px;
+		padding: 0 17px;
+		border-radius: 5px;
+		text-decoration: none;
+		font-size: 13px;
+		font-weight: 700;
+		transition:
+			background 0.2s,
+			transform 0.2s;
+	}
+	.button:hover {
+		transform: translateY(-2px);
+	}
+	.button-primary {
+		color: white;
+		background: var(--green);
+	}
+	.button-primary:hover {
+		background: #1b604d;
+	}
+	.text-link {
+		color: #33433d;
+		text-decoration: none;
+		font-size: 12px;
+		font-weight: 700;
+	}
+	.text-link span {
+		margin-left: 5px;
+		color: var(--green);
+	}
+	.hero-note {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-top: 43px;
+		color: #75817b;
+		font-size: 11px;
+	}
+	.note-line {
+		width: 26px;
+		height: 1px;
+		background: #aab5ae;
+	}
+	.hero-visual {
+		position: relative;
+		min-width: 0;
+		min-height: 465px;
+		display: grid;
+		place-items: center;
+		isolation: isolate;
+		animation: rise-in 0.8s 0.12s both;
+	}
+	.hero-visual::before {
+		position: absolute;
+		z-index: -2;
+		top: 13%;
+		right: 2%;
+		width: 85%;
+		height: 75%;
+		border-radius: 50%;
+		background: radial-gradient(
+			ellipse,
+			#e7eddb 0%,
+			#eff1e9 56%,
+			transparent 72%
+		);
+		content: "";
+	}
+	.visual-orbit {
+		position: absolute;
+		z-index: -1;
+		border: 1px solid rgba(36, 119, 97, 0.12);
+		border-radius: 50%;
+		transform: rotate(-28deg);
+	}
+	.orbit-one {
+		width: 520px;
+		height: 265px;
+	}
+	.orbit-two {
+		width: 565px;
+		height: 310px;
+	}
+	.floating-note {
+		position: absolute;
+		z-index: 4;
+		right: -2%;
+		bottom: 8%;
+		display: flex;
+		align-items: center;
+		gap: 11px;
+		padding: 13px 17px;
+		border: 1px solid rgba(23, 35, 33, 0.08);
+		border-radius: 7px;
+		background: #fffefa;
+		box-shadow: 0 14px 34px rgba(35, 54, 46, 0.1);
+		animation: float-in 5s ease-in-out infinite;
+	}
+	.floating-check {
+		width: 29px;
+		height: 29px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		color: #256a51;
+		background: #e0f2cc;
+		font-weight: 700;
+	}
+	.floating-note strong,
+	.floating-note small {
+		display: block;
+	}
+	.floating-note strong {
+		margin-bottom: 3px;
+		color: #24342e;
+		font-size: 11px;
+	}
+	.floating-note small {
+		color: #7c8982;
+		font-size: 9px;
+	}
+	.floating-label {
+		position: absolute;
+		z-index: 3;
+		top: 8%;
+		left: 1%;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 9px 12px;
+		border: 1px solid #e1e7de;
+		border-radius: 4px;
+		color: #50615a;
+		background: rgba(255, 255, 255, 0.8);
+		font-size: 10px;
+		font-weight: 600;
+	}
+	.floating-label span {
+		width: 7px;
+		height: 7px;
+		border-radius: 2px;
+		background: #dc9d4c;
+	}
+	.signal-bar {
+		display: flex;
+		min-height: 85px;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+		padding: 18px max(38px, calc((100vw - 1164px) / 2));
+		border-top: 1px solid var(--rule);
+		border-bottom: 1px solid var(--rule);
+		background: #f0f2ed;
+	}
+	.signal-bar p {
+		margin: 0;
+		color: #66736d;
+		font-size: 13px;
+	}
+	.signal-bar strong {
+		color: #283a33;
+		font-weight: 700;
+	}
+	.signal-items {
+		display: flex;
+		align-items: center;
+		gap: 34px;
+	}
+	.signal-items span {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		color: #45544d;
+		font-size: 12px;
+		font-weight: 600;
+	}
+	.signal-mark {
+		width: 20px;
+		height: 20px;
+		position: relative;
+		display: inline-block;
+		border-radius: 5px;
+		background: #dce9d9;
+	}
+	.signal-mark::after {
+		position: absolute;
+		inset: 5px;
+		border: 1.5px solid #39846b;
+		border-radius: 2px;
+		content: "";
+	}
+	.mark-tasks {
+		background: #f4e7d2;
+	}
+	.mark-tasks::after {
+		border-color: #bd8350;
+		border-left: 0;
+		border-right: 0;
+	}
+	.mark-team {
+		background: #e5e3ed;
+	}
+	.mark-team::after {
+		border-color: #777a9c;
+		border-radius: 50%;
+	}
+	.section-wrap {
+		max-width: 1240px;
+		margin: 0 auto;
+		padding: 118px 38px 125px;
+	}
+	.features-section {
+		display: grid;
+		grid-template-columns: 0.85fr 1.15fr;
+		gap: 80px;
+	}
+	.section-heading {
+		position: sticky;
+		top: 40px;
+		align-self: start;
+	}
+	.section-heading h2 {
+		margin: 23px 0 17px;
+		color: var(--ink);
+		font-size: 48px;
+		line-height: 1.14;
+		font-weight: 700;
+	}
+	.section-intro {
+		max-width: 330px;
+		color: #66736d;
+		font-size: 14px;
+		line-height: 1.8;
+	}
+	.feature-list {
+		border-top: 1px solid var(--rule);
+	}
+	.feature-row {
+		display: grid;
+		grid-template-columns: 34px 48px 1fr 24px;
+		align-items: start;
+		gap: 17px;
+		padding: 27px 0 29px;
+		border-bottom: 1px solid var(--rule);
+	}
+	.feature-number {
+		padding-top: 4px;
+		color: #8b9890;
+		font: 600 10px var(--display);
+	}
+	.feature-icon {
+		width: 43px;
+		height: 43px;
+		display: grid;
+		place-items: center;
+		border-radius: 7px;
+		color: var(--green);
+		background: #e5ede2;
+	}
+	.feature-row:nth-child(2) .feature-icon {
+		color: #af7543;
+		background: #f4eadb;
+	}
+	.feature-row:nth-child(3) .feature-icon {
+		color: #6d7495;
+		background: #e9e8f0;
+	}
+	.feature-icon svg {
+		width: 20px;
+		height: 20px;
+		stroke: currentColor;
+	}
+	.feature-copy h3 {
+		margin: 1px 0 8px;
+		color: #20312a;
+		font: 700 17px var(--display);
+	}
+	.feature-copy p {
+		max-width: 410px;
+		margin: 0;
+		color: #6b7871;
+		font-size: 12px;
+		line-height: 1.75;
+	}
+	.feature-arrow {
+		justify-self: end;
+		padding-top: 2px;
+		color: #789084;
+		font-size: 14px;
+	}
+	.workflow-section {
+		position: relative;
+		overflow: hidden;
+		color: #f5f6f0;
+		background: #1d332d;
+	}
+	.workflow-section::before {
+		position: absolute;
+		top: -250px;
+		right: -90px;
+		width: 600px;
+		height: 600px;
+		border: 1px solid rgba(215, 243, 106, 0.13);
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 48px rgba(215, 243, 106, 0.025),
+			0 0 0 96px rgba(215, 243, 106, 0.025);
+		content: "";
+	}
+	.workflow-inner {
+		position: relative;
+		max-width: 1240px;
+		min-height: 445px;
+		margin: 0 auto;
+		padding: 94px 38px 92px;
+		display: grid;
+		grid-template-columns: 0.8fr 1.2fr;
+		gap: 85px;
+	}
+	.eyebrow-light {
+		color: #bac8c0;
+	}
+	.eyebrow-light .eyebrow-dot {
+		background: var(--lime);
+		box-shadow: 0 0 0 3px rgba(215, 243, 106, 0.12);
+	}
+	.workflow-heading h2 {
+		margin: 24px 0 15px;
+		font-size: 48px;
+		line-height: 1.1;
+		font-weight: 650;
+	}
+	.workflow-heading > p:last-child {
+		max-width: 270px;
+		margin: 0;
+		color: #b7c3bc;
+		font-size: 13px;
+		line-height: 1.8;
+	}
+	.workflow-steps {
+		align-self: center;
+		border-top: 1px solid rgba(238, 246, 235, 0.19);
+	}
+	.workflow-step {
+		display: grid;
+		grid-template-columns: 46px 1fr 24px;
+		gap: 17px;
+		padding: 20px 0 19px;
+		border-bottom: 1px solid rgba(238, 246, 235, 0.19);
+	}
+	.step-number {
+		padding-top: 3px;
+		color: var(--lime);
+		font: 700 11px var(--display);
+	}
+	.workflow-step h3 {
+		margin: 0 0 6px;
+		color: #f4f6ed;
+		font: 700 15px var(--display);
+	}
+	.workflow-step p {
+		max-width: 350px;
+		margin: 0;
+		color: #b4c1ba;
+		font-size: 11px;
+		line-height: 1.65;
+	}
+	.step-arrow {
+		justify-self: end;
+		color: #b4c1ba;
+	}
+	.workflow-stamp {
+		position: absolute;
+		right: 2%;
+		bottom: -38px;
+		width: 110px;
+		height: 110px;
+		display: grid;
+		place-content: center;
+		border: 1px solid rgba(215, 243, 106, 0.42);
+		border-radius: 50%;
+		color: var(--lime);
+		text-align: center;
+		transform: rotate(11deg);
+	}
+	.workflow-stamp span {
+		font-size: 9px;
+		line-height: 1.4;
+		font-weight: 700;
+		letter-spacing: 1px;
+	}
+	.workflow-stamp i {
+		margin-top: 1px;
+		font-size: 16px;
+		font-style: normal;
+	}
+	.closing-cta {
+		position: relative;
+		padding: 105px 24px 110px;
+		text-align: center;
+		background: #eef1e9;
+	}
+	.closing-mark {
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: end;
+		justify-content: center;
+		gap: 4px;
+		margin: 0 auto 26px;
+		padding: 7px;
+		border-radius: 11px;
+		background: var(--green);
+	}
+	.closing-mark span {
+		width: 6px;
+		border-radius: 3px;
+		background: var(--lime);
+	}
+	.closing-mark span:nth-child(1) {
+		height: 13px;
+		opacity: 0.75;
+	}
+	.closing-mark span:nth-child(2) {
+		height: 22px;
+	}
+	.closing-mark span:nth-child(3) {
+		height: 16px;
+		opacity: 0.85;
+	}
+	.closing-cta .eyebrow {
+		justify-content: center;
+	}
+	.closing-cta h2 {
+		margin: 18px auto 25px;
+		color: var(--ink);
+		font-size: 43px;
+		line-height: 1.2;
+	}
+	.site-footer {
+		max-width: 1240px;
+		min-height: 87px;
+		margin: 0 auto;
+		padding: 19px 38px;
+		display: grid;
+		grid-template-columns: 1fr 1fr auto auto;
+		align-items: center;
+		gap: 28px;
+	}
+	.footer-brand {
+		font-size: 16px;
+	}
+	.footer-brand .brand-mark {
+		width: 22px;
+		height: 22px;
+	}
+	.site-footer p,
+	.copyright {
+		margin: 0;
+		color: #77837d;
+		font-size: 10px;
+	}
+	.footer-top {
+		color: #4d5d55;
+		text-decoration: none;
+		font-size: 10px;
+		font-weight: 700;
+	}
+	.footer-top span {
+		margin-left: 7px;
+	}
+	@keyframes rise-in {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	@keyframes float-in {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-7px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			scroll-behavior: auto !important;
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+	@media (max-width: 900px) {
+		.hero {
+			min-height: auto;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+			padding-top: 64px;
+		}
+		.hero-visual {
+			min-height: 400px;
+		}
+		.features-section {
+			gap: 42px;
+		}
+		.workflow-inner {
+			gap: 48px;
+		}
+		.site-footer {
+			grid-template-columns: 1fr auto auto;
+		}
+		.site-footer p {
+			display: none;
+		}
+	}
+	@media (max-width: 650px) {
+		.site-header {
+			height: 68px;
+			padding: 0 20px;
+		}
+		.brand {
+			font-size: 18px;
+		}
+		.main-nav {
+			display: none;
+		}
+		.header-cta {
+			gap: 8px;
+			padding: 10px 11px;
+			font-size: 11px;
+		}
+		.hero {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 10px;
+			padding: 54px 22px 40px;
+		}
+		h1 {
+			max-width: 500px;
+			margin-top: 22px;
+			font-size: clamp(42px, 11vw, 58px);
+		}
+		.hero-description {
+			max-width: 470px;
+			font-size: 14px;
+		}
+		.hero-actions {
+			align-items: flex-start;
+			gap: 17px;
+		}
+		.button {
+			min-height: 46px;
+		}
+		.text-link {
+			padding: 15px 0;
+		}
+		.hero-note {
+			margin-top: 28px;
+			font-size: 10px;
+		}
+		.hero-visual {
+			min-height: 340px;
+			margin: 4px -13px 0;
+		}
+		.orbit-one {
+			width: 370px;
+			height: 205px;
+		}
+		.orbit-two {
+			width: 405px;
+			height: 240px;
+		}
+		.floating-label {
+			top: 5%;
+			left: 3%;
+		}
+		.floating-note {
+			right: 0;
+			bottom: 4%;
+			padding: 10px 12px;
+		}
+		.signal-bar {
+			align-items: flex-start;
+			flex-direction: column;
+			padding: 19px 22px;
+			gap: 14px;
+		}
+		.signal-items {
+			width: 100%;
+			justify-content: space-between;
+			gap: 10px;
+		}
+		.section-wrap {
+			padding: 78px 22px 83px;
+		}
+		.features-section {
+			display: block;
+		}
+		.section-heading {
+			position: static;
+			margin-bottom: 37px;
+		}
+		.section-heading h2,
+		.workflow-heading h2 {
+			font-size: 41px;
+		}
+		.section-intro {
+			font-size: 13px;
+		}
+		.feature-row {
+			grid-template-columns: 25px 40px 1fr 15px;
+			gap: 11px;
+			padding: 22px 0;
+		}
+		.feature-icon {
+			width: 38px;
+			height: 38px;
+		}
+		.feature-copy h3 {
+			font-size: 15px;
+		}
+		.feature-copy p {
+			font-size: 11px;
+		}
+		.workflow-inner {
+			display: block;
+			min-height: auto;
+			padding: 76px 22px 78px;
+		}
+		.workflow-heading {
+			margin-bottom: 34px;
+		}
+		.workflow-heading > p:last-child {
+			max-width: 340px;
+		}
+		.workflow-step {
+			grid-template-columns: 34px 1fr 15px;
+			gap: 12px;
+		}
+		.workflow-stamp {
+			right: 19px;
+			bottom: -39px;
+			width: 82px;
+			height: 82px;
+		}
+		.workflow-stamp span {
+			font-size: 7px;
+		}
+		.closing-cta {
+			padding: 85px 21px 88px;
+		}
+		.closing-cta h2 {
+			font-size: 35px;
+		}
+		.site-footer {
+			min-height: 78px;
+			padding: 17px 20px;
+			grid-template-columns: 1fr auto;
+			gap: 10px;
+		}
+		.copyright {
+			grid-column: 1;
+			grid-row: 2;
+		}
+		.footer-top {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+		}
+	}
+
+	.site-shell {
+		color: #e6e6e6;
+		background: #1c1c1c;
+	}
+	.site-header {
+		max-width: none;
+		padding-right: max(22px, calc((100vw - 1164px) / 2));
+		padding-left: max(22px, calc((100vw - 1164px) / 2));
+		border-color: rgba(230, 230, 230, 0.1);
+	}
+	.brand {
+		color: #f0f8ff;
+	}
+	.main-nav a,
+	.header-cta {
+		color: #acacac;
+	}
+	.main-nav a:hover,
+	.footer-top:hover {
+		color: #bfedef;
+	}
+	.header-cta {
+		color: #f0f8ff;
+		background: #313131;
+	}
+	.header-cta:hover {
+		background: #587b7f;
+	}
+	.hero {
+		max-width: none;
+		padding-right: max(22px, calc((100vw - 1164px) / 2));
+		padding-left: max(22px, calc((100vw - 1164px) / 2));
+		background: linear-gradient(135deg, #2d4953 0%, #470024 100%);
+	}
+	.hero h1 {
+		color: #f0f8ff;
+	}
+	.hero h1 span {
+		color: #bfedef;
+	}
+	.eyebrow {
+		color: #c1c7ca;
+	}
+	.eyebrow-dot {
+		background: #587b7f;
+		box-shadow: 0 0 0 3px rgba(88, 123, 127, 0.2);
+	}
+	.hero-description,
+	.section-intro,
+	.feature-copy p {
+		color: #acacac;
+	}
+	.hero-note {
+		color: #acacac;
+	}
+	.note-line {
+		background: #587b7f;
+	}
+	.text-link {
+		color: #e6e6e6;
+	}
+	.text-link span,
+	.section-heading h2 span,
+	.closing-cta h2 span {
+		color: #bfedef;
+	}
+	.button-primary {
+		color: #f0f8ff;
+		background: #587b7f;
+	}
+	.button-primary:hover {
+		background: #2d4953;
+	}
+	.hero-visual::before {
+		display: none;
+	}
+	.visual-orbit {
+		border-color: rgba(191, 237, 239, 0.14);
+	}
+	.floating-note,
+	.floating-label {
+		border-color: rgba(230, 230, 230, 0.12);
+		color: #e6e6e6;
+		background: #242424;
+	}
+	.floating-note strong {
+		color: #f0f8ff;
+	}
+	.floating-note small {
+		color: #acacac;
+	}
+	.floating-check {
+		color: #f0f8ff;
+		background: rgba(8, 184, 125, 0.2);
+	}
+	.floating-label span {
+		background: #74394e;
+	}
+	.signal-bar {
+		color: #e6e6e6;
+		border-color: rgba(230, 230, 230, 0.1);
+		background: #313131;
+	}
+	.signal-bar p {
+		color: #acacac;
+	}
+	.signal-bar strong,
+	.signal-items span {
+		color: #f0f8ff;
+	}
+	.signal-mark {
+		background: rgba(88, 123, 127, 0.2);
+	}
+	.signal-mark::after {
+		border-color: #bfedef;
+	}
+	.mark-tasks {
+		background: rgba(116, 57, 78, 0.3);
+	}
+	.mark-tasks::after {
+		border-color: #a07178;
+	}
+	.mark-team {
+		background: rgba(160, 113, 120, 0.2);
+	}
+	.mark-team::after {
+		border-color: #a07178;
+	}
+	.features-section,
+	.closing-cta {
+		background: #242424;
+	}
+	.section-heading h2,
+	.feature-copy h3,
+	.closing-cta h2 {
+		color: #f0f8ff;
+	}
+	.feature-list,
+	.feature-row {
+		border-color: rgba(230, 230, 230, 0.12);
+	}
+	.feature-number,
+	.feature-arrow {
+		color: #acacac;
+	}
+	.feature-icon {
+		color: #bfedef;
+		background: rgba(88, 123, 127, 0.2);
+	}
+	.feature-row:nth-child(2) .feature-icon {
+		color: #c28b9a;
+		background: rgba(116, 57, 78, 0.28);
+	}
+	.feature-row:nth-child(3) .feature-icon {
+		color: #acacac;
+		background: #313131;
+	}
+	.workflow-section {
+		background: linear-gradient(135deg, #2d4953, #470024);
+	}
+	.workflow-section::before {
+		border-color: rgba(191, 237, 239, 0.12);
+		box-shadow:
+			0 0 0 48px rgba(191, 237, 239, 0.025),
+			0 0 0 96px rgba(191, 237, 239, 0.02);
+	}
+	.workflow-stamp {
+		color: #bfedef;
+		border-color: rgba(191, 237, 239, 0.35);
+	}
+	.closing-cta {
+		color: #e6e6e6;
+	}
+	.closing-cta .eyebrow {
+		color: #acacac;
+	}
+	.site-footer {
+		color: #e6e6e6;
+	}
+	.site-footer p,
+	.copyright {
+		color: #acacac;
+	}
+	.footer-top {
+		color: #e6e6e6;
+	}
+	@media (max-width: 650px) {
+		.site-header {
+			padding-right: 20px;
+			padding-left: 20px;
+		}
+	}
+</style>

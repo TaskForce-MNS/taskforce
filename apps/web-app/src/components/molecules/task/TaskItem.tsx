@@ -1,5 +1,7 @@
-import { type Task } from '@/api/task';
+import { type Task, TaskDifficulty } from '@/api/task';
 import { useUpdateTask } from '@/mutations/task';
+import { AssigneeDropdown } from './AssigneeDropdown';
+import { DueDateSelector } from './DueDateSelector';
 
 interface TaskItemProps {
     task: Task;
@@ -17,81 +19,97 @@ export const TaskItem = ({ task, projectId }: TaskItemProps) => {
         });
     };
 
-    // Formatage de la date (On utilise CreatedAt pour l'instant)
-    const formattedDate = new Intl.DateTimeFormat('fr-FR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    }).format(new Date(task.createdAt));
+    const getDifficultyLabel = (diff: TaskDifficulty) => {
+        switch (diff) {
+            case TaskDifficulty.Simple: return { label: 'Simple', color: 'bg-green-500/10 text-green-400 border-green-500/20' };
+            case TaskDifficulty.Medium: return { label: 'Moyenne', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20' };
+            case TaskDifficulty.Complex: return { label: 'Complexe', color: 'bg-red-500/10 text-red-400 border-red-500/20' };
+            default: return null;
+        }
+    };
+    const difficultyInfo = getDifficultyLabel(task.difficulty);
+
+    let daysLeftTag = null;
+    if (task.dueDate && !task.isChecked) {
+        const diffTime = new Date(task.dueDate).getTime() - new Date().getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) {
+            daysLeftTag = <span className="text-red-400">En retard de {Math.abs(diffDays)}j</span>;
+        } else if (diffDays === 0) {
+            daysLeftTag = <span className="text-orange-400">À faire aujourd'hui</span>;
+        } else {
+            daysLeftTag = <span>jours restants : {diffDays}j</span>;
+        }
+    }
+
+    const formatTargetWeek = (dateString: string) => {
+        const d = new Date(dateString);
+        return `Semaine du ${d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}`;
+    };
 
     return (
-        <div className="bg-[#242424] border border-[#333333] rounded-lg p-4 flex flex-col gap-3 transition-colors hover:bg-[#2A2A2A]">
-
-            {/* --- LIGNE SUPÉRIEURE --- */}
-            <div className="flex items-center gap-4">
-                {/* Checkbox circulaire */}
+        <div className="bg-black-accent-default rounded-lg p-3 flex flex-col gap-3 transition-colors hover:bg-black-accent-dark">
+            <div className="flex items-start gap-4">
                 <button
                     onClick={handleToggle}
                     disabled={isPending}
-                    className={`w-5 h-5 rounded-full flex-shrink-0 border-2 transition-colors ${task.isChecked
-                        ? 'bg-gray-400 border-gray-400' // Tâche terminée
-                        : 'bg-transparent border-gray-400 hover:border-gray-200' // À faire
+                    className={`mt-1 w-4 h-4 rounded flex-shrink-0 border-2 transition-colors ${task.isChecked
+                        ? 'bg-primary-default border-primary-default'
+                        : 'bg-transparent border-gray-500 hover:border-gray-300'
                         }`}
-                />
+                >
+                    {task.isChecked && (
+                        <svg viewBox="0 0 14 14" fill="none" className="w-full h-full text-white">
+                            <path d="M3 7.5L5.5 10L11 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    )}
+                </button>
 
-                <div className="flex flex-1 items-center justify-between min-w-0 gap-4">
-
-                    {/* Titre et Assignés */}
-                    <div className="flex items-center gap-4 truncate">
-                        <span className={`text-lg font-medium truncate ${task.isChecked ? 'text-gray-500 line-through' : 'text-gray-100'}`}>
+                <div className="flex flex-col flex-1 min-w-0 gap-1">
+                    <div className="flex items-center justify-between gap-4">
+                        <span className={`text-sm font-medium truncate ${task.isChecked ? 'text-white-accent-dark line-through' : 'text-white-accent-light'}`}>
                             {task.name}
                         </span>
 
-                        {/* 🚧 MOCK: Assignation (À implémenter plus tard) */}
-                        <div className="hidden md:flex items-center gap-2 text-sm">
-                            <span className="text-gray-500">assigné à:</span>
-                            <span className="bg-[#333333] text-gray-200 px-2 py-1 rounded-md text-xs">Léa J.</span>
-                            <span className="bg-[#333333] text-gray-200 px-2 py-1 rounded-md text-xs">Martin O.</span>
-                            <span className="bg-[#333333] text-gray-400 px-2 py-1 rounded-md text-xs">+ 2</span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {difficultyInfo && (
+                                <span className={`px-2 py-0.5 rounded text-[10px] border ${difficultyInfo.color}`}>
+                                    {difficultyInfo.label} ({task.storyPoints} pts)
+                                </span>
+                            )}
+                            {task.targetWeek && !task.isChecked && (
+                                <span className="px-2 py-0.5 rounded text-[10px] bg-primary-default/10 text-primary-light border border-primary-default/20 flex items-center gap-1" title="Semaine assignée par l'algorithme">
+                                    ✨ {formatTargetWeek(task.targetWeek)}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Date et Priorité */}
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="flex items-center gap-2 text-gray-400 text-sm">
-                            Logo calendar
-                            <span>{formattedDate}</span>
+                    <div className="flex items-center gap-4 text-xs mt-1">
+                        <AssigneeDropdown task={task} projectId={projectId} />
+
+                        <div className="flex items-center gap-2">
+                            <DueDateSelector task={task} projectId={projectId} />
+                            {daysLeftTag && (
+                                <span className="text-[10px] text-white-accent-dark">
+                                    ({daysLeftTag})
+                                </span>
+                            )}
                         </div>
-                        {/* 🚧 MOCK: Priorité */}
-                        <span className="bg-white text-black px-3 py-1 rounded text-sm font-medium">
-                            Faible
-                        </span>
                     </div>
+
+                    {task.requiredDomains?.length > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                            {task.requiredDomains.map(domain => (
+                                <span key={domain} className="text-[9px] px-1.5 py-0.5 bg-white/5 text-white-accent-dark rounded">
+                                    {domain}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
-
-            {/* --- LIGNE INFÉRIEURE (Décalée sur la droite) --- */}
-            <div className="pl-9 flex items-center justify-between">
-
-                {/* 🚧 MOCK: Indicateurs (Fichiers, Commentaires, Sous-tâches) */}
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-[#1E1E1E] border border-[#333333] text-gray-400 px-2 py-1 rounded-md text-xs">
-                        logo file <span>3</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-[#1E1E1E] border border-[#333333] text-gray-400 px-2 py-1 rounded-md text-xs">
-                        logo message <span>12</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-[#1E1E1E] border border-[#333333] text-gray-400 px-2 py-1 rounded-md text-xs">
-                        logo fork <span>4</span>
-                    </div>
-                </div>
-
-                {/* 🚧 MOCK: Jours restants (Nécessitera une 'DueDate' en base plus tard) */}
-                <div className="text-gray-400 text-sm bg-[#1E1E1E] px-3 py-1.5 rounded-md border border-[#333333]">
-                    jours restant: 6j
-                </div>
-            </div>
-
         </div>
     );
 };

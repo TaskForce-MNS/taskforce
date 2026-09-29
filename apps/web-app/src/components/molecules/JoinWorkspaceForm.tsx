@@ -78,7 +78,7 @@ export const JoinWorkspaceForm = () => {
 
     return (
         <div className="rounded-medium border border-white-accent-dark/10 bg-black-accent-default p-5">
-            <h2 className="mb-4 font-title text-lg font-semibold text-white-accent-light">
+            <h2 className="mb-4 font-title text-md font-semibold text-white-accent-light">
                 Rejoindre un projet
             </h2>
 
@@ -100,8 +100,10 @@ export const JoinWorkspaceForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="Collez le lien ou le code..."
+                                placeholder="e_Cnx0wnm4QlanDf4mSr8Pg1wejw51tRKIM..."
                                 disabled={acceptMutation.isPending}
+                                inputSize="md"
+                                className="text-lg"
                             />
                         </div>
                     )}
@@ -112,6 +114,7 @@ export const JoinWorkspaceForm = () => {
                         selector={(state) => [state.canSubmit, state.isSubmitting]}
                         children={([canSubmit, isSubmitting]) => (
                             <Button
+                                size='sm'
                                 type="submit"
                                 variant="primary"
                                 isLoading={acceptMutation.isPending || isSubmitting}
@@ -123,13 +126,14 @@ export const JoinWorkspaceForm = () => {
                     />
 
                     <Button
+                        size='sm'
                         type="button"
                         variant="outline"
                         onClick={handlePasteAndSubmit}
                         disabled={acceptMutation.isPending}
                         title="Coller et valider automatiquement"
                     >
-                      <Clipboard className="size-6" />
+                        <Clipboard className="size-6" />
                     </Button>
                 </div>
             </form>

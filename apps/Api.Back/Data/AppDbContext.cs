@@ -16,6 +16,7 @@ namespace Api.Back.Data
         public DbSet<DbInvitation> Invitations { get; set; }
         public DbSet<DbProjectMember> ProjectMembers { get; set; }
         public DbSet<DbTask> Tasks { get; set; }
+        public DbSet<DbUserSkill> UserSkills { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -86,12 +87,25 @@ namespace Api.Back.Data
                     .HasForeignKey(e => e.ProjectId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.HasOne(t => t.Assignee)
+                    .WithMany()
+                    .HasForeignKey(t => t.AssigneeId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 entity.Property(e => e.Name)
                       .IsRequired()
                       .HasMaxLength(255);
 
                 entity.Property(e => e.IsChecked)
                       .IsRequired();
+            });
+            modelBuilder.Entity<DbUserSkill>(entity =>
+            {
+                entity.ToTable("user_skills");
+                entity.HasOne<DbIdentity>()
+                    .WithMany(i => i.Skills)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
         }

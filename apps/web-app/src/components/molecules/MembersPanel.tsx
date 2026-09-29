@@ -52,7 +52,7 @@ export const MembersPanel = ({ projectId }: { projectId: string }) => {
     });
 
     return (
-        <div className="flex max-w-[280px] sm:max-w-[350px] items-center gap-1 overflow-x-auto rounded-full border border-white-accent-dark/15 bg-black-accent-light/40 p-1.5 backdrop-blur-md shadow-sm scrollbar-hide">
+        <div className="flex max-w-[280px] sm:max-w-[350px] items-center gap-1 overflow-x-auto rounded-large border border-white-accent-dark/15 bg-black-accent-light/40 p-1.5 backdrop-blur-md shadow-sm">
 
             {sortedMembers.length === 0 ? (
                 <span className="px-3 py-1 text-xs text-white-accent-dark">Aucun membre</span>

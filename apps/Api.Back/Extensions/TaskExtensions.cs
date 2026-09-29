@@ -14,7 +14,14 @@ namespace Api.Back.Extensions
                 task.IsChecked,
                 task.IsArchived,
                 task.CreatedAt,
-                task.ProjectId
+                task.DueDate,
+                task.AssigneeId,
+                task.Assignee != null ? $"{task.Assignee.FirstName} {task.Assignee.LastName}".Trim() : null,
+                task.ProjectId,
+                task.Difficulty,
+                task.StoryPoints,
+                task.TargetWeek,
+                task.RequiredDomains ?? []
             );
         }
     }
