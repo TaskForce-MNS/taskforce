@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Api.Back.DTOs.Requests
+namespace Api.Back.DTOs.Requests.auth
 {
     public record RegisterIdentityDto(
         string EncryptedProfileBlob,

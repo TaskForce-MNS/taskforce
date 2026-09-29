@@ -22,19 +22,45 @@ namespace Api.Back.Controllers.Projects
             _validator = validator;
         }
 
+        // [HttpPost(BackUrls.PostProject)]
+        // [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]
+        // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        // public async Task<IActionResult> PostProject([FromBody] PostProjectRequest request)
+        // {
+        //     var userId = GetCurrentIdentityId();
+        //     var validation = await _validator.ValidateAsync(request);
+        //     if (!validation.IsValid)
+        //         return BadRequest(validation.Errors);
+        //     var response = await _projectService.PostProjectAsync(request, userId);
+
+        //     return CreatedAtAction(nameof(GetProjectById), new { id = response.Id }, response);
+        // }
         [HttpPost(BackUrls.PostProject)]
         [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
         public async Task<IActionResult> PostProject([FromBody] PostProjectRequest request)
         {
             var userId = GetCurrentIdentityId();
             var validation = await _validator.ValidateAsync(request);
+
             if (!validation.IsValid)
                 return BadRequest(validation.Errors);
-            var response = await _projectService.PostProjectAsync(request, userId);
 
-            return CreatedAtAction(nameof(GetProjectById), new { id = response.Id }, response);
+            var (project, checkoutUrl) = await _projectService.PostProjectAsync(request, userId);
+
+            if (!string.IsNullOrEmpty(checkoutUrl))
+            {
+                return StatusCode(402, new
+                {
+                    Message = "Limite de 3 projets gratuits atteinte.",
+                    CheckoutUrl = checkoutUrl
+                });
+            }
+
+            return CreatedAtAction(nameof(GetProjectById), new { id = project!.Id }, project);
         }
 
         [HttpGet(BackUrls.ListProjects)]

@@ -5,30 +5,28 @@ import { MembersPanel } from '@/components/molecules/MembersPanel';
 import { useCallback, useState, useRef } from 'react';
 import { EditProjectModal } from '@/pages/ProjectDetail/EditProjectModal';
 import { CalendarTimeline, type CalendarTimelineHandle } from '@/components/molecules/CalendarTimeline';
+import { CreateTaskBar } from '@/components/molecules/task/CreateTaskBar';
+import { StickyDateTitle, type StickyDateTitleHandle } from '@/components/molecules/task/StickyDateTitle';
 
 export const ProjectDetail = ({ projectId }: { projectId: string }) => {
     const { data: project } = useSuspenseQuery(projectQueryOptions(projectId));
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const calendarRef = useRef<CalendarTimelineHandle>(null);
+    const stickyDateRef = useRef<StickyDateTitleHandle>(null);
 
-    const canManage = project.currentUserRole === 'Owner';
-    console.log(project.currentUserRole);
-    const [headerDateTitle, setHeaderDateTitle] = useState<string>('Chargement...');
+    const canManage = project.currentUserRole === 'Owner' || project.currentUserRole === 'Admin';
 
     const handleDateChange = useCallback((newDateTitle: string) => {
-        setHeaderDateTitle(newDateTitle);
+        stickyDateRef.current?.setTitle(newDateTitle);
     }, []);
     const handleGoToToday = () => {
         calendarRef.current?.scrollToToday();
-        console.log(calendarRef.current);
     }
     return (
 
-        <div className="flex h-full w-full flex-col space-y-4 sm:space-y-6">
-
+        <div className="flex h-full w-full flex-col">
             <div className="flex shrink-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-
                 <div className="flex min-w-0 items-center gap-4">
                     {/* <div
                         className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-medium font-title text-lg sm:text-xl font-bold text-white-accent-light shadow-sm"
@@ -37,13 +35,10 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
                         {project.name.charAt(0).toUpperCase()}
                     </div> */}
                     <div className="min-w-0">
-                        <h1
+                        <StickyDateTitle
+                            ref={stickyDateRef}
                             onClick={handleGoToToday}
-                            title="Revenir à aujourd'hui"
-                            className="truncate font-subtitle sm:text-xl font-bold text-white-accent-light transition-colors duration-300 cursor-pointer hover:text-primary-light"
-                        >
-                            {headerDateTitle}
-                        </h1>
+                        />
                     </div>
                 </div>
 
@@ -67,7 +62,11 @@ export const ProjectDetail = ({ projectId }: { projectId: string }) => {
             </div>
 
             <CalendarTimeline projectId={projectId} ref={calendarRef} key={projectId} onDateChange={handleDateChange} />
-
+            {canManage && (
+                <div className="sticky md:bottom-0">
+                    <CreateTaskBar projectId={projectId} projectName={project.name} />
+                </div>
+            )}
             {isEditModalOpen && (
                 <EditProjectModal
                     project={project}

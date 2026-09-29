@@ -1,3 +1,4 @@
+using Api.Back.DTOs.Requests.auth;
 using Api.Back.DTOs.Requests;
 using Api.Back.DTOs.Responses;
 using Api.Back.Services;

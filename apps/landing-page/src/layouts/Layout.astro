@@ -1,29 +1,60 @@
+---
+const {
+  title = "Taskforce | Le travail d’équipe, enfin aligné",
+  description = "Taskforce rassemble vos projets, vos tâches et votre équipe dans un espace de travail clair et partagé.",
+} = Astro.props;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#1C1C1C" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
   </head>
   <body>
     <slot />
-    <h1>Bienvenue sur TaskForce</h1>
-    <p>L'IA au service de votre productivité.</p>
-
-    <a href="http://localhost:5173" class="btn-primary">
-      Essayer l'application (Beta)
-    </a>
   </body>
 </html>
 
 <style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+  :global(html) {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+  }
+  :global(body) {
+    margin: 0;
+    min-width: 320px;
+    background: #1c1c1c;
+    color: #e6e6e6;
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :global(button),
+  :global(a) {
+    font: inherit;
+  }
+  :global(a:focus-visible) {
+    outline: 3px solid #587b7f;
+    outline-offset: 4px;
+  }
   html,
   body {
-    margin: 0;
     width: 100%;
-    height: 100%;
   }
 </style>

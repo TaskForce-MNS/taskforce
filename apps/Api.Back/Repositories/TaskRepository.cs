@@ -24,6 +24,7 @@ namespace Api.Back.Repositories
         public async Task<List<DbTask>> GetByProjectIdAsync(Guid projectId)
         {
             return await _context.Tasks
+                .Include(t => t.Assignee)
                 .Where(t => t.ProjectId == projectId && !t.IsArchived)
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
@@ -31,7 +32,9 @@ namespace Api.Back.Repositories
 
         public async Task<DbTask?> GetByIdAsync(Guid taskId)
         {
-            return await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+            return await _context.Tasks
+                .Include(t => t.Assignee)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
         }
 
         public async Task AddAsync(DbTask task)
@@ -42,8 +45,8 @@ namespace Api.Back.Repositories
 
         public async Task UpdateAsync(DbTask task)
         {
-            _context.Tasks.Update(task);
             await _context.SaveChangesAsync();
+            await _context.Entry(task).Reference(t => t.Assignee).LoadAsync();
         }
     }
 }

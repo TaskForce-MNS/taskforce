@@ -11,6 +11,7 @@ using Api.Back.Common;
 using System.Data.Common;
 using StackExchange.Redis;
 using Api.Back.Services.dev;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +46,9 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IDevAutoJoinService, DevAutoJoinService>();
 
 builder.Services.AddMemoryCache();
-
+builder.Services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IStripeCheckoutService, StripeCheckoutService>();
 // Redis for Refresh Tokens
 var redisConnection = builder.Configuration["Redis:ConnectionString"]
     ?? throw new InvalidOperationException("Redis:ConnectionString manquant");
@@ -84,6 +87,8 @@ builder.Services.AddFido2(options =>
     options.Origins = allowedOrigins;
 });
 
+// Initialisation de Stripe
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 #endregion
 
 #region AUTHENTICATION

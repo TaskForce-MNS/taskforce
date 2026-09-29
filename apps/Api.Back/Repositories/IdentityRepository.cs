@@ -13,6 +13,9 @@ public interface IIdentityRepository
     Task<DbIdentity?> GetByCredentialIdAsync(byte[] descriptorId);
     Task UpdateSignatureCounterAsync(byte[] credentialId, uint newCounter);
     Task<UserResponseDto?> GetUserProfileByIdAsync(Guid identityId, CancellationToken cancellationToken);
+    Task AddSkillAsync(DbUserSkill skill);
+    Task<DbUserSkill?> GetSkillByIdAsync(Guid skillId, Guid userId);
+    Task RemoveSkillAsync(DbUserSkill skill);
 }
 
 public class IdentityRepository : IIdentityRepository
@@ -81,8 +84,26 @@ public class IdentityRepository : IIdentityRepository
                 i.Title,
                 i.CurrentWorkload,
                 i.Experience,
-                i.CreatedAt
+                i.CreatedAt,
+                i.Skills.Select(s => new UserSkillDto(s.Id, s.Domain, s.Level)).ToArray()
             ))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+    public async Task AddSkillAsync(DbUserSkill skill)
+    {
+        await _context.UserSkills.AddAsync(skill);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<DbUserSkill?> GetSkillByIdAsync(Guid skillId, Guid userId)
+    {
+        return await _context.UserSkills
+            .FirstOrDefaultAsync(s => s.Id == skillId && s.UserId == userId);
+    }
+
+    public async Task RemoveSkillAsync(DbUserSkill skill)
+    {
+        _context.UserSkills.Remove(skill);
+        await _context.SaveChangesAsync();
     }
 }

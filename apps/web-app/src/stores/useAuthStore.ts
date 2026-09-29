@@ -8,7 +8,18 @@ import {
 import { authMe, auth, login, authOptions, logout, register } from '@/api/config';
 import { apiClient } from '@/api/client';
 
-
+export const ExperienceLevel = {
+  None: 0,
+  Junior: 1,
+  Intermediate: 2,
+  Senior: 3
+} as const;
+export type ExperienceLevel = (typeof ExperienceLevel)[keyof typeof ExperienceLevel];
+export interface UserSkill {
+  id: string;
+  domain: string;
+  level: ExperienceLevel;
+}
 export interface User {
   id: string;
   email: string;
@@ -19,13 +30,13 @@ export interface User {
   experience: string;
   createdAt: string;
   avatarUrl?: string;
+  skills: UserSkill[];
 }
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
   user: User | null;
-
   loginWithPasskey: () => Promise<boolean>;
   registerWithPasskey: (profileData: { firstname: string, lastname: string, title: string; experience: string }) => Promise<void>;
   logout: () => Promise<void>;
@@ -104,8 +115,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   checkSession: async () => {
     set({ isLoading: true });
     try {
-
-      const userData = await apiClient<User>(`${auth}${authMe}`);
+      const userData = await apiClient<User>(`${auth}${authMe}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       set({ isAuthenticated: true, user: userData, isLoading: false });
     } catch {
       set({ isAuthenticated: false, user: null, isLoading: false });

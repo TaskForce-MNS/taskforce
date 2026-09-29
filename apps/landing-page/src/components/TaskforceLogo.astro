@@ -1,0 +1,48 @@
+---
+const { compact = false, gradientId = "taskforce-mark" } = Astro.props;
+---
+
+<span class:list={["taskforce-logo", compact && "compact"]}>
+    <svg
+        class="taskforce-symbol"
+        viewBox="0 0 202 203"
+        fill="none"
+        aria-hidden="true"
+    >
+        <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#587B7F"></stop>
+                <stop offset="100%" stop-color="#74394E"></stop>
+            </linearGradient>
+        </defs>
+        <path
+            d="M55.71 59.0706C44.36 44.3506 28.72 34.9004 7.20996 34.9004C20.16 52.0704 37.12 58.8706 55.71 59.0706Z"
+            fill={`url(#${gradientId})`}></path>
+        <path
+            d="M145.7 59.0706C157.05 44.3506 172.69 34.9004 194.2 34.9004C181.25 52.0704 164.29 58.8706 145.7 59.0706Z"
+            fill={`url(#${gradientId})`}></path>
+        <path
+            d="M100.71 37.5C105.23 30.83 129.51 0.959963 201.35 0.959963V20.3401C124.8 20.3401 112.02 136.4 110.03 202.24H91.3799C89.3899 136.4 76.6096 20.3401 0.0595703 20.3401V0.959963C71.8996 0.949963 96.19 30.83 100.71 37.5Z"
+            fill={`url(#${gradientId})`}></path>
+    </svg>
+    {!compact && <span>Taskforce</span>}
+</span>
+
+<style>
+    .taskforce-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        color: #f0f8ff;
+        white-space: nowrap;
+    }
+    .taskforce-logo.compact {
+        gap: 0;
+    }
+    .taskforce-symbol {
+        display: block;
+        width: 1.3em;
+        height: 1.3em;
+        flex: 0 0 auto;
+    }
+</style>

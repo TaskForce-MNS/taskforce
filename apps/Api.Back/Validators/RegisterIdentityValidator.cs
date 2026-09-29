@@ -1,4 +1,4 @@
-using Api.Back.DTOs.Requests;
+using Api.Back.DTOs.Requests.auth;
 using FluentValidation;
 using System.Text.Json;
 

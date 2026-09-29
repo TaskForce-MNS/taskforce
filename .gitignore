@@ -186,3 +186,5 @@ node_modules/
 infra/certs/*.pem
 
 TestResults/**
+
+appsettings.Development.json
