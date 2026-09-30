@@ -99,7 +99,6 @@ export const Auth = () => {
             inputSize="md"
           />
 
-          {/* Select (Tu pourras plus tard créer un composant <Select /> personnalisé sur le même modèle que <Input />) */}
           <div className="flex flex-col gap-1.5 mb-s w-full">
             <label htmlFor="experience-select" className="text-sm font-medium text-white-accent-default select-none">
               Niveau d'expérience
@@ -143,7 +142,6 @@ export const Auth = () => {
           {isLogin ? 'Se connecter avec Passkey' : 'Créer mon Passkey'}
         </Button>
       )}
-      {/* Login/Register */}
       <div className="mt-xl w-full border-t border-white-accent-dark/50 pt-l text-center">
         <Button
           variant="link"
@@ -158,6 +156,15 @@ export const Auth = () => {
             : "Déjà un compte ? Se connecter"}
         </Button>
       </div>
+      <footer className="mt-8 flex items-center justify-center gap-4 text-xs text-white-accent-dark/60">
+        <a href="/legal/mentions-legales" className="hover:text-white-accent-light">
+          Mentions légales
+        </a>
+        <span>&middot;</span>
+        <a href="/legal/confidentialite" className="hover:text-white-accent-light">
+          Politique de confidentialité
+        </a>
+      </footer>
     </AuthLayout >
   );
 };
